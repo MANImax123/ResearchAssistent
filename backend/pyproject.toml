@@ -76,3 +76,8 @@ python_files = ["test_*.py"]
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# python-jose ships no type information
+module = ["jose", "jose.*"]
+ignore_missing_imports = true

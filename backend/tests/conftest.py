@@ -11,6 +11,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.core.config import get_settings
+from app.db.session import get_db
 from app.main import app
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -78,3 +79,18 @@ async def db_session(test_database: str) -> AsyncIterator[AsyncSession]:
             await session.close()
             await trans.rollback()
     await engine.dispose()
+
+
+@pytest.fixture
+async def api_client(db_session: AsyncSession) -> AsyncIterator[AsyncClient]:
+    """HTTP client whose requests use the rolled-back test session instead of the dev DB."""
+
+    async def override_get_db() -> AsyncIterator[AsyncSession]:
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+            yield c
+    finally:
+        app.dependency_overrides.pop(get_db, None)
