@@ -49,13 +49,45 @@ ResearchFlow is an end-to-end, multi-agent, AI-powered research assistant that s
    | MinIO Console | http://localhost:9001 |
    | Neo4j Browser | http://localhost:7474 |
 
+### Database & demo data
+
+```bash
+make migrate   # docker compose exec backend alembic upgrade head
+make seed      # docker compose exec backend python -m app.db.seed
+```
+
+The seed creates a demo account: `demo@researchflow.dev` / `demo-password` (dev only).
+
 ### Makefile Commands
 
 ```bash
-make up       # Start all services
+make up       # Start all services (builds images)
 make down     # Stop all services
 make logs     # Tail logs from all services
 make ps       # Show service status
+make migrate  # Apply database migrations
+make seed     # Create the demo user + project
+make test     # Backend (pytest) + frontend (vitest) tests
+make lint     # ruff + mypy (backend), tsc (frontend)
+```
+
+**No `make` (e.g. Windows)?** Run the commands directly:
+
+```bash
+docker compose up -d --build
+docker compose exec backend alembic upgrade head
+docker compose exec backend python -m app.db.seed
+docker compose exec backend pytest
+cd frontend && npm install && npm test
+```
+
+### Frontend development
+
+The `frontend` container serves a production build. For hot reload while working on the UI:
+
+```bash
+docker compose stop frontend
+cd frontend && npm install && npm run dev   # http://localhost:3000
 ```
 
 ## Architecture

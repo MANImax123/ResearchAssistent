@@ -1,5 +1,5 @@
 # Progress
-Current step: 0.5
+Current step: 1.1
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -7,8 +7,8 @@ Current step: 0.5
 | 0.2  | FastAPI backend skeleton | ✅ | 2026-10-20 | |
 | 0.3  | Database models & migrations | ✅ | 2026-10-20 | |
 | 0.4  | Authentication (JWT) | ✅ | 2026-10-20 | |
-| 0.5  | Frontend skeleton + auth | 🔄 in progress | | |
-| 1.1  | Projects CRUD + dashboard | ⬜ not started | | |
+| 0.5  | Frontend skeleton + auth | ✅ | 2026-10-20 | |
+| 1.1  | Projects CRUD + dashboard | 🔄 in progress | | |
 | 1.2  | File uploads (MinIO) | ⬜ not started | | |
 | 1.3  | Celery background jobs + job status | ⬜ not started | | |
 | 1.4  | LLM & embeddings service | ⬜ not started | | |

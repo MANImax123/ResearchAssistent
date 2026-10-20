@@ -23,10 +23,12 @@ migrate:
 
 test:
 	docker compose exec backend pytest -v
+	cd frontend && npm test
 
 lint:
 	docker compose exec backend ruff check app/
 	docker compose exec backend mypy app/
+	cd frontend && npm run typecheck
 
 worker:
 	docker compose exec worker celery -A app.workers.celery_app worker --loglevel=info

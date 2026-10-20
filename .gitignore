@@ -25,6 +25,9 @@ node_modules/
 out/
 frontend/.next/
 frontend/node_modules/
+next-env.d.ts
+*.tsbuildinfo
+coverage/
 
 # IDE
 .vscode/
