@@ -1,5 +1,5 @@
 # Progress
-Current step: 1.4
+Current step: 2.1
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -11,8 +11,8 @@ Current step: 1.4
 | 1.1  | Projects CRUD + dashboard | ✅ | 2026-10-20 | |
 | 1.2  | File uploads (MinIO) | ✅ | 2026-10-20 | |
 | 1.3  | Celery background jobs + job status | ✅ | 2026-10-20 | |
-| 1.4  | LLM & embeddings service | 🔄 in progress | | |
-| 2.1  | ResearchState + LangGraph orchestrator skeleton | ⬜ not started | | |
+| 1.4  | LLM & embeddings service | ✅ | 2026-10-20 | Gemini default (approved), OpenAI optional |
+| 2.1  | ResearchState + LangGraph orchestrator skeleton | 🔄 in progress | | |
 | 2.2  | Approval checkpoints & feedback actions | ⬜ not started | | |
 | 2.3  | Section editor with versioning | ⬜ not started | | |
 | 3.1  | Research Planning + idea refinement | ⬜ not started | | |

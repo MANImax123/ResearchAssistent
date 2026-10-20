@@ -50,12 +50,21 @@ class Settings(BaseSettings):
     # GROBID
     grobid_url: str = "http://localhost:8070"
 
-    # LLM
+    # LLM — every model call goes through app/services/llm.py and embeddings.py
+    llm_provider: Literal["gemini", "openai", "fake"] = "gemini"
+    gemini_api_key: str = ""
     openai_api_key: str = ""
-    llm_model: str = ""
-    llm_model_fast: str = ""
-    embedding_model: str = "text-embedding-3-small"
-    embedding_dim: int = 1536
+    llm_model: str = "gemini-3.8-flash"  # reasoning / writing
+    llm_model_fast: str = "gemini-3.5-flash-lite"  # extraction / classification
+    # Used when the requested model keeps failing with transient errors (e.g. "high demand" 503s); "" disables
+    llm_model_fallback: str = "gemini-3.5-flash-lite"
+    llm_retries_before_fallback: int = 1  # the last model in the chain gets the full llm_max_retries
+    llm_timeout_s: float = 120.0
+    llm_max_retries: int = 3
+    embedding_provider: Literal["gemini", "openai", "fake"] = "gemini"
+    embedding_model: str = "gemini-embedding-2"
+    embedding_dim: int = 1536  # must match paper_chunks.embedding vector(N)
+    embedding_batch_size: int = 100
 
     # Academic APIs
     s2_api_key: str = ""

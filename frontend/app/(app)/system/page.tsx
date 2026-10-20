@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 
 import { JobProgress } from "@/components/JobProgress";
+import { LLMTestCard } from "@/components/LLMTestCard";
 import { Badge, Button, ErrorAlert, Spinner, TextField } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { jobsApi, TERMINAL, useJob, type Job } from "@/lib/jobs";
@@ -145,6 +146,7 @@ export default function SystemPage() {
         <p className="mt-1 text-sm text-slate-500">Status of the services ResearchFlow depends on.</p>
       </div>
       <ServiceHealth />
+      <LLMTestCard />
       <DemoJob />
     </div>
   );

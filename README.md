@@ -82,6 +82,20 @@ docker compose exec backend pytest
 cd frontend && npm install && npm test
 ```
 
+### AI model (Gemini by default)
+
+Get a free API key at https://aistudio.google.com/apikey and put it in `.env`:
+
+```bash
+GEMINI_API_KEY=your-key
+```
+
+Then restart the backend and worker (`docker compose up -d backend worker`) and use **System → Test AI connection**.
+To use OpenAI instead set `LLM_PROVIDER=openai`, `OPENAI_API_KEY`, and the model names (see `.env.example`).
+`LLM_PROVIDER=fake` runs everything without a key (placeholder AI output).
+
+Note: on Gemini's free tier, prompts may be used by Google to improve its products; use a paid key for confidential research.
+
 ### Background jobs
 
 Long-running work (paper search, PDF parsing, generation) runs on the Celery `worker` service, using Redis as the queue.
