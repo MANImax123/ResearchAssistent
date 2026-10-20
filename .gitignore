@@ -1,0 +1,63 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# Data volumes (created by Docker)
+data/
+
+# MinIO data
+minio_data/
+
+# Neo4j data
+neo4j_data/
+
+# Postgres data
+postgres_data/
+
+# Redis data
+redis_data/
+
+# Logs
+*.log
+
+# Alembic
+alembic/versions/__pycache__/

@@ -1,0 +1,113 @@
+services:
+  # ─── PostgreSQL with pgvector ───────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: researchflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-researchflow}
+      POSTGRES_USER: ${POSTGRES_USER:-researchflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-researchflow_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-researchflow} -d ${POSTGRES_DB:-researchflow}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ─── Redis ──────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: researchflow-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── MinIO (S3-compatible file storage) ─────────────────────────────
+  # Bitnami build of MinIO: upstream stopped publishing minio/minio images.
+  # MINIO_DEFAULT_BUCKETS auto-creates the bucket on startup.
+  minio:
+    image: bitnamilegacy/minio:2025.7.23
+    container_name: researchflow-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin_secret}
+      MINIO_DEFAULT_BUCKETS: ${MINIO_BUCKET:-researchflow}
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_data:/bitnami/minio/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Web console (Bitnami ships it separately from the server). Log in with MinIO root credentials.
+  minio-console:
+    image: bitnamilegacy/minio-object-browser:2.0.2
+    container_name: researchflow-minio-console
+    restart: unless-stopped
+    command: ["server"]
+    environment:
+      CONSOLE_MINIO_SERVER: http://minio:9000
+    ports:
+      - "9001:9090"
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  # ─── Neo4j (Knowledge Graph) ───────────────────────────────────────
+  neo4j:
+    image: neo4j:5-community
+    container_name: researchflow-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-neo4j_dev_password}
+      NEO4J_PLUGINS: '[]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # ─── GROBID (PDF / scientific document parsing) ─────────────────────
+  grobid:
+    image: lfoppiano/grobid:0.8.1
+    container_name: researchflow-grobid
+    restart: unless-stopped
+    ports:
+      - "8070:8070"
+    healthcheck:
+      # image has no curl/wget — use bash /dev/tcp
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8070 && printf 'GET /api/isalive HTTP/1.0\r\n\r\n' >&3 && grep -q true <&3"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  neo4j_data:
