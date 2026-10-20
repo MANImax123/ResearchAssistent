@@ -40,9 +40,7 @@ async def test_health_all_ok(client: AsyncClient, probes: dict[str, health.Probe
     assert all(d["status"] == "ok" for d in body["dependencies"].values())
 
 
-async def test_health_degraded_when_one_dependency_fails(
-    client: AsyncClient, probes: dict[str, health.Probe]
-) -> None:
+async def test_health_degraded_when_one_dependency_fails(client: AsyncClient, probes: dict[str, health.Probe]) -> None:
     probes["redis"] = _fail
 
     resp = await client.get("/api/v1/health")

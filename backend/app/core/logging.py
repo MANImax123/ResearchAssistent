@@ -31,10 +31,15 @@ def configure_logging(settings: Settings) -> None:
 
     # Route stdlib logs (uvicorn, sqlalchemy, ...) through the same renderer
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(structlog.stdlib.ProcessorFormatter(foreign_pre_chain=shared, processors=[
-        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-        renderer,
-    ]))
+    handler.setFormatter(
+        structlog.stdlib.ProcessorFormatter(
+            foreign_pre_chain=shared,
+            processors=[
+                structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                renderer,
+            ],
+        )
+    )
     root = logging.getLogger()
     root.handlers = [handler]
     root.setLevel(level)
