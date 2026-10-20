@@ -11,3 +11,8 @@ All design decisions not explicitly stated in BUILD_INSTRUCTIONS.md are logged h
 | 2026-10-20 | 0.1 | GROBID healthcheck uses bash `/dev/tcp` instead of curl | The `lfoppiano/grobid` image has no curl/wget, so the curl healthcheck always reported unhealthy |
 | 2026-10-20 | 0.1 | `check_infra.py` maps Docker service hostnames (`postgres`, `redis`, …) to `localhost` and checks pgvector separately | `.env` uses in-network hostnames for the backend containers, while the script runs on the host |
 | 2026-10-20 | 0.1 | Neo4j community edition (no APOC initially) | APOC can be added later if needed; community edition is free and sufficient for v1 |
+| 2026-10-20 | 0.2 | `/api/v1/health` always returns HTTP 200 with `status: ok \| degraded` and a per-dependency status | The backend's own container healthcheck uses it; a slow or down GROBID should not mark the API itself unhealthy. Each probe runs concurrently with a 3s timeout (`HEALTH_CHECK_TIMEOUT_S`) |
+| 2026-10-20 | 0.2 | Added `CORS_ORIGINS` (comma-separated) and `LOG_LEVEL` env vars | Needed for the CORS and logging setup; defaults match local dev |
+| 2026-10-20 | 0.2 | Backend image installs dependencies (incl. dev extras) straight from `pyproject.toml`; source is bind-mounted with `uvicorn --reload` in compose | Cached dependency layer, live reload in dev, and `pytest`/`ruff`/`mypy` runnable inside the container |
+| 2026-10-20 | 0.2 | `db/session.py` (async engine + `get_db`) created now rather than in 0.3 | The health check needs a DB connection; 0.3 adds models/base on top |
+| 2026-10-20 | 0.2 | `.gitattributes` forces LF line endings | Files are bind-mounted into Linux containers; CRLF breaks shell scripts and Makefiles |

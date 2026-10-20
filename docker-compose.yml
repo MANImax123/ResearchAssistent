@@ -106,6 +106,34 @@ services:
       retries: 5
       start_period: 60s
 
+  # ─── Backend API (FastAPI) ──────────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: researchflow-backend
+    restart: unless-stopped
+    env_file: .env
+    # Dev: source is bind-mounted and uvicorn reloads on change
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/code
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
 volumes:
   postgres_data:
   redis_data:

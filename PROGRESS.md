@@ -1,11 +1,11 @@
 # Progress
-Current step: 0.2
+Current step: 0.3
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
 | 0.1  | Repo & infra scaffolding | ✅ | 2026-10-20 | All 6 checks OK; MinIO via Bitnami image (see DECISIONS) |
-| 0.2  | FastAPI backend skeleton | 🔄 in progress | | |
-| 0.3  | Database models & migrations | ⬜ not started | | |
+| 0.2  | FastAPI backend skeleton | ✅ | 2026-10-20 | |
+| 0.3  | Database models & migrations | 🔄 in progress | | |
 | 0.4  | Authentication (JWT) | ⬜ not started | | |
 | 0.5  | Frontend skeleton + auth | ⬜ not started | | |
 | 1.1  | Projects CRUD + dashboard | ⬜ not started | | |
