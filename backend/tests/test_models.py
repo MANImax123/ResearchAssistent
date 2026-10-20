@@ -21,7 +21,8 @@ from app.db.models import (
     User,
 )
 from app.db.models.enums import GapConfidence, GapStatus, MemberRole, SectionType, StageName, StageStatus, VersionSource
-from app.db.seed import DEMO_EMAIL, DEMO_PASSWORD, new_project, seed
+from app.db.seed import DEMO_EMAIL, DEMO_PASSWORD, seed
+from app.services.projects import new_project
 
 DIM = get_settings().embedding_dim
 

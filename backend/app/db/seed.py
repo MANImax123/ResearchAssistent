@@ -11,23 +11,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.core.security import hash_password
-from app.db.models import Project, ProjectMember, ResearchStateSnapshot, Stage, User
-from app.db.models.enums import MemberRole, StageName
+from app.db.models import Project, User
 from app.db.session import SessionLocal, engine
+from app.services.projects import new_project
 
 log = get_logger(__name__)
 
 DEMO_EMAIL = "demo@researchflow.dev"
 DEMO_PASSWORD = "demo-password"  # dev-only demo account
 DEMO_PROJECT_TITLE = "ResearchFlow: A Human-in-the-Loop Multi-Agent Research Paper Assistant"
-
-
-def new_project(owner: User, title: str, **fields: str) -> Project:
-    """A project with its owner membership, all 9 stages (`not_started`) and an empty state."""
-    project = Project(owner_id=owner.id, title=title, **fields)
-    project.members = [ProjectMember(user_id=owner.id, role=MemberRole.OWNER)]
-    project.stages = [Stage(name=name) for name in StageName]
-    return project
+DEMO_RAW_IDEA = (
+    "An AI assistant that supports researchers through the whole paper lifecycle, from idea to formatted "
+    "manuscript, using specialised agents that share one research state, with human approval at every stage."
+)
 
 
 async def seed(session: AsyncSession) -> None:
@@ -42,15 +38,15 @@ async def seed(session: AsyncSession) -> None:
         select(Project).where(Project.owner_id == user.id, Project.title == DEMO_PROJECT_TITLE)
     )
     if project is None:
-        project = new_project(user, DEMO_PROJECT_TITLE, domain="Natural Language Processing", target_venue="ieee")
+        project = new_project(
+            user,
+            DEMO_PROJECT_TITLE,
+            raw_idea=DEMO_RAW_IDEA,
+            domain="Natural Language Processing",
+            target_venue="ieee",
+        )
         session.add(project)
         await session.flush()
-        session.add(
-            ResearchStateSnapshot(
-                project_id=project.id,
-                snapshot={"project_id": str(project.id), "current_stage": StageName.IDEA.value},
-            )
-        )
         log.info("seed_project_created", project_id=str(project.id))
 
     await session.commit()

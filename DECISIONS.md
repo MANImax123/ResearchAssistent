@@ -39,3 +39,10 @@ All design decisions not explicitly stated in BUILD_INSTRUCTIONS.md are logged h
 | 2026-10-20 | 0.5 | Post-login `?next=` redirect accepts only same-site paths | Prevents open redirects (`//evil.com`, absolute URLs) |
 | 2026-10-20 | 0.5 | No ESLint; `tsc --noEmit` is the static check | `next lint` was removed in Next 16; type-checking covers most issues. ESLint can be added later |
 | 2026-10-20 | 0.5 | Frontend container runs a production `standalone` build; `NEXT_PUBLIC_API_URL` is a build arg | Small, fast image. For hot reload, run `npm run dev` on the host (see README) |
+| 2026-10-20 | 1.1 | Project access through `project_members`: any member can view, owner/editor can edit, only the owner can delete. Non-members get 404, too-low role gets 403 | 404 doesn't reveal that a project exists; roles are ready for member invites (10.1) |
+| 2026-10-20 | 1.1 | The raw idea is stored in the project's `research_state` snapshot (`idea.raw_idea`, snapshot version bumped on change), not as a `projects` column | It's the input to the Idea stage, which reads from `ResearchState` (B12) |
+| 2026-10-20 | 1.1 | `PATCH /projects/{id}` is a partial update: only fields sent are changed; blank `domain`/`target_venue`/`raw_idea` clear the field; `null` for `title` is rejected (422) | Lets the UI edit one field at a time without resending everything |
+| 2026-10-20 | 1.1 | Target venue is a free string; the UI offers `ieee`, `springer_lncs`, `acm`, `elsevier` (matching `backend/templates/`) | Venue configuration and custom templates come in Step 9.2 |
+| 2026-10-20 | 1.1 | Project list ordered by `updated_at` desc; editing the raw idea also bumps `updated_at` | "Last updated" on the dashboard reflects any change to the project |
+| 2026-10-20 | 1.1 | Project overview lives at `/projects/[id]`; later stage pages will be `/projects/[id]/<stage>` | Shorter URL for the most-used page |
+| 2026-10-20 | 1.1 | Project create/update re-read the row with `populate_existing` instead of `expire_all()` after commit | `expire_all()` also expires the current user object, which then lazy-loads, and that fails under asyncio |

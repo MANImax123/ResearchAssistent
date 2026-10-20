@@ -23,6 +23,7 @@ class Project(UUIDPkMixin, TimestampMixin, Base):
 
     members: Mapped[list["ProjectMember"]] = relationship(back_populates="project", cascade="all, delete-orphan")
     stages: Mapped[list["Stage"]] = relationship(back_populates="project", cascade="all, delete-orphan")
+    research_state: Mapped["ResearchStateSnapshot | None"] = relationship(cascade="all, delete-orphan")
 
 
 class ProjectMember(Base):

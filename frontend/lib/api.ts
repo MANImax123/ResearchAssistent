@@ -3,6 +3,8 @@
  * Attaches the bearer token, parses JSON, and turns error responses into ApiError.
  */
 
+import type { StageName, StageStatus } from "@/lib/stages";
+
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 const TOKEN_KEY = "researchflow.token";
@@ -107,4 +109,42 @@ export const authApi = {
   register: (data: { email: string; password: string; name: string }) =>
     apiFetch<User>("/auth/register", { method: "POST", json: data }),
   me: () => apiFetch<User>("/auth/me"),
+};
+
+// ─── Projects ─────────────────────────────────────────────────────────
+
+export type MemberRole = "owner" | "editor" | "viewer";
+
+export type ProjectSummary = {
+  id: string;
+  title: string;
+  domain: string | null;
+  target_venue: string | null;
+  current_stage: StageName;
+  status: "active" | "archived" | "completed";
+  role: MemberRole;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProjectDetail = ProjectSummary & {
+  citation_style: string;
+  raw_idea: string | null;
+  stages: { name: StageName; status: StageStatus; approved_at: string | null }[];
+};
+
+export type ProjectInput = {
+  title: string;
+  domain: string | null;
+  raw_idea: string | null;
+  target_venue: string | null;
+};
+
+export const projectsApi = {
+  list: () => apiFetch<ProjectSummary[]>("/projects"),
+  get: (id: string) => apiFetch<ProjectDetail>(`/projects/${encodeURIComponent(id)}`),
+  create: (data: ProjectInput) => apiFetch<ProjectDetail>("/projects", { method: "POST", json: data }),
+  update: (id: string, data: Partial<ProjectInput>) =>
+    apiFetch<ProjectDetail>(`/projects/${encodeURIComponent(id)}`, { method: "PATCH", json: data }),
+  remove: (id: string) => apiFetch<void>(`/projects/${encodeURIComponent(id)}`, { method: "DELETE" }),
 };

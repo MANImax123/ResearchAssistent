@@ -5,7 +5,10 @@ import { usePathname } from "next/navigation";
 
 import { useAuth } from "@/lib/auth";
 
-const NAV = [{ href: "/dashboard", label: "Dashboard" }];
+const NAV = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/projects/new", label: "New project" },
+];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
