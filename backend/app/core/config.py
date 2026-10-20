@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     minio_secret_key: str = ""
     minio_bucket: str = "researchflow"
     minio_secure: bool = False
+    # Host the *browser* uses to reach MinIO; presigned download URLs are signed for it
+    minio_public_endpoint: str = ""
+    minio_public_secure: bool = False
+
+    # Uploads
+    max_upload_mb: int = 50
+    download_url_expiry_s: int = 900
 
     # Neo4j
     neo4j_uri: str = "bolt://localhost:7687"

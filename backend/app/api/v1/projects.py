@@ -1,6 +1,7 @@
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Depends, Response, status
 
 from app.core.deps import CurrentUser, DbSession
 from app.core.logging import get_logger
@@ -8,6 +9,7 @@ from app.db.models import Project
 from app.db.models.enums import MemberRole, StageName
 from app.schemas.project import ProjectCreate, ProjectDetail, ProjectSummary, ProjectUpdate, StageRead
 from app.services import projects as svc
+from app.services.storage import Storage, get_storage, project_prefix
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 log = get_logger(__name__)
@@ -83,9 +85,16 @@ async def update_project(project_id: uuid.UUID, body: ProjectUpdate, user: Curre
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_project(project_id: uuid.UUID, user: CurrentUser, db: DbSession) -> Response:
+async def delete_project(
+    project_id: uuid.UUID, user: CurrentUser, db: DbSession, storage: Annotated[Storage, Depends(get_storage)]
+) -> Response:
     project, _ = await svc.get_project_for_user(db, project_id, user, min_role=MemberRole.OWNER)
     await db.delete(project)
     await db.commit()
-    log.info("project_deleted", project_id=str(project_id))
+    try:
+        removed = await storage.delete_prefix(project_prefix(project_id))
+    except Exception:
+        log.exception("project_objects_delete_failed", project_id=str(project_id))
+        removed = 0
+    log.info("project_deleted", project_id=str(project_id), objects_removed=removed)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

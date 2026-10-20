@@ -1,5 +1,5 @@
 # Progress
-Current step: 1.2
+Current step: 1.3
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -9,8 +9,8 @@ Current step: 1.2
 | 0.4  | Authentication (JWT) | ✅ | 2026-10-20 | |
 | 0.5  | Frontend skeleton + auth | ✅ | 2026-10-20 | |
 | 1.1  | Projects CRUD + dashboard | ✅ | 2026-10-20 | |
-| 1.2  | File uploads (MinIO) | 🔄 in progress | | |
-| 1.3  | Celery background jobs + job status | ⬜ not started | | |
+| 1.2  | File uploads (MinIO) | ✅ | 2026-10-20 | |
+| 1.3  | Celery background jobs + job status | 🔄 in progress | | |
 | 1.4  | LLM & embeddings service | ⬜ not started | | |
 | 2.1  | ResearchState + LangGraph orchestrator skeleton | ⬜ not started | | |
 | 2.2  | Approval checkpoints & feedback actions | ⬜ not started | | |

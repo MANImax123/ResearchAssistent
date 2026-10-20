@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FilesPanel } from "@/components/FilesPanel";
 import { ProjectForm } from "@/components/ProjectForm";
 import { StageTracker } from "@/components/StageTracker";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
@@ -122,6 +123,8 @@ export default function ProjectOverviewPage() {
           )}
         </section>
       )}
+
+      <FilesPanel projectId={project.id} canEdit={canEdit} />
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Stages</h2>
