@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 const NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/projects/new", label: "New project" },
+  { href: "/system", label: "System" },
 ];
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {

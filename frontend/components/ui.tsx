@@ -22,12 +22,14 @@ const BUTTON_VARIANTS: Record<Variant, string> = {
 export function Button({
   loading,
   variant = "primary",
+  type = "button", // never submit a form by accident; submit buttons say so explicitly
   children,
   className = "",
   ...props
 }: ComponentProps<"button"> & { loading?: boolean; variant?: Variant }) {
   return (
     <button
+      type={type}
       {...props}
       disabled={props.disabled || loading}
       className={`${BUTTON_BASE} ${BUTTON_VARIANTS[variant]} ${className}`}

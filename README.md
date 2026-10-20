@@ -68,6 +68,7 @@ make ps       # Show service status
 make migrate  # Apply database migrations
 make seed     # Create the demo user + project
 make test     # Backend (pytest) + frontend (vitest) tests
+make worker   # Follow the Celery worker logs
 make lint     # ruff + mypy (backend), tsc (frontend)
 ```
 
@@ -80,6 +81,11 @@ docker compose exec backend python -m app.db.seed
 docker compose exec backend pytest
 cd frontend && npm install && npm test
 ```
+
+### Background jobs
+
+Long-running work (paper search, PDF parsing, generation) runs on the Celery `worker` service, using Redis as the queue.
+The worker restarts automatically when backend code changes. To check it works, open **System** in the app and start the demo job.
 
 ### Frontend development
 

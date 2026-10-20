@@ -49,9 +49,13 @@ class Job(UUIDPkMixin, TimestampMixin, Base):
     project_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), index=True
     )
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
     celery_task_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     type: Mapped[str] = mapped_column(String(100))
     status: Mapped[JobStatus] = mapped_column(str_enum(JobStatus), default=JobStatus.PENDING)
     progress: Mapped[int] = mapped_column(Integer, default=0)  # 0-100
+    message: Mapped[str | None] = mapped_column(String(500))  # human-readable progress, e.g. "Parsing 3 of 12"
     result_ref: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     error: Mapped[str | None] = mapped_column(Text)

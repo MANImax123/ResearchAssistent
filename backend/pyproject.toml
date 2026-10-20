@@ -81,3 +81,12 @@ plugins = ["pydantic.mypy"]
 # python-jose ships no type information
 module = ["jose", "jose.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Celery ships no type information; its task decorator is untyped
+module = ["celery", "celery.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["app.workers.tasks", "app.workers.celery_app"]
+disallow_untyped_decorators = false

@@ -31,7 +31,7 @@ lint:
 	cd frontend && npm run typecheck
 
 worker:
-	docker compose exec worker celery -A app.workers.celery_app worker --loglevel=info
+	docker compose logs -f worker
 
 seed:
 	docker compose exec backend python -m app.db.seed
