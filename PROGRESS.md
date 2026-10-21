@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.4
+Current step: 4.5
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -21,8 +21,8 @@ Current step: 4.4
 | 4.1  | Academic API clients + Paper Discovery agent | ✅ | 2026-10-21 | S2, OpenAlex, arXiv, Crossref; dedup; manual DOI/arXiv/PDF add |
 | 4.2  | Relevance Ranking agent + selection | ✅ | 2026-10-21 | Embeddings + LLM rerank with reasons; selection → selected_paper_ids |
 | 4.3  | PDF acquisition + Document Parsing agent | ✅ | 2026-10-21 | Legal OA PDFs; GROBID + PyMuPDF fallback; section chunks; upload-needed flow |
-| 4.4  | Embeddings + RAG Retrieval agent | 🔄 in progress | | |
-| 4.5  | Paper Analysis agent | ⬜ not started | | |
+| 4.4  | Embeddings + RAG Retrieval agent | ✅ | 2026-10-21 | HNSW + MMR retrieval; Ask the literature with verified chunk citations |
+| 4.5  | Paper Analysis agent | 🔄 in progress | | |
 | 4.6  | Comparative Analysis agent | ⬜ not started | | |
 | 4.7  | Contradiction Detection agent | ⬜ not started | | |
 | 4.8  | Knowledge Graph agent + visualization | ⬜ not started | | |

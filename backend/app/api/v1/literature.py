@@ -10,15 +10,19 @@ from sqlalchemy import func, or_, select
 
 from app.agents import registry
 from app.agents.idea.agent import plan_from_state
+from app.agents.literature import rag
 from app.api.v1.files import StorageDep, save_upload
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
 from app.db.models import Job, Paper, PaperChunk, PaperDocument, Project
 from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, StageName
+from app.db.session import request_session_factory
 from app.orchestrator.service import selected_paper_ids
 from app.schemas.job import JobRead
 from app.schemas.literature import (
+    AnswerRead,
+    AskRequest,
     DiscoverRequest,
     LiteratureWorkspaceRead,
     LookupRequest,
@@ -33,19 +37,21 @@ from app.schemas.literature import (
     RankRequest,
     SelectionRequest,
     SelectionResult,
+    SourceRead,
     SourceStatus,
 )
-from app.services import literature
+from app.services import literature, retrieval
 from app.services.academic import sources as academic
 from app.services.academic.dedup import Deduplicator
 from app.services.academic.http import SourceError
 from app.services.academic.models import PaperMetadata, parse_identifier
+from app.services.llm import LLMError
 from app.services.projects import get_project_for_user
 
 router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature"])
 log = get_logger(__name__)
 
-LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse")
+LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index")
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -114,6 +120,7 @@ async def get_workspace(
         .where(Paper.project_id == project_id, Paper.selected.is_(True))
         .group_by(Paper.parse_status)
     )
+    indexed, pending = await retrieval.chunk_counts(db, project_id)
     return LiteratureWorkspaceRead(
         status=next(row.status for row in project.stages if row.name == StageName.LITERATURE),
         editable=reason is None,
@@ -125,6 +132,8 @@ async def get_workspace(
         judged_count=counts[3],
         unranked_count=counts[4],
         parse_counts={status.value: n for status, n in parse_rows.all()},
+        indexed_chunks=indexed,
+        pending_chunks=pending,
         sources=_source_statuses(settings),
         research_questions=[{"id": q.id, "text": q.text} for q in plan.research_questions] if plan else [],
         subtopics=list(plan.subtopics) if plan else [],
@@ -476,4 +485,59 @@ async def get_document(project_id: uuid.UUID, paper_id: uuid.UUID, user: Current
         limitations=document.limitations,
         reference_count=document.reference_count,
         chunk_count=chunks or 0,
+    )
+
+
+# ─── Ask the literature (Step 4.4) ───────────────────────────────────────
+
+
+@router.post("/index", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def index_passages(project_id: uuid.UUID, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep) -> Job:
+    """Embed parsed passages that aren't searchable yet (normally done right after parsing)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    if not (await retrieval.chunk_counts(db, project_id))[1]:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Every parsed passage is already indexed")
+    return await start_job(db, dispatcher, user, "literature_index", {"project_id": str(project_id)}, project_id)
+
+
+@router.post("/ask", response_model=AnswerRead)
+async def ask(project_id: uuid.UUID, body: AskRequest, user: CurrentUser, db: DbSession) -> AnswerRead:
+    """Answer a question from the project's parsed papers; every citation is a retrieved passage."""
+    await get_project_for_user(db, project_id, user)
+    if not (await retrieval.chunk_counts(db, project_id))[0]:
+        raise HTTPException(status.HTTP_409_CONFLICT, "No searchable passages yet: get the full text of some papers")
+    try:
+        query = await registry.embeddings_factory().embed_query(body.question)
+        sources = await retrieval.retrieve(
+            db, project_id, query, k=body.k, section_kinds=body.section_kinds, paper_ids=body.paper_ids
+        )
+        result = await rag.answer(
+            body.question, sources, registry.llm_factory(request_session_factory(db))(), project_id
+        )
+    except LLMError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"The AI service failed: {exc}") from exc
+    log.info("literature_asked", project_id=str(project_id), retrieved=len(sources), cited=len(result.citations),
+             removed=len(result.removed_markers))  # fmt: skip
+    return AnswerRead(
+        answer=result.text,
+        insufficient=result.insufficient,
+        citations=[
+            SourceRead(
+                marker=c.marker,
+                chunk_id=c.source.chunk_id,
+                paper_id=c.source.paper_id,
+                paper_title=c.source.paper_title,
+                year=c.source.year,
+                section=c.source.section,
+                kind=c.source.kind,
+                page=c.source.page,
+                text=c.source.text,
+                similarity=c.source.similarity,
+                pdf_file_id=c.source.pdf_file_id,
+            )
+            for c in result.citations
+        ],  # fmt: skip
+        retrieved=len(sources),
+        removed_markers=result.removed_markers,
     )

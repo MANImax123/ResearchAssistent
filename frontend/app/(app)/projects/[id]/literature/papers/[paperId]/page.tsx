@@ -11,6 +11,7 @@ import {
   literatureApi,
   paperLink,
   PDF_SOURCE_LABEL,
+  sectionAnchor,
   SECTION_KIND_LABEL,
   type DocumentSection,
   type PaperDocument,
@@ -67,6 +68,16 @@ export default function PaperDocumentPage() {
         ),
       );
   }, [id, paperId]);
+
+  // A citation links to "#sec-…": open that section and bring it into view once the paper is loaded
+  useEffect(() => {
+    if (!doc || !window.location.hash) return;
+    const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+    if (target instanceof HTMLDetailsElement) {
+      target.open = true;
+      target.scrollIntoView?.({ block: "start" });
+    }
+  }, [doc]);
 
   async function openPdf() {
     if (!doc?.paper.pdf_file_id) return;
@@ -248,7 +259,8 @@ export default function PaperDocumentPage() {
           {doc.sections.map((s) => (
             <details
               key={`${s.heading}-${s.page}`}
-              className="group px-4 py-2.5"
+              id={sectionAnchor(s.heading)}
+              className="group scroll-mt-24 px-4 py-2.5 target:bg-indigo-50/60"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-2 text-sm">
                 <span className="font-medium text-slate-900">{s.heading}</span>

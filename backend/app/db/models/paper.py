@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -73,10 +73,21 @@ class PaperProfile(TimestampMixin, Base):
 
 class PaperChunk(UUIDPkMixin, Base):
     __tablename__ = "paper_chunks"
+    __table_args__ = (
+        # Approximate nearest-neighbour search by cosine distance (Step 4.4)
+        Index(
+            "ix_paper_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     paper_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("papers.id", ondelete="CASCADE"), index=True)
     chunk_index: Mapped[int] = mapped_column(Integer)
     section_name: Mapped[str | None] = mapped_column(String(255))
+    section_kind: Mapped[str | None] = mapped_column(String(32))  # abstract | methodology | dataset | results …
     text: Mapped[str] = mapped_column(Text)
     # Nullable: chunks are stored at parse time and embedded afterwards (Step 4.4)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(get_settings().embedding_dim))

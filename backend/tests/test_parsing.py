@@ -16,6 +16,7 @@ from app.agents.literature.parsing import Tools
 from app.core.config import get_settings
 from app.db.models import File, Job, Paper, PaperChunk
 from app.db.models.enums import JobStatus, PaperOrigin, ParseStatus, StageName
+from app.services.embeddings import EmbeddingService, FakeEmbeddings
 from app.services.grobid import GrobidClient, GrobidError, parse_tei
 from app.services.llm import LLMService
 from app.services.llm_providers import FakeLLM
@@ -248,6 +249,7 @@ def tools(monkeypatch: pytest.MonkeyPatch, storage: Storage) -> dict[str, Any]:
         grobid=GrobidClient("http://grobid:8070", transport=httpx.MockTransport(grobid)),
     )
     monkeypatch.setattr(registry, "parsing_factory", lambda: built)
+    monkeypatch.setattr(registry, "embeddings_factory", lambda: EmbeddingService(FakeEmbeddings(), SETTINGS))
     fake = FakeLLM(responses=[PLAN])
     monkeypatch.setattr(
         registry, "agent_factory",
@@ -302,7 +304,8 @@ async def test_parse_selected_papers(
 
     result = await parse(flow)
 
-    assert result == {"papers": 3, "parsed": 1, "upload_needed": 2}
+    chunk_total = len(chunk_document(parse_tei(TEI)))
+    assert result == {"papers": 3, "parsed": 1, "upload_needed": 2, "indexed": chunk_total}  # indexed right away
     statuses = await status_of(flow)
     assert statuses["SIGN"] == ("parsed", None)
     assert statuses["Not chosen"][0] == "not_started"  # not selected: not parsed
@@ -316,8 +319,10 @@ async def test_parse_selected_papers(
     kinds = {s["kind"] for s in doc["sections"]}
     assert {"introduction", "methodology", "dataset", "results", "conclusion"} <= kinds
     assert any(c["label"] == "Table 2" for c in doc["captions"]) and doc["chunk_count"] > 20
-    chunks = list(await db_session.scalars(select(PaperChunk).where(PaperChunk.paper_id == ids["arxiv"])))
-    assert chunks[0].section_name == "Abstract" and all(c.embedding is None for c in chunks)
+    by_index = select(PaperChunk).where(PaperChunk.paper_id == ids["arxiv"]).order_by(PaperChunk.chunk_index)
+    chunks = list(await db_session.scalars(by_index))
+    assert chunks[0].section_name == "Abstract" and chunks[0].section_kind == "abstract"
+    assert all(c.embedding is not None for c in chunks)  # searchable straight after parsing
     stored = await db_session.scalar(select(File).where(File.project_id == flow.pid))
     assert stored is not None and stored.kind.value == "paper_pdf" and stored.uploaded_by is None
     assert await storage.get_bytes(stored.object_key) == PDF
@@ -342,7 +347,7 @@ async def test_upload_needed_then_pdf_uploaded_and_fallback_parser(
     tools["grobid_fails"] = True  # GROBID down: PyMuPDF takes over
 
     result = await parse(flow, paper_ids=[str(ids["nothing"])])
-    assert result == {"papers": 1, "parsed": 1}
+    assert result["parsed"] == 1 and result["indexed"] > 0
     doc = (
         await flow.client.get(flow.url(f"/literature/papers/{ids['nothing']}/document"), headers=flow.headers)
     ).json()

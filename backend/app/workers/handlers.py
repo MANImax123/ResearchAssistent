@@ -155,6 +155,13 @@ async def literature_parse(reporter: JobReporter, project_id: str, paper_ids: li
     )
 
 
+async def literature_index(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L5: embed parsed passages that aren't searchable yet."""
+    from app.services import literature
+
+    return await literature.index_chunks(uuid.UUID(project_id), reporter.session_factory, progress=reporter.progress)
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -165,4 +172,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_discover": literature_discover,
     "literature_rank": literature_rank,
     "literature_parse": literature_parse,
+    "literature_index": literature_index,
 }

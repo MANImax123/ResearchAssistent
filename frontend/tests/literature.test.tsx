@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AddPaper } from "@/components/literature/AddPaper";
+import { AskPanel } from "@/components/literature/AskPanel";
 import { DiscoverPanel, DiscoveryReport } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
@@ -11,6 +12,8 @@ import { RankPanel } from "@/components/literature/RankPanel";
 import {
   authorLine,
   paperLink,
+  sectionAnchor,
+  splitCitations,
   type LiteratureWorkspace,
   type Paper,
   type SearchQuery,
@@ -220,7 +223,8 @@ describe("helpers", () => {
 
 const WS: LiteratureWorkspace = {
   status: "not_started", editable: true, blocked_reason: null, queries: QUERIES, paper_count: 100,
-  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, sources: SOURCES,
+  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, indexed_chunks: 0, pending_chunks: 0,
+  sources: SOURCES,
   research_questions: [{ id: "RQ1", text: "Q?" }, { id: "RQ2", text: "H." }], subtopics: [],
 }; // prettier-ignore
 
@@ -319,5 +323,72 @@ describe("FullTextPanel", () => {
                      ws={{ ...WS, selected_count: 3, parse_counts: { parsed: 1, upload_needed: 2 } }} />,
     ); // prettier-ignore
     expect(screen.getByRole("button", { name: "Try open-access sources again" })).toBeEnabled();
+  });
+});
+
+describe("AskPanel", () => {
+  const SOURCE = {
+    marker: "S1", chunk_id: "c1", paper_id: "p9", paper_title: "GraphDTA", year: 2020, section: "4.1 Datasets",
+    kind: "dataset", page: 5, text: "We evaluate on the Davis and KIBA datasets.", similarity: 0.81, pdf_file_id: "f1",
+  }; // prettier-ignore
+
+  it("answers with clickable sources that open the cited section", async () => {
+    const answer = {
+      answer: "GraphDTA uses Davis and KIBA [S1].", insufficient: false, citations: [SOURCE], retrieved: 8,
+      removed_markers: ["[S12]"],
+    }; // prettier-ignore
+    const fetchMock = vi.fn().mockResolvedValue(json(200, answer));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<AskPanel projectId="p" ws={{ ...WS, indexed_chunks: 120 }} canEdit busy={false} onIndex={vi.fn()} />);
+
+    await userEvent.type(screen.getByLabelText("Your question"), "Which datasets are used?");
+    await userEvent.selectOptions(screen.getByLabelText("Search in"), "dataset");
+    await userEvent.click(screen.getByRole("button", { name: "Ask" }));
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      question: "Which datasets are used?",
+      section_kinds: ["dataset"],
+    });
+    const chip = await screen.findByRole("button", { name: "Source S1: GraphDTA" });
+    await userEvent.click(chip);
+    expect(chip).toHaveClass("bg-indigo-600");
+    expect(screen.getByText("Sources (1 of 8 passages read)")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open in paper" })).toHaveAttribute(
+      "href",
+      "/projects/p/literature/papers/p9#sec-4-1-datasets",
+    );
+    expect(screen.getByRole("button", { name: "PDF at p. 5" })).toBeInTheDocument();
+    expect(screen.getByText(/1 citation to passages that weren't retrieved was removed/)).toBeInTheDocument();
+  });
+
+  it("explains when nothing is searchable yet and offers to index pending passages", async () => {
+    const onIndex = vi.fn();
+    render(
+      <AskPanel projectId="p" ws={{ ...WS, indexed_chunks: 0, pending_chunks: 14 }} canEdit busy={false}
+                onIndex={onIndex} />,
+    ); // prettier-ignore
+    expect(screen.getByText(/Get the full text of some selected papers first/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Your question")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Index them now" }));
+    expect(onIndex).toHaveBeenCalledOnce();
+  });
+
+  it("flags answers the passages don't support", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, {
+      answer: "The passages don't mention wet-lab validation.", insufficient: true, citations: [], retrieved: 8,
+      removed_markers: [],
+    }))); // prettier-ignore
+    render(<AskPanel projectId="p" ws={{ ...WS, indexed_chunks: 50 }} canEdit busy={false} onIndex={vi.fn()} />);
+    await userEvent.click(screen.getByRole("button", { name: /Which evaluation metrics/ }));
+    expect(await screen.findByText(/don't fully answer this/)).toBeInTheDocument();
+  });
+});
+
+describe("citation helpers", () => {
+  it("splits markers and builds section anchors", () => {
+    expect(splitCitations("A [S1] and B [S2][S3].")).toEqual([
+      { text: "A " }, { marker: "S1" }, { text: " and B " }, { marker: "S2" }, { marker: "S3" }, { text: "." },
+    ]); // prettier-ignore
+    expect(sectionAnchor("5.2.1 Overall Comparison (RQ1).")).toBe("sec-5-2-1-overall-comparison-rq1");
   });
 });

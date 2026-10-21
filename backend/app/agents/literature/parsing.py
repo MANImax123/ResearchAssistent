@@ -142,7 +142,7 @@ async def parse_paper(paper_id: uuid.UUID, session_factory: SessionFactory, tool
             for index, chunk in enumerate(chunks):
                 session.add(
                     PaperChunk(paper_id=paper_id, chunk_index=index, section_name=chunk.section[:255],
-                               text=chunk.text, page=chunk.page)
+                               section_kind=chunk.kind, text=chunk.text, page=chunk.page)
                 )  # fmt: skip
             row = await session.get(Paper, paper_id)
             if row is not None:
@@ -187,7 +187,7 @@ async def parse_papers(
         outcomes.append(outcome)
         done += 1
         if progress is not None:
-            await progress(5 + int(90 * done / max(len(paper_ids), 1)), f"Processed {done}/{len(paper_ids)} papers")
+            await progress(5 + int(75 * done / max(len(paper_ids), 1)), f"Processed {done}/{len(paper_ids)} papers")
 
     await asyncio.gather(*(run(pid) for pid in paper_ids))
     return outcomes

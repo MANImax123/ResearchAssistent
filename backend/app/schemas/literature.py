@@ -54,6 +54,8 @@ class LiteratureWorkspaceRead(BaseModel):
     judged_count: int  # papers the LLM judged for the current research questions
     unranked_count: int  # papers without a similarity score yet (added since the last ranking)
     parse_counts: dict[str, int]  # selected papers by parse status
+    indexed_chunks: int  # passages searchable by "Ask the literature"
+    pending_chunks: int  # parsed passages not embedded yet
     sources: list[SourceStatus]
     research_questions: list[dict[str, Any]]  # id + text, to show what each query targets
     subtopics: list[str]
@@ -185,3 +187,38 @@ class PaperDocumentRead(BaseModel):
     limitations: list[LimitationMention]
     reference_count: int
     chunk_count: int
+
+
+SectionKindName = Literal[
+    "abstract", "introduction", "related_work", "methodology", "dataset", "results", "discussion",
+    "limitations", "conclusion", "appendix", "other",
+]  # fmt: skip
+
+
+class AskRequest(BaseModel):
+    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=1000)]
+    section_kinds: list[SectionKindName] | None = None  # only search these parts of the papers
+    paper_ids: list[uuid.UUID] | None = Field(default=None, max_length=200)
+    k: int = Field(default=8, ge=3, le=15)  # passages given to the model
+
+
+class SourceRead(BaseModel):
+    marker: str  # "S3", as cited in the answer
+    chunk_id: uuid.UUID
+    paper_id: uuid.UUID
+    paper_title: str
+    year: int | None
+    section: str | None
+    kind: str | None
+    page: int | None
+    text: str
+    similarity: float
+    pdf_file_id: uuid.UUID | None  # the stored PDF, to open it at `page`
+
+
+class AnswerRead(BaseModel):
+    answer: str
+    insufficient: bool  # the passages didn't (fully) answer the question
+    citations: list[SourceRead]  # every [S#] in the answer, in order of first use
+    retrieved: int  # passages the model was given
+    removed_markers: list[str]  # citations the model made up, removed from the answer

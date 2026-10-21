@@ -196,6 +196,7 @@ class TextChunk:
     section: str
     text: str
     page: int | None
+    kind: str = "other"  # the section's kind, or "abstract"
 
 
 def chunk_document(document: ParsedDocument) -> list[TextChunk]:
@@ -205,20 +206,20 @@ def chunk_document(document: ParsedDocument) -> list[TextChunk]:
     """
     chunks: list[TextChunk] = []
     if document.abstract:
-        chunks.append(TextChunk("Abstract", document.abstract, 1))
+        chunks.append(TextChunk("Abstract", document.abstract, 1, "abstract"))
     for section in document.sections:
         words = section.text.split()
         if not words:
             continue
         if len(words) <= MAX_WORDS:
-            chunks.append(TextChunk(section.heading, " ".join(words), section.page))
+            chunks.append(TextChunk(section.heading, " ".join(words), section.page, section.kind))
             continue
         start = 0
         while start < len(words):
             end = min(start + TARGET_WORDS, len(words))
             if len(words) - end < TARGET_WORDS // 3:  # don't leave a tiny tail: absorb it (stays ≤ MAX_WORDS)
                 end = len(words) if len(words) - start <= MAX_WORDS else end
-            chunks.append(TextChunk(section.heading, " ".join(words[start:end]), section.page))
+            chunks.append(TextChunk(section.heading, " ".join(words[start:end]), section.page, section.kind))
             if end == len(words):
                 break
             start = end - OVERLAP_WORDS

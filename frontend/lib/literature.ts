@@ -42,6 +42,8 @@ export type LiteratureWorkspace = {
   judged_count: number; // papers the AI judged against the current research questions
   unranked_count: number; // papers added since the last ranking
   parse_counts: Partial<Record<ParseStatus, number>>; // selected papers by parse status
+  indexed_chunks: number; // passages "Ask the literature" can search
+  pending_chunks: number; // parsed passages not indexed yet
   sources: SourceStatus[];
   research_questions: { id: string; text: string }[];
   subtopics: string[];
@@ -221,6 +223,12 @@ export const literatureApi = {
   },
   document: (projectId: string, paperId: string) =>
     apiFetch<PaperDocument>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/document`),
+  indexPassages: (projectId: string) => apiFetch<Job>(`${base(projectId)}/index`, { method: "POST" }),
+  ask: (projectId: string, question: string, sectionKinds: AskSectionKind[] | null) =>
+    apiFetch<Answer>(`${base(projectId)}/ask`, {
+      method: "POST",
+      json: { question, section_kinds: sectionKinds },
+    }),
   addByIdentifier: (projectId: string, identifier: string) =>
     apiFetch<AddResult>(`${base(projectId)}/papers/lookup`, { method: "POST", json: { identifier } }),
   uploadPdf: (
@@ -257,4 +265,47 @@ export function scoreTone(score: number): string {
   if (score >= 0.6) return "bg-lime-100 text-lime-800";
   if (score >= 0.3) return "bg-amber-100 text-amber-800";
   return "bg-red-100 text-red-700";
+}
+
+export type AskSectionKind = SectionKind | "abstract";
+
+/** A passage the answer cites ([S3] → marker "S3"). */
+export type Source = {
+  marker: string;
+  chunk_id: string;
+  paper_id: string;
+  paper_title: string;
+  year: number | null;
+  section: string | null;
+  kind: string | null;
+  page: number | null;
+  text: string;
+  similarity: number;
+  pdf_file_id: string | null; // the stored PDF, to open it at `page`
+};
+
+export type Answer = {
+  answer: string;
+  insufficient: boolean;
+  citations: Source[];
+  retrieved: number;
+  removed_markers: string[];
+};
+
+/** Anchor id of a section on the paper page (citations link straight to it). */
+export function sectionAnchor(heading: string): string {
+  return `sec-${heading.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
+/** Split an answer into text and [S#] citation markers. */
+export function splitCitations(text: string): ({ text: string } | { marker: string })[] {
+  const parts: ({ text: string } | { marker: string })[] = [];
+  let last = 0;
+  for (const match of text.matchAll(/\[(S\d+)\]/g)) {
+    if (match.index > last) parts.push({ text: text.slice(last, match.index) });
+    parts.push({ marker: match[1] });
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last) });
+  return parts;
 }

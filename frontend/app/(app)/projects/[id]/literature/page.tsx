@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { JobProgress } from "@/components/JobProgress";
 import { AddPaper } from "@/components/literature/AddPaper";
+import { AskPanel } from "@/components/literature/AskPanel";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
@@ -28,12 +29,14 @@ const JOB_LABEL: Record<string, string> = {
   literature_discover: "Paper discovery",
   literature_rank: "Relevance ranking",
   literature_parse: "Full text",
+  literature_index: "Indexing passages",
 };
 
-type Tab = "discover" | "fulltext";
+type Tab = "discover" | "fulltext" | "ask";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
+  { id: "ask", label: "Ask" },
 ];
 
 export default function LiteratureWorkspacePage() {
@@ -47,9 +50,15 @@ export default function LiteratureWorkspacePage() {
   const [libraryVersion, setLibraryVersion] = useState(0);
   const [tab, setTab] = useState<Tab>("discover");
 
-  // The tab is kept in the URL hash so "Back" from a paper returns to Full text
+  // The tab is kept in the URL hash ("#fulltext", "#ask"), so links and "Back" land on the right tab
   useEffect(() => {
-    if (window.location.hash === "#fulltext") setTab("fulltext");
+    const follow = () => {
+      const hash = window.location.hash.slice(1);
+      if (TABS.some((t) => t.id === hash)) setTab(hash as Tab);
+    };
+    follow();
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
   }, []);
   const chooseTab = (next: Tab) => {
     setTab(next);
@@ -254,7 +263,15 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "fulltext" ? (
+      {tab === "ask" ? (
+        <AskPanel
+          projectId={id}
+          ws={ws}
+          canEdit={canEdit}
+          busy={busy}
+          onIndex={() => void start(() => literatureApi.indexPassages(id))}
+        />
+      ) : tab === "fulltext" ? (
         <FullTextPanel
           projectId={id}
           ws={ws}

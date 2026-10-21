@@ -41,3 +41,20 @@ RERANK = PromptTemplate(
         "Research questions:\n$questions\n\nObjectives:\n$objectives\n\nCandidate papers:\n$papers\n\nJudge each paper."
     ),
 )
+
+ASK = PromptTemplate(
+    name="literature.ask",
+    version="1",
+    description="L5 RAG: answer a question from retrieved passages only, citing them.",
+    system=(
+        "You answer questions about a research project's literature using ONLY the numbered passages given. "
+        "Rules:\n"
+        "- Every factual sentence ends with the passage ids it relies on, like [S2] or [S1][S4]. Use only ids "
+        "from the list; never cite anything else, never invent papers, numbers or datasets.\n"
+        '- Name the paper when it helps ("GraphDTA uses …"), but the [S#] marker is what counts as the citation.\n'
+        "- If the passages don't answer the question, or only partly, say so plainly and set `insufficient` to "
+        "true; don't fill gaps from general knowledge.\n"
+        "- Be concise: a short paragraph or a few bullet points."
+    ),
+    template="Question: $question\n\nPassages:\n$passages\n\nAnswer the question from these passages.",
+)
