@@ -1,6 +1,5 @@
 """Paper sections: read, edit (versioned, with autosave), history, restore and diff."""
 
-import re
 import uuid
 
 from fastapi import APIRouter, HTTPException, Response, status
@@ -26,15 +25,10 @@ router = APIRouter(prefix="/projects/{project_id}/sections", tags=["sections"])
 log = get_logger(__name__)
 
 SECTION_ORDER = {t: i for i, t in enumerate(SectionType)}
-_WORDS = re.compile(r"[\w'’-]+")
 
 
 def _statuses(project: Project) -> dict[StageName, StageStatus]:
     return {row.name: row.status for row in project.stages}
-
-
-def _word_count(content: str) -> int:
-    return len(_WORDS.findall(re.sub(r"\[@[^\]]+\]", " ", content)))
 
 
 async def _summary(
@@ -56,7 +50,7 @@ async def _summary(
         exists=section is not None,
         version_count=count,
         current_version=VersionMeta.model_validate(current) if current else None,
-        word_count=_word_count(current.content) if current else 0,
+        word_count=svc.word_count(current.content) if current else 0,
         editable=blocker is None,
         edit_blocked_reason=blocker,
     )

@@ -1,4 +1,4 @@
-"""Idea workspace (Step 3.1): read and edit the research plan produced by the Idea agent."""
+"""Idea workspace: the research plan (3.1), critics and revision (3.2), working abstract (3.3)."""
 
 import uuid
 from datetime import datetime
@@ -7,12 +7,14 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
+from app.agents.idea.abstract import plan_fingerprint
 from app.agents.idea.agent import plan_from_state, plan_to_state, render_markdown
 from app.agents.idea.critique import CritiqueSet
 from app.agents.idea.schemas import IdeaPlan
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession
 from app.core.logging import get_logger
+from app.core.venues import abstract_word_limits
 from app.db.models import Feedback, Job, Project, User
 from app.db.models.enums import (
     FeedbackAction,
@@ -25,7 +27,7 @@ from app.db.models.enums import (
 )
 from app.db.session import request_session_factory
 from app.orchestrator import service as orchestrator
-from app.schemas.idea import IdeaWorkspaceRead, ReviseRequest
+from app.schemas.idea import AbstractRead, IdeaWorkspaceRead, ReviseRequest
 from app.schemas.job import JobRead
 from app.services import sections
 from app.services.projects import get_project_for_user
@@ -68,6 +70,24 @@ async def _read(db: DbSession, project_id: uuid.UUID, user: User) -> IdeaWorkspa
         agent_run_id=uuid.UUID(run_id) if run_id else None,
         pending_feedback=snapshot.get("pending_feedback"),
         critiques=CritiqueSet.model_validate(snapshot["critiques"]) if snapshot.get("critiques") else None,
+        abstract=await _abstract(db, project, snapshot, plan),
+    )
+
+
+async def _abstract(db: DbSession, project: Project, snapshot: dict[str, Any], plan: IdeaPlan | None) -> AbstractRead:
+    lo, hi = abstract_word_limits(project.target_venue)
+    section = await sections.get_section(db, project.id, SectionType.ABSTRACT)
+    current = await sections.current_version(db, section) if section else None
+    meta = snapshot.get("abstract_meta") or {}
+    content = current.content if current else None
+    return AbstractRead(
+        content=content,
+        word_count=sections.word_count(content or ""),
+        min_words=lo,
+        max_words=hi,
+        generated_at=datetime.fromisoformat(meta["generated_at"]) if meta.get("generated_at") else None,
+        edited=current is not None and current.source != VersionSource.AI,
+        outdated=bool(meta) and plan is not None and meta.get("plan_fingerprint") != plan_fingerprint(plan),
     )
 
 
@@ -131,7 +151,7 @@ async def _record_title(db: DbSession, project_id: uuid.UUID, plan: IdeaPlan, us
 
 # ─── Critics (Step 3.2) ─────────────────────────────────────────────────
 
-PLAN_JOBS = ("idea_critique", "idea_revise")
+PLAN_JOBS = ("idea_critique", "idea_revise", "idea_abstract")
 
 
 async def _ensure_plan_idle(db: DbSession, project: Project, plan_exists: bool) -> None:
@@ -146,7 +166,7 @@ async def _ensure_plan_idle(db: DbSession, project: Project, plan_exists: bool) 
         )
     )
     if busy:
-        raise HTTPException(status.HTTP_409_CONFLICT, "The critics are already working on this plan")
+        raise HTTPException(status.HTTP_409_CONFLICT, "An agent is already working on this plan")
 
 
 @router.post("/critiques", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
@@ -176,3 +196,15 @@ async def revise_with_suggestions(
                     comment=f"Applied critic suggestions {', '.join(body.suggestion_ids)}"))  # fmt: skip
     params = {"project_id": str(project_id), "suggestion_ids": body.suggestion_ids, "by": str(user.id)}
     return await start_job(db, dispatcher, user, "idea_revise", params, project_id)
+
+
+# ─── Working abstract (Step 3.3) ────────────────────────────────────────
+
+
+@router.post("/abstract", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def request_abstract(project_id: uuid.UUID, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep) -> Job:
+    """Draft the working abstract from the plan under review (a new Abstract section version)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    snapshot: dict[str, Any] = project.research_state.snapshot if project.research_state else {}
+    await _ensure_plan_idle(db, project, plan_from_state(snapshot) is not None)
+    return await start_job(db, dispatcher, user, "idea_abstract", {"project_id": str(project_id)}, project_id)

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { FilesPanel } from "@/components/FilesPanel";
+import { AbstractPanel } from "@/components/idea/AbstractPanel";
 import { CritiquePanel } from "@/components/idea/CritiquePanel";
 import { PlanCards } from "@/components/idea/PlanCards";
 import { JobProgress } from "@/components/JobProgress";
@@ -13,7 +14,7 @@ import { projectsApi, type ProjectDetail } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
 import { ideaApi, type IdeaPlan, type IdeaWorkspace } from "@/lib/idea";
 import { TERMINAL, useJob, type Job } from "@/lib/jobs";
-import { STATUS_META } from "@/lib/stages";
+import { STATUS_META, venueLabel } from "@/lib/stages";
 import { workflowApi } from "@/lib/workflow";
 
 export default function IdeaWorkspacePage() {
@@ -46,6 +47,16 @@ export default function IdeaWorkspacePage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // After an edit in the abstract editor: refresh its word count without resetting the rest of the page
+  const refreshAbstract = useCallback(async () => {
+    try {
+      const w = await ideaApi.get(id);
+      setWs((prev) => (prev ? { ...prev, abstract: w.abstract } : w));
+    } catch {
+      // the editor shows its own save errors
+    }
+  }, [id]);
 
   useEffect(() => {
     if (!polled || !TERMINAL.has(polled.status)) return;
@@ -202,7 +213,32 @@ export default function IdeaWorkspacePage() {
               run(async () => setJobState({ job: await ideaApi.revise(id, ids), label: "The revision" }))
             }
           />
-          {job && polled && job.label !== "The Idea agent" && (
+          {job && polled && (job.label === "The critics" || job.label === "The revision") && (
+            <JobProgress key={job.job.id} job={polled} label={job.label} pollError={pollError} />
+          )}
+        </>
+      )}
+      {hasPlan && ws.status === "approved" && !ws.critiques && (
+        <p className="text-sm text-slate-500">
+          No critiques for this plan. To ask the critics, go back to the Idea stage from the project overview.
+        </p>
+      )}
+
+      {hasPlan && (
+        <>
+          <AbstractPanel
+            key={ws.abstract.generated_at ?? "none"}
+            projectId={id}
+            abstract={ws.abstract}
+            venue={venueLabel(project.target_venue)}
+            canAct={canEdit && reviewing && !running}
+            busy={busy || job !== null}
+            onDraft={() =>
+              run(async () => setJobState({ job: await ideaApi.draftAbstract(id), label: "The abstract writer" }))
+            }
+            onChanged={() => void refreshAbstract()}
+          />
+          {job && polled && job.label === "The abstract writer" && (
             <JobProgress key={job.job.id} job={polled} label={job.label} pollError={pollError} />
           )}
         </>
@@ -210,10 +246,17 @@ export default function IdeaWorkspacePage() {
 
       {hasPlan && reviewing && canEdit && !running && (
         <section aria-label="Review" className="space-y-3 rounded-xl border-2 border-amber-300 bg-amber-50/40 p-5">
-          <h2 className="text-base font-semibold">Ready to approve?</h2>
+          <h2 className="text-base font-semibold">Ready to approve stage 1?</h2>
           <p className="text-sm text-slate-600">
-            Approving makes this plan the basis for the literature survey and every later stage.
+            Approving accepts the research plan{ws.abstract.content ? " and the working abstract together" : ""}. They
+            become the basis for the literature survey and every later stage.
           </p>
+          {!ws.abstract.content && (
+            <p className="text-sm text-amber-800">
+              There's no abstract yet. You can approve without one, but drafting it now checks that the plan reads
+              as a paper.
+            </p>
+          )}
           {rejecting && (
             <TextArea
               label="What's wrong with this plan?"
@@ -235,7 +278,7 @@ export default function IdeaWorkspacePage() {
                   }
                   loading={busy}
                 >
-                  Approve plan
+                  {ws.abstract.content ? "Approve plan & abstract" : "Approve plan"}
                 </Button>
                 <Button variant="danger-outline" onClick={() => setRejecting(true)} disabled={busy}>
                   Reject

@@ -68,6 +68,17 @@ export const FIELD_LABEL: Record<string, string> = {
   title_options: "Title options",
 };
 
+/** The working abstract (Abstract section) and its target length for the project's venue. */
+export type AbstractInfo = {
+  content: string | null;
+  word_count: number;
+  min_words: number;
+  max_words: number;
+  generated_at: string | null;
+  edited: boolean;
+  outdated: boolean;
+};
+
 export type IdeaWorkspace = {
   status: StageStatus;
   raw_idea: string | null;
@@ -78,6 +89,7 @@ export type IdeaWorkspace = {
   agent_run_id: string | null;
   pending_feedback: string | null;
   critiques: CritiqueSet | null;
+  abstract: AbstractInfo;
 };
 
 const base = (projectId: string) => `/projects/${encodeURIComponent(projectId)}/idea`;
@@ -89,6 +101,7 @@ export const ideaApi = {
   critique: (projectId: string) => apiFetch<Job>(`${base(projectId)}/critiques`, { method: "POST" }),
   revise: (projectId: string, suggestionIds: string[]) =>
     apiFetch<Job>(`${base(projectId)}/revise`, { method: "POST", json: { suggestion_ids: suggestionIds } }),
+  draftAbstract: (projectId: string) => apiFetch<Job>(`${base(projectId)}/abstract`, { method: "POST" }),
 };
 
 /** Next free id with the given prefix ("O" → "O4" when O1–O3 exist). */

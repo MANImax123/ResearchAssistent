@@ -56,7 +56,7 @@ export const SECTION_LABEL: Record<SectionType, string> = {
 
 /**
  * The section each stage's draft is reviewed in (mirrors backend STAGE_SECTIONS). The Idea stage
- * produces a research plan, reviewed in the Idea workspace; its abstract arrives in Step 3.3.
+ * produces a research plan and the working abstract, both reviewed in the Idea workspace.
  */
 export const STAGE_SECTION: Partial<Record<StageName, SectionType>> = {
   literature: "literature_survey",

@@ -84,9 +84,19 @@ async def idea_revise(
     return {"applied": suggestion_ids}
 
 
+async def idea_abstract(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """Draft the working abstract from the research plan (length-controlled)."""
+    from app.services import idea_review
+
+    await reporter.progress(10, "Drafting the abstract")
+    result = await idea_review.draft_abstract(uuid.UUID(project_id), reporter.session_factory)
+    return {"words": result.word_count, "within_limit": result.within_limit, "attempts": result.attempts}
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
     "idea_critique": idea_critique,
     "idea_revise": idea_revise,
+    "idea_abstract": idea_abstract,
 }

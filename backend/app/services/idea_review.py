@@ -1,16 +1,22 @@
-"""Critique and revise the research plan while the Idea stage awaits review (Step 3.2)."""
+"""Work on the research plan while the Idea stage awaits review: critique and revise it (Step 3.2),
+draft the working abstract (Step 3.3)."""
 
 import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 from app.agents import registry
+from app.agents.idea.abstract import AGENT_NAME as ABSTRACT_AGENT
+from app.agents.idea.abstract import AbstractResult, plan_fingerprint, write_abstract
 from app.agents.idea.agent import plan_from_state, plan_to_state, render_markdown
 from app.agents.idea.critique import CriticFn, CritiqueSet, allowed_fields, merge_revision, run_critiques
 from app.agents.idea.schemas import IdeaPlan
 from app.agents.prompts.critique import REVISE
 from app.core.logging import get_logger
-from app.db.models.enums import StageName
+from app.core.venues import abstract_word_limits
+from app.db.models.enums import SectionType, StageName, VersionSource
 from app.orchestrator import service as orchestrator
+from app.services import sections
 from app.services.llm import LLMService, SessionFactory
 
 log = get_logger(__name__)
@@ -93,3 +99,44 @@ async def revise_plan(
     await orchestrator.review(project_id, decision, session_factory=session_factory, agents={})
     log.info("plan_revised", project_id=str(project_id), applied=[s.id for s in selected], fields=sorted(fields))
     return revised
+
+
+async def draft_abstract(
+    project_id: uuid.UUID, session_factory: SessionFactory, *, llm: LLMService | None = None
+) -> AbstractResult:
+    """Write the working abstract from the plan under review and save it as a new Abstract version.
+
+    Approving the Idea stage approves the plan and this abstract together (the section follows the stage).
+    """
+    plan, values = await _plan_under_review(project_id)
+    venue = (values.get("venue") or {}).get("name")
+    limits = abstract_word_limits(venue)
+    result = await write_abstract(plan, llm or registry.llm_factory(session_factory)(), project_id, limits, venue)
+    meta = {
+        "word_count": result.word_count,
+        "min_words": result.min_words,
+        "max_words": result.max_words,
+        "within_limit": result.within_limit,
+        "attempts": result.attempts,
+        "venue": venue,
+        "plan_fingerprint": plan_fingerprint(plan),
+        "generated_at": datetime.now(UTC).isoformat(),
+        "agent_run_ids": result.run_ids,
+    }
+    decision = {"action": "update", "fields": {"abstract_draft": result.text, "abstract_meta": meta}}
+    await orchestrator.review(project_id, decision, session_factory=session_factory, agents={})
+
+    async with session_factory() as session:
+        section = await sections.get_or_create_section(session, project_id, SectionType.ABSTRACT)
+        await sections.add_version(
+            session,
+            section,
+            result.text,
+            VersionSource.AI,
+            change_note=f"Drafted by {ABSTRACT_AGENT} agent ({result.word_count} words)",
+            agent_run_id=uuid.UUID(result.run_ids[-1]),
+        )
+        await session.commit()
+    log.info("abstract_drafted", project_id=str(project_id), words=result.word_count,
+             within_limit=result.within_limit, attempts=result.attempts)  # fmt: skip
+    return result

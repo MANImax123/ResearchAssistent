@@ -6,6 +6,7 @@ produce hundreds of versions. Restoring copies an old version into a new one.
 """
 
 import difflib
+import re
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -37,6 +38,8 @@ SECTION_STATUS_FOR_STAGE: dict[StageStatus, SectionStatus] = {
     StageStatus.STALE: SectionStatus.STALE,
 }
 
+_WORDS = re.compile(r"[\w'’-]+")
+
 AUTOSAVE_NOTE = "Autosave"
 AUTOSAVE_WINDOW = timedelta(minutes=10)
 
@@ -54,6 +57,11 @@ class Diff:
     unified: str
     added: int
     removed: int
+
+
+def word_count(content: str) -> int:
+    """Words in section Markdown; citation keys like [@smith2020] don't count."""
+    return len(_WORDS.findall(re.sub(r"\[@[^\]]+\]", " ", content)))
 
 
 async def get_section(session: AsyncSession, project_id: uuid.UUID, section_type: SectionType) -> Section | None:

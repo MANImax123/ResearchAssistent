@@ -108,6 +108,7 @@ class ResearchState(TypedDict, total=False):
     stage_status: Annotated[dict[str, str], merge_dicts]  # stage -> StageStatus value
     stage_outputs: Annotated[dict[str, StageOutput], merge_dicts]  # drafts until sections exist (Step 2.3)
     critiques: NotRequired[dict[str, Any] | None]  # latest critic round on the research plan (Step 3.2)
+    abstract_meta: NotRequired[dict[str, Any] | None]  # how the working abstract was drafted (Step 3.3)
 
 
 def initial_state(

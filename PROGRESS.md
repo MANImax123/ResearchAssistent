@@ -1,5 +1,5 @@
 # Progress
-Current step: 3.3
+Current step: 4.1
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -17,8 +17,8 @@ Current step: 3.3
 | 2.3  | Section editor with versioning | ✅ | 2026-10-21 | |
 | 3.1  | Research Planning + idea refinement | ✅ | 2026-10-21 | First real agent (Gemini) |
 | 3.2  | Critic agents (Novelty, Feasibility, Methodology) | ✅ | 2026-10-21 | Parallel critics; revision limited to selected fields; per-loop SDK clients |
-| 3.3  | Draft abstract | 🔄 in progress | | |
-| 4.1  | Academic API clients + Paper Discovery agent | ⬜ not started | | |
+| 3.3  | Draft abstract | ✅ | 2026-10-21 | Venue word range with length control; approved with the plan |
+| 4.1  | Academic API clients + Paper Discovery agent | 🔄 in progress | | |
 | 4.2  | Relevance Ranking agent + selection | ⬜ not started | | |
 | 4.3  | PDF acquisition + Document Parsing agent | ⬜ not started | | |
 | 4.4  | Embeddings + RAG Retrieval agent | ⬜ not started | | |
