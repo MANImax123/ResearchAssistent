@@ -19,6 +19,7 @@ from sqlalchemy.orm import selectinload
 from app.core.logging import get_logger
 from app.db.models import Project, ResearchStateSnapshot, Stage
 from app.db.models.enums import StageName, StageStatus
+from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
 from app.orchestrator.graph import StageAgent, build_graph
 from app.orchestrator.state import ResearchState, initial_state
@@ -39,6 +40,17 @@ class ReviewPendingError(Exception):
 
 class NoPendingReviewError(Exception):
     pass
+
+
+class PrerequisitesNotMetError(Exception):
+    def __init__(self, stage: str, missing: list[str]) -> None:
+        super().__init__(f"Stage '{stage}' needs approved: {', '.join(missing)}")
+        self.stage = stage
+        self.missing = missing
+
+
+class InvalidStageActionError(Exception):
+    """The action doesn't apply to the stage in its current state."""
 
 
 @dataclass(frozen=True)
@@ -82,10 +94,15 @@ async def run_stage(
     stage: StageName,
     *,
     session_factory: SessionFactory,
+    feedback: str | None = None,
     factory: CheckpointerFactory | None = None,
     agents: dict[StageName, StageAgent] | None = None,
 ) -> GraphSnapshot:
-    """Run one stage's agent; the graph then pauses at human review."""
+    """Run (or re-run) one stage's agent; the graph then pauses at human review.
+
+    Prerequisites must be approved. Re-running a stage marks its started dependents stale.
+    `feedback` (e.g. from Regenerate) is passed to the agent as `pending_feedback`.
+    """
     async with session_factory() as session:
         project = await _load_project(session, project_id)
         fresh = _researcher_inputs(project)
@@ -96,21 +113,69 @@ async def run_stage(
         if current.pending is not None:
             # New input would silently discard the pending review, so refuse
             raise ReviewPendingError(current.pending.stage)
+        statuses = _statuses(current.values)
+        missing = workflow.blocked_by(stage, statuses)
+        if missing:
+            raise PrerequisitesNotMetError(stage.value, [m.value for m in missing])
         if current.values:
             idea = {**current.values.get("idea", {}), **fresh["idea"]}
             venue = {**current.values.get("venue", {}), **fresh["venue"]}
             inputs: dict[str, Any] = {"requested_stage": stage.value, "idea": idea, "venue": venue}
         else:
             inputs = {**fresh["initial"], "requested_stage": stage.value}
+        stale = workflow.stale_after_change(stage, statuses)
+        if stale:
+            inputs["stage_status"] = {d.value: StageStatus.STALE.value for d in stale}
+        if feedback is not None:
+            inputs["pending_feedback"] = feedback
         await graph.ainvoke(inputs, thread_config(project_id))
         snapshot = await _snapshot(graph, project_id)
 
     await sync_to_db(project_id, snapshot, session_factory)
-    log.info("stage_run_paused", project_id=str(project_id), stage=stage.value, checkpoint=snapshot.checkpoint_id)
+    log.info("stage_run_paused", project_id=str(project_id), stage=stage.value, stale=[d.value for d in stale])
     return snapshot
 
 
-async def resume_review(
+async def go_back(
+    project_id: uuid.UUID,
+    stage: StageName,
+    *,
+    session_factory: SessionFactory,
+    factory: CheckpointerFactory | None = None,
+) -> GraphSnapshot:
+    """Reopen an earlier stage for review (its draft is kept); every started dependent becomes stale."""
+    async with (factory or checkpointer_factory)() as saver:
+        graph = build_graph(saver)
+        current = await _snapshot(graph, project_id)
+        statuses = _statuses(current.values)
+        if statuses.get(stage, StageStatus.NOT_STARTED) in (StageStatus.NOT_STARTED, StageStatus.RUNNING):
+            raise InvalidStageActionError(f"Stage '{stage.value}' hasn't produced a draft to go back to")
+        if current.pending is not None:
+            pending = StageName(current.pending.stage)
+            if pending == stage:
+                raise InvalidStageActionError(f"Stage '{stage.value}' is already awaiting review")
+            # Going back discards the pending review; only allowed if that stage depends on this one
+            if pending not in workflow.dependents(stage):
+                raise ReviewPendingError(current.pending.stage)
+        stale = {d.value: StageStatus.STALE.value for d in workflow.stale_after_change(stage, statuses)}
+        changes = {**stale, stage.value: StageStatus.AWAITING_REVIEW.value}
+        merged = {**{k.value: v.value for k, v in statuses.items()}, **changes}
+        inputs = {
+            "requested_stage": stage.value,
+            "reopen": True,
+            "current_stage": stage.value,
+            "stage_status": changes,
+            "stale_stages": [s.value for s in StageName if merged.get(s.value) == StageStatus.STALE.value],
+        }
+        await graph.ainvoke(inputs, thread_config(project_id))
+        snapshot = await _snapshot(graph, project_id)
+
+    await sync_to_db(project_id, snapshot, session_factory)
+    log.info("stage_reopened", project_id=str(project_id), stage=stage.value, stale=sorted(stale))
+    return snapshot
+
+
+async def review(
     project_id: uuid.UUID,
     decision: dict[str, Any],
     *,
@@ -118,7 +183,10 @@ async def resume_review(
     factory: CheckpointerFactory | None = None,
     agents: dict[StageName, StageAgent] | None = None,
 ) -> GraphSnapshot:
-    """Resume the paused run with the researcher's decision."""
+    """Resume the paused run with the researcher's decision: approve | reject | edit | regenerate.
+
+    Regenerate re-runs the stage's agent before pausing again, so call it from a background job.
+    """
     async with (factory or checkpointer_factory)() as saver:
         graph = build_graph(saver, agents)
         current = await _snapshot(graph, project_id)
@@ -152,6 +220,8 @@ async def sync_to_db(project_id: uuid.UUID, snapshot: GraphSnapshot, session_fac
             if row.status == StageStatus.APPROVED and (record := approvals.get(row.name.value)):
                 row.approved_at = datetime.fromisoformat(record["at"])
                 row.approved_by = uuid.UUID(record["by"]) if record.get("by") else None
+            elif row.status != StageStatus.APPROVED:
+                row.approved_at = row.approved_by = None
         if values.get("current_stage"):
             project.current_stage = StageName(values["current_stage"])
         await session.commit()
@@ -165,6 +235,11 @@ async def set_stage_status(
         if row is not None:
             row.status = status
             await session.commit()
+
+
+def _statuses(values: dict[str, Any]) -> dict[StageName, StageStatus]:
+    raw: dict[str, str] = values.get("stage_status", {})
+    return {StageName(k): StageStatus(v) for k, v in raw.items()}
 
 
 async def _load_project(session: AsyncSession, project_id: uuid.UUID) -> Project:

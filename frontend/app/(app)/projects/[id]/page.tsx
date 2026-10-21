@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FilesPanel } from "@/components/FilesPanel";
 import { ProjectForm } from "@/components/ProjectForm";
-import { StageTracker } from "@/components/StageTracker";
+import { StagesWorkspace } from "@/components/StagesWorkspace";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
 import { ApiError, projectsApi, type ProjectDetail } from "@/lib/api";
 import { relativeTime } from "@/lib/format";
@@ -128,7 +128,7 @@ export default function ProjectOverviewPage() {
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Stages</h2>
-        <StageTracker stages={project.stages} current={project.current_stage} />
+        <StagesWorkspace projectId={project.id} canEdit={canEdit} />
       </section>
 
       {confirmDelete && (

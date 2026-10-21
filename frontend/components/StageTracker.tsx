@@ -1,21 +1,35 @@
-import { Badge } from "@/components/ui";
-import type { ProjectDetail } from "@/lib/api";
-import { STAGES, STATUS_META, type StageName } from "@/lib/stages";
+import type { ReactNode } from "react";
 
-export function StageTracker({ stages, current }: { stages: ProjectDetail["stages"]; current: StageName }) {
-  const statusOf = new Map(stages.map((s) => [s.name, s.status]));
+import { Badge } from "@/components/ui";
+import { STAGE_LABEL, STAGES, STATUS_META, type StageName, type StageStatus } from "@/lib/stages";
+
+type TrackerStage = { name: StageName; status: StageStatus; blocked_by?: StageName[] };
+
+export function StageTracker({
+  stages,
+  current,
+  actions,
+}: {
+  stages: TrackerStage[];
+  current: StageName;
+  /** Buttons shown at the end of a row (e.g. Run, Go back). */
+  actions?: (stage: StageName) => ReactNode;
+}) {
+  const byName = new Map(stages.map((s) => [s.name, s]));
 
   return (
     <ol className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
       {STAGES.map((stage, i) => {
-        const status = statusOf.get(stage.name) ?? "not_started";
+        const info = byName.get(stage.name);
+        const status = info?.status ?? "not_started";
         const meta = STATUS_META[status];
         const isCurrent = stage.name === current;
+        const waitingOn = status === "not_started" ? (info?.blocked_by ?? []) : [];
         return (
           <li
             key={stage.name}
             aria-current={isCurrent ? "step" : undefined}
-            className={`flex items-center gap-4 px-4 py-3 sm:px-5 ${isCurrent ? "bg-indigo-50/60" : ""}`}
+            className={`flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:px-5 ${isCurrent ? "bg-indigo-50/60" : ""}`}
           >
             <span
               className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
@@ -34,9 +48,17 @@ export function StageTracker({ stages, current }: { stages: ProjectDetail["stage
                 {stage.label}
                 {isCurrent && <span className="ml-2 text-xs font-normal text-indigo-600">Current stage</span>}
               </p>
-              <p className="text-xs text-slate-500 sm:truncate">{stage.description}</p>
+              <p className="text-xs text-slate-500 sm:truncate">
+                {waitingOn.length > 0
+                  ? `Needs ${waitingOn.map((s) => STAGE_LABEL[s]).join(" and ")} approved`
+                  : stage.description}
+              </p>
             </div>
-            <Badge className={meta.className}>{meta.label}</Badge>
+            {/* On narrow screens the buttons take their own line, aligned with the text */}
+            <div className="flex w-full flex-wrap items-center gap-2 pl-12 sm:w-auto sm:pl-0">
+              {actions?.(stage.name)}
+              <Badge className={meta.className}>{meta.label}</Badge>
+            </div>
           </li>
         );
       })}

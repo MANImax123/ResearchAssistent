@@ -114,7 +114,7 @@ async def test_run_pauses_for_review_persists_and_resumes(db_session: AsyncSessi
     assert restored.checkpoint_id == snap.checkpoint_id
 
     # 4. Resume with approval: the run continues to the end
-    done = await orchestrator.resume_review(
+    done = await orchestrator.review(
         project_id, {"action": "approve", "by": None, "comment": "looks good"}, session_factory=sessions
     )
     assert done.pending is None and done.next == ()
@@ -157,14 +157,14 @@ async def test_cannot_start_another_stage_while_review_pending(db_session: Async
 
 async def test_resume_without_pending_review_fails(db_session: AsyncSession, project_id: uuid.UUID) -> None:
     with pytest.raises(orchestrator.NoPendingReviewError):
-        await orchestrator.resume_review(project_id, {"action": "approve"}, session_factory=factory_for(db_session))
+        await orchestrator.review(project_id, {"action": "approve"}, session_factory=factory_for(db_session))
 
 
 async def test_reject_feeds_comment_into_the_next_run(db_session: AsyncSession, project_id: uuid.UUID) -> None:
     sessions = factory_for(db_session)
     await orchestrator.run_stage(project_id, StageName.IDEA, session_factory=sessions)
 
-    rejected = await orchestrator.resume_review(
+    rejected = await orchestrator.review(
         project_id, {"action": "reject", "comment": "Narrow it to kinase inhibitors"}, session_factory=sessions
     )
     assert rejected.values["stage_status"]["idea"] == "rejected"
@@ -180,7 +180,7 @@ async def test_edited_idea_reaches_the_next_run(
 ) -> None:
     sessions = factory_for(db_session)
     await orchestrator.run_stage(project_id, StageName.IDEA, session_factory=sessions)
-    await orchestrator.resume_review(project_id, {"action": "approve"}, session_factory=sessions)
+    await orchestrator.review(project_id, {"action": "approve"}, session_factory=sessions)
 
     await api_client.patch(
         f"/api/v1/projects/{project_id}", json={"raw_idea": "Protein folding with diffusion"}, headers=alice
@@ -213,7 +213,7 @@ async def test_run_endpoint_queues_job_then_state_shows_review(
     )
     assert (await stage_row(db_session, project_id, StageName.IDEA)).status == StageStatus.RUNNING
     job_id, job_type, params = dispatcher.queued[0]
-    assert params == {"project_id": str(project_id), "stage": "idea", "previous_status": "not_started"}
+    assert params == {"project_id": str(project_id), "stage": "idea", "previous_status": "not_started", "mode": "run"}
 
     # The worker's part, in-process
     assert await execute_job(job_id, HANDLERS[job_type], params, factory_for(db_session)) == JobStatus.SUCCESS
@@ -247,7 +247,7 @@ async def test_refuses_while_a_stage_is_running(
 ) -> None:
     assert (await api_client.post(f"/api/v1/projects/{project_id}/stages/idea/run", headers=alice)).status_code == 202
     resp = await api_client.post(f"/api/v1/projects/{project_id}/stages/idea/run", headers=alice)
-    assert resp.status_code == 409 and "already running" in resp.json()["detail"]
+    assert resp.status_code == 409 and "is running" in resp.json()["detail"]
 
 
 async def test_failed_run_restores_previous_status(

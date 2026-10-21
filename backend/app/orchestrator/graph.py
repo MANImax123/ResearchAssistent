@@ -4,17 +4,18 @@
                                                               ▲ interrupt(): pauses here
 
 One invocation runs one stage and pauses for review; the paused run is resumed with
-`Command(resume=decision)`. Stage agents are stubs until their steps are built (3.x–9.x).
+`Command(resume=decision)` (approve / reject / edit / regenerate). "Go back" starts a run with
+`reopen=True`, which goes straight to review. Stage agents are stubs until their steps are built (3.x–9.x).
 """
 
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Hashable
 from datetime import UTC, datetime
 from typing import Any
 
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.types import interrupt
+from langgraph.types import Command, interrupt
 
 from app.db.models.enums import StageName, StageStatus
 from app.orchestrator.state import ResearchState, StageOutput
@@ -74,25 +75,54 @@ def make_stub_agent(stage: StageName) -> StageAgent:
 STUB_AGENTS: dict[StageName, StageAgent] = {stage: make_stub_agent(stage) for stage in StageName}
 
 
-async def human_review(state: ResearchState) -> dict[str, Any]:
+REVIEW_ACTIONS = ("approve", "reject", "edit", "regenerate")
+
+
+def _status_update(state: ResearchState, changes: dict[str, str]) -> dict[str, Any]:
+    """A stage_status update plus the matching B12 `stale_stages` list."""
+    merged = {**state.get("stage_status", {}), **changes}
+    stale = [s.value for s in StageName if merged.get(s.value) == StageStatus.STALE.value]
+    return {"stage_status": changes, "stale_stages": stale}
+
+
+async def human_review(state: ResearchState) -> Command[str]:
     """Pause for the researcher (A4.4: nothing is final without approval).
 
-    The resume value is the decision: {"action": "approve" | "reject", "comment"?, "by"?}.
-    Step 2.2 adds edit / regenerate / go back.
+    Resume with a decision {"action": ..., "by"?, "comment"?, "content"?}:
+      approve     → stage approved, run ends
+      reject      → stage rejected, comment kept as feedback for the next run, run ends
+      edit        → `content` replaces the draft, back to review
+      regenerate  → the stage's agent runs again with the comment as feedback, then back to review
     """
     stage = state["requested_stage"]
     output = state.get("stage_outputs", {}).get(stage)
     decision: dict[str, Any] = interrupt({"stage": stage, "draft": output["draft"] if output else None})
-    action = decision.get("action")
-    if action not in ("approve", "reject"):
-        raise ValueError(f"Unsupported review action: {action!r}")
-    status = StageStatus.APPROVED if action == "approve" else StageStatus.REJECTED
-    comment = decision.get("comment")
-    return {
-        "stage_status": {stage: status.value},
-        "approvals": {stage: {"action": action, "at": now_iso(), "by": decision.get("by"), "comment": comment}},
-        "pending_feedback": comment if action == "reject" else None,
-    }
+    action, by, comment = decision.get("action"), decision.get("by"), decision.get("comment")
+
+    if action in ("approve", "reject"):
+        status = StageStatus.APPROVED if action == "approve" else StageStatus.REJECTED
+        record = {"action": action, "at": now_iso(), "by": by, "comment": comment}
+        update = {
+            **_status_update(state, {stage: status.value}),
+            "approvals": {stage: record},
+            "pending_feedback": comment if action == "reject" else None,
+            "reopen": False,
+        }
+        return Command(update=update, goto=END)
+    if action == "edit":
+        content = decision.get("content")
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("Edit needs non-empty content")
+        edited = StageOutput(draft=content, agent="user", generated_at=now_iso())
+        return Command(update={"stage_outputs": {stage: edited}, "reopen": False}, goto=REVIEW_NODE)
+    if action == "regenerate":
+        update = {
+            **_status_update(state, {stage: StageStatus.RUNNING.value}),
+            "pending_feedback": comment or state.get("pending_feedback"),
+            "reopen": False,
+        }
+        return Command(update=update, goto=stage)
+    raise ValueError(f"Unsupported review action: {action!r}")
 
 
 def _mark_awaiting_review(agent: StageAgent, stage: StageName) -> StageAgent:
@@ -100,10 +130,15 @@ def _mark_awaiting_review(agent: StageAgent, stage: StageName) -> StageAgent:
 
     async def node(state: ResearchState) -> dict[str, Any]:
         update = await agent(state)
-        status = {**update.get("stage_status", {}), stage.value: StageStatus.AWAITING_REVIEW.value}
-        return {**update, "stage_status": status, "current_stage": stage.value}
+        statuses = {**update.get("stage_status", {}), stage.value: StageStatus.AWAITING_REVIEW.value}
+        return {**update, **_status_update(state, statuses), "current_stage": stage.value}
 
     return node
+
+
+def _route_from_start(state: ResearchState) -> str:
+    # "Go back" reopens a stage's review without re-running its agent
+    return REVIEW_NODE if state.get("reopen") else state["requested_stage"]
 
 
 def build_graph(
@@ -115,7 +150,9 @@ def build_graph(
     for stage in StageName:
         graph.add_node(stage.value, _mark_awaiting_review(agents[stage], stage))  # type: ignore[call-overload]
         graph.add_edge(stage.value, REVIEW_NODE)
-    graph.add_node(REVIEW_NODE, human_review)
-    graph.add_conditional_edges(START, lambda s: s["requested_stage"], {s.value: s.value for s in StageName})
-    graph.add_edge(REVIEW_NODE, END)
+    # The review node routes itself (Command.goto): back to an agent, to itself, or to END
+    graph.add_node(REVIEW_NODE, human_review, destinations=(*[s.value for s in StageName], REVIEW_NODE, END))
+    routes: dict[Hashable, str] = {REVIEW_NODE: REVIEW_NODE}
+    routes.update({s.value: s.value for s in StageName})
+    graph.add_conditional_edges(START, _route_from_start, routes)
     return graph.compile(checkpointer=checkpointer)

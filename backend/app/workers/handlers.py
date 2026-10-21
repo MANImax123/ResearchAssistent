@@ -24,16 +24,35 @@ async def demo(
     return {"steps": steps, "message": "Demo job completed"}
 
 
-async def stage_run(reporter: JobReporter, project_id: str, stage: str, previous_status: str) -> dict[str, Any]:
-    """Run one stage through the orchestrator; succeeds once the stage is paused for review."""
+async def stage_run(
+    reporter: JobReporter,
+    project_id: str,
+    stage: str,
+    previous_status: str,
+    mode: str = "run",
+    feedback: str | None = None,
+    by: str | None = None,
+) -> dict[str, Any]:
+    """Run a stage's agent through the orchestrator; succeeds once the stage is paused for review.
+
+    mode "run": fresh run or re-run (optional feedback); mode "regenerate": the stage is paused for
+    review and its agent runs again with the feedback.
+    """
     from app.orchestrator import service as orchestrator  # imported lazily: keeps LangGraph out of worker boot
     from app.orchestrator.graph import STAGE_LABELS
 
     stage_name = StageName(stage)
     pid = uuid.UUID(project_id)
-    await reporter.progress(5, f"Running {STAGE_LABELS[stage_name]}")
+    verb = "Regenerating" if mode == "regenerate" or feedback else "Running"
+    await reporter.progress(5, f"{verb} {STAGE_LABELS[stage_name]}")
     try:
-        snapshot = await orchestrator.run_stage(pid, stage_name, session_factory=reporter.session_factory)
+        if mode == "regenerate":
+            decision = {"action": "regenerate", "comment": feedback, "by": by}
+            snapshot = await orchestrator.review(pid, decision, session_factory=reporter.session_factory)
+        else:
+            snapshot = await orchestrator.run_stage(
+                pid, stage_name, session_factory=reporter.session_factory, feedback=feedback
+            )
     except Exception:
         # Put the stage back the way it was so it can be run again
         await orchestrator.set_stage_status(pid, stage_name, StageStatus(previous_status), reporter.session_factory)
