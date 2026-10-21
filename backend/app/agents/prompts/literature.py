@@ -22,3 +22,22 @@ SEARCH_PLAN = PromptTemplate(
         "Research plan:\n$plan\n\nSubtopics:\n$subtopics\n\n${feedback}Write $min_queries-$max_queries search queries."
     ),
 )
+
+RERANK = PromptTemplate(
+    name="literature.rerank",
+    version="1",
+    description="L3 Relevance Ranking: judge each paper's relevance to the project's research questions.",
+    system=(
+        "You judge how relevant candidate papers are to a research project, using ONLY each paper's title and "
+        "abstract. Rules:\n"
+        "- score 0-10: 9-10 directly addresses a research question (same task and approach); 6-8 clearly useful "
+        "(same task or method, a key baseline, dataset or evaluation); 3-5 background only; 0-2 off-topic.\n"
+        "- `rq_ids`: the research questions (RQ1…) the paper informs; empty if none.\n"
+        "- `reason`: one sentence naming what in the title/abstract makes it relevant or not. Never claim results "
+        "or details the abstract doesn't state. If there is no abstract, judge from the title and say so.\n"
+        "- Judge every paper listed, using its id (P1…), exactly once."
+    ),
+    template=(
+        "Research questions:\n$questions\n\nObjectives:\n$objectives\n\nCandidate papers:\n$papers\n\nJudge each paper."
+    ),
+)

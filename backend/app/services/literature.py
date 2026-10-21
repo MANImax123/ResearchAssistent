@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents import registry
 from app.agents.idea.agent import plan_from_state
+from app.agents.idea.schemas import IdeaPlan
+from app.agents.literature import ranking
 from app.agents.literature.discovery import DiscoveryResult, Filters, Progress, discover
 from app.agents.literature.planning import PlannedQuery, plan_queries
 from app.core.logging import get_logger
@@ -17,9 +19,12 @@ from app.db.models import Paper, Project, SearchQuery
 from app.db.models.enums import PaperOrigin, QueryOrigin, StageName, StageStatus
 from app.services.academic.models import Author, PaperMetadata, SearchSourceName
 from app.services.academic.sources import SearchClient
+from app.services.embeddings import EmbeddingService
 from app.services.llm import LLMService, SessionFactory
 
 log = get_logger(__name__)
+
+EMBED_BATCH = 25  # papers per embedding request (free-tier quotas count texts per minute)
 
 
 class LiteratureBlockedError(Exception):
@@ -203,3 +208,128 @@ def summary(result: DiscoveryResult, label: Callable[[str], str]) -> dict[str, A
             for source, r in result.sources.items()
         },
     }
+
+
+# ─── Relevance ranking (Step 4.2) ────────────────────────────────────────
+
+
+async def _approved_plan(session: AsyncSession, project_id: uuid.UUID) -> tuple[Project, IdeaPlan]:
+    project = await session.get(Project, project_id)
+    if project is None:
+        raise LookupError("Project not found")
+    await session.refresh(project, ["research_state", "stages"])
+    if reason := blocker(project):
+        raise LiteratureBlockedError(reason)
+    plan = plan_from_state(project.research_state.snapshot if project.research_state else {})
+    if plan is None:
+        raise LiteratureBlockedError("The project has no research plan")
+    return project, plan
+
+
+async def rank_papers(
+    project_id: uuid.UUID,
+    session_factory: SessionFactory,
+    *,
+    top_n: int,
+    embeddings: EmbeddingService | None = None,
+    llm: LLMService | None = None,
+    progress: Progress | None = None,
+) -> dict[str, Any]:
+    """Embed → similarity to every RQ → LLM judgement of the `top_n` most similar (and must-include) papers."""
+    embedder = embeddings or registry.embeddings_factory()
+    async with session_factory() as session:
+        _, plan = await _approved_plan(session, project_id)
+        papers = await project_papers(session, project_id)
+        to_embed = [p for p in papers if p.embedding is None]
+        texts = [ranking.paper_text(p.title, p.abstract) for p in to_embed]
+    # Embed in small batches, saving each, so a quota error never loses finished work
+    for start in range(0, len(to_embed), EMBED_BATCH):
+        if progress:
+            await progress(5 + 25 * start // max(len(to_embed), 1), f"Embedding papers ({start}/{len(to_embed)})")
+        chunk = to_embed[start : start + EMBED_BATCH]
+        vectors = await embedder.embed_documents(texts[start : start + EMBED_BATCH], titles=[p.title for p in chunk])
+        async with session_factory() as session:
+            for paper, vector in zip(chunk, vectors, strict=True):
+                row = await session.get(Paper, paper.id)
+                if row is not None:
+                    row.embedding = vector
+            await session.commit()
+    rqs = await ranking.rq_vectors(plan, embedder)
+    basis = ranking.rq_fingerprint(plan)
+
+    async with session_factory() as session:
+        rows = {p.id: p for p in await project_papers(session, project_id)}
+        for paper in rows.values():
+            if paper.embedding is None:
+                continue
+            per_rq = ranking.similarities(list(paper.embedding), rqs)
+            paper.rq_similarity = per_rq
+            paper.similarity = max(per_rq.values(), default=None)
+            if paper.ranked_for != basis:  # judged against other research questions: no longer valid
+                paper.relevance_score = paper.relevance_reason = paper.ranked_for = None
+                paper.relevance_rqs = []
+        await session.commit()
+        by_similarity = sorted(rows.values(), key=lambda p: p.similarity or -1.0, reverse=True)
+        chosen = {p.id for p in by_similarity[:top_n]} | {p.id for p in rows.values() if p.must_include}
+        candidates = [
+            ranking.Candidate(str(p.id), p.title, p.abstract, p.year, p.venue)
+            for p in by_similarity
+            if p.id in chosen and p.relevance_score is None
+        ]
+    reused = len(chosen) - len(candidates)
+    if progress:
+        await progress(35, f"AI is judging {len(candidates)} papers ({reused} already judged)")
+    judged = await ranking.rerank(candidates, plan, llm or registry.llm_factory(session_factory)(), project_id)
+
+    async with session_factory() as session:
+        for key, judgement in judged.items():
+            judged_paper = await session.get(Paper, uuid.UUID(key))
+            if judged_paper is None or judged_paper.project_id != project_id:
+                continue
+            judged_paper.relevance_score = judgement.score / 10
+            judged_paper.relevance_reason = judgement.reason
+            judged_paper.relevance_rqs = judgement.rq_ids
+            judged_paper.ranked_for = basis
+        await session.commit()
+    log.info("papers_ranked", project_id=str(project_id), embedded=len(to_embed), judged=len(judged), reused=reused)
+    return {
+        "papers": len(rows),
+        "embedded": len(to_embed),
+        "judged": len(judged),
+        "reused": reused,
+        "unjudged": len(candidates) - len(judged),
+    }
+
+
+# ─── Selection ───────────────────────────────────────────────────────────
+
+
+def _relevance_order(paper: Paper) -> tuple[int, float, float]:
+    """Judged papers first (by the LLM's score), then by similarity."""
+    judged = paper.relevance_score is not None
+    return (int(judged), paper.relevance_score or 0.0, paper.similarity or -1.0)
+
+
+def set_flags(paper: Paper, *, selected: bool | None, must_include: bool | None) -> None:
+    """Must-include implies selected; deselecting drops must-include."""
+    if must_include is not None:
+        paper.must_include = must_include
+        if must_include:
+            paper.selected = True
+    if selected is not None:
+        paper.selected = selected
+        if not selected:
+            paper.must_include = False
+
+
+async def select_top(session: AsyncSession, project_id: uuid.UUID, k: int, min_score: float | None) -> int:
+    """Select the k most relevant papers (must-include ones always stay selected); deselect the rest."""
+    papers = sorted(await project_papers(session, project_id), key=_relevance_order, reverse=True)
+    eligible = [
+        p for p in papers if min_score is None or (p.relevance_score is not None and p.relevance_score >= min_score)
+    ]
+    keep = {p.id for p in eligible[:k]}
+    for paper in papers:
+        paper.selected = paper.must_include or paper.id in keep
+    await session.flush()
+    return sum(p.selected for p in papers)

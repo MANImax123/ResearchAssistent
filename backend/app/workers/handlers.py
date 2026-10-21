@@ -132,6 +132,16 @@ async def literature_discover(
     return literature.summary(result, lambda s: SOURCE_LABEL.get(s, s))
 
 
+async def literature_rank(reporter: JobReporter, project_id: str, top_n: int) -> dict[str, Any]:
+    """L3: embed papers, score them against the research questions, and have the LLM judge the top ones."""
+    from app.services import literature
+
+    await reporter.progress(5, "Ranking papers")
+    return await literature.rank_papers(
+        uuid.UUID(project_id), reporter.session_factory, top_n=top_n, progress=reporter.progress
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -140,4 +150,5 @@ HANDLERS: dict[str, JobHandler] = {
     "idea_abstract": idea_abstract,
     "literature_plan": literature_plan,
     "literature_discover": literature_discover,
+    "literature_rank": literature_rank,
 }

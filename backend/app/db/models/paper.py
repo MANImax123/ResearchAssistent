@@ -39,6 +39,14 @@ class Paper(UUIDPkMixin, TimestampMixin, Base):
     found_by: Mapped[list[str]] = mapped_column(JSONB, default=list)  # search query labels (Q1…)
     citation_count: Mapped[int | None] = mapped_column(Integer)
     pdf_url: Mapped[str | None] = mapped_column(String(2048))  # open-access PDF reported by a source
+    # Relevance ranking (Step 4.2). relevance_score (above) is the LLM's 0–1 judgement for reranked papers.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(get_settings().embedding_dim))  # title + abstract
+    similarity: Mapped[float | None] = mapped_column(Float)  # best cosine similarity to a research question
+    rq_similarity: Mapped[dict[str, float]] = mapped_column(JSONB, default=dict)  # RQ id → cosine similarity
+    relevance_reason: Mapped[str | None] = mapped_column(Text)  # the LLM's "why relevant"
+    relevance_rqs: Mapped[list[str]] = mapped_column(JSONB, default=list)  # RQ ids the LLM says it informs
+    ranked_for: Mapped[str | None] = mapped_column(String(16))  # fingerprint of the RQs it was judged against
+    must_include: Mapped[bool] = mapped_column(Boolean, default=False)
 
     profile: Mapped["PaperProfile | None"] = relationship(back_populates="paper", cascade="all, delete-orphan")
     chunks: Mapped[list["PaperChunk"]] = relationship(back_populates="paper", cascade="all, delete-orphan")

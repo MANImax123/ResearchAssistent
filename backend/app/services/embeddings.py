@@ -20,6 +20,17 @@ from app.services.llm_providers import PerLoop, is_network_error
 log = get_logger(__name__)
 
 Kind = Literal["document", "query"]
+MAX_SUGGESTED_WAIT_S = 90.0  # longest server-requested wait we honour before retrying
+
+_RETRY_IN = re.compile(r"retry in (\d+(?:\.\d+)?)s", re.IGNORECASE)
+_RETRY_DELAY = re.compile(r"'retryDelay': '(\d+(?:\.\d+)?)s'")
+
+
+def suggested_wait(exc: BaseException) -> float | None:
+    """The wait a rate-limited API asked for ("Please retry in 47.3s" / RetryInfo retryDelay), if any."""
+    text = str(exc)
+    match = _RETRY_IN.search(text) or _RETRY_DELAY.search(text)
+    return float(match.group(1)) if match else None
 
 
 class EmbeddingProvider(Protocol):
@@ -161,7 +172,8 @@ class EmbeddingService:
             except Exception as exc:
                 if attempt == attempts or not self.provider.is_retryable(exc):
                     raise
-                delay = min(2 ** (attempt - 1), 30)
+                # Free-tier quotas are per minute: wait as long as the API asks, not just a few seconds
+                delay = min(max(2.0 ** (attempt - 1), (suggested_wait(exc) or 0) + 1), MAX_SUGGESTED_WAIT_S)
                 log.warning(
                     "embedding_retry", attempt=attempt, delay_s=delay, error=f"{type(exc).__name__}: {exc}"[:300]
                 )

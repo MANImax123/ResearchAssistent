@@ -90,6 +90,29 @@ async def test_transient_errors_are_retried() -> None:
     assert svc.sleeps == [1, 2]  # type: ignore[attr-defined]
 
 
+async def test_quota_errors_wait_as_long_as_the_api_asks() -> None:
+    """Gemini's free tier allows 100 embedded texts per minute and says how long to wait (live, Step 4.2)."""
+
+    class Quota(FakeEmbeddings):
+        failures = 2
+
+        async def embed(self, texts: list[str], *, kind: Kind, dim: int, titles: list[str | None]) -> list[list[float]]:
+            if self.failures == 2:
+                self.failures -= 1
+                raise RuntimeError("429 RESOURCE_EXHAUSTED. Quota exceeded ... Please retry in 47.372185136s.")
+            if self.failures == 1:
+                self.failures -= 1
+                raise RuntimeError("429 {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '300s'}")
+            return await super().embed(texts, kind=kind, dim=dim, titles=titles)
+
+        def is_retryable(self, exc: BaseException) -> bool:
+            return True
+
+    svc = service(Quota())
+    assert len(await svc.embed_query("x")) == DIM
+    assert svc.sleeps == [48.372185136, 90.0]  # type: ignore[attr-defined]  # capped at 90 s
+
+
 async def test_gemini_embeds_each_text_separately_with_task_prefixes() -> None:
     """gemini-embedding-2 merges a plain list of strings into ONE vector, so each text must be its own Content."""
     provider = GeminiEmbeddings("test-key", "gemini-embedding-2", timeout_s=30)

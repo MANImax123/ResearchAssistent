@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.logging import get_logger
-from app.db.models import Project, ResearchStateSnapshot, Section, Stage
+from app.db.models import Paper, Project, ResearchStateSnapshot, Section, Stage
 from app.db.models.enums import StageName, StageStatus, VersionSource
 from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
@@ -107,6 +107,7 @@ async def run_stage(
     async with session_factory() as session:
         project = await _load_project(session, project_id)
         fresh = _researcher_inputs(project)
+        selected = await selected_paper_ids(session, project_id)
 
     async with (factory or checkpointer_factory)() as saver:
         graph = build_graph(saver, agents if agents is not None else _default_agents(session_factory))
@@ -124,6 +125,7 @@ async def run_stage(
             inputs: dict[str, Any] = {"requested_stage": stage.value, "idea": idea, "venue": venue}
         else:
             inputs = {**fresh["initial"], "requested_stage": stage.value}
+        inputs["selected_paper_ids"] = selected
         stale = workflow.stale_after_change(stage, statuses)
         if stale:
             inputs["stage_status"] = {d.value: StageStatus.STALE.value for d in stale}
@@ -227,7 +229,11 @@ async def sync_to_db(
         project = await _load_project(session, project_id)
         if project.research_state is None:
             project.research_state = ResearchStateSnapshot(snapshot={}, version=0)
-        project.research_state.snapshot = values
+        # The paper selection lives on the papers (edited outside the graph); the mirror always shows it
+        project.research_state.snapshot = {
+            **values,
+            "selected_paper_ids": await selected_paper_ids(session, project_id),
+        }
         project.research_state.version += 1
         for row in project.stages:
             status = statuses.get(row.name.value)
@@ -316,6 +322,21 @@ async def _load_project(session: AsyncSession, project_id: uuid.UUID) -> Project
     if project is None:
         raise LookupError(f"Project {project_id} not found")
     return project
+
+
+async def selected_paper_ids(session: AsyncSession, project_id: uuid.UUID) -> list[str]:
+    """The researcher's paper selection (B12 `selected_paper_ids`): must-include first, then by relevance."""
+    rows = await session.scalars(
+        select(Paper.id)
+        .where(Paper.project_id == project_id, Paper.selected.is_(True))
+        .order_by(
+            Paper.must_include.desc(),
+            Paper.relevance_score.desc().nulls_last(),
+            Paper.similarity.desc().nulls_last(),
+            Paper.created_at,
+        )
+    )
+    return [str(pid) for pid in rows]
 
 
 def _researcher_inputs(project: Project) -> dict[str, Any]:

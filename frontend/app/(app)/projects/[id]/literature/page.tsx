@@ -9,6 +9,7 @@ import { AddPaper } from "@/components/literature/AddPaper";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
 import { QueryEditor } from "@/components/literature/QueryEditor";
+import { RankPanel } from "@/components/literature/RankPanel";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
 import { projectsApi, type ProjectDetail } from "@/lib/api";
 import { jobsApi, TERMINAL, useJob, type Job } from "@/lib/jobs";
@@ -24,6 +25,7 @@ import { STATUS_META } from "@/lib/stages";
 const JOB_LABEL: Record<string, string> = {
   literature_plan: "Planning agent",
   literature_discover: "Paper discovery",
+  literature_rank: "Relevance ranking",
 };
 
 export default function LiteratureWorkspacePage() {
@@ -85,6 +87,17 @@ export default function LiteratureWorkspacePage() {
       setActive(await action());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start");
+    }
+  }
+
+  async function changeSelection(action: () => Promise<unknown>) {
+    setError(null);
+    try {
+      await action();
+      setLibraryVersion((v) => v + 1);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not change the selection");
     }
   }
 
@@ -175,12 +188,31 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {canEdit && <AddPaper projectId={id} onAdded={() => setLibraryVersion((v) => v + 1)} />}
+      <RankPanel
+        ws={ws}
+        canEdit={canEdit}
+        busy={busy}
+        onRank={(topN) => void start(() => literatureApi.rank(id, topN))}
+        onSelectTop={(k, minScore) => void changeSelection(() => literatureApi.selectTop(id, k, minScore))}
+        onClear={() => void changeSelection(() => literatureApi.clearSelection(id))}
+      />
+
+      {canEdit && (
+        <AddPaper
+          projectId={id}
+          onAdded={() => {
+            setLibraryVersion((v) => v + 1);
+            void load();
+          }}
+        />
+      )}
 
       <PaperTable
         projectId={id}
         canEdit={canEdit}
         refreshKey={libraryVersion}
+        rqIds={ws.research_questions.map((q) => q.id)}
+        ranked={ws.judged_count > 0}
         onChanged={() => void load()}
       />
     </div>

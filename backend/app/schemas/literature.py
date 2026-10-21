@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, computed_field, model_validator
 
@@ -49,6 +49,10 @@ class LiteratureWorkspaceRead(BaseModel):
     blocked_reason: str | None
     queries: list[QueryRead]
     paper_count: int
+    selected_count: int
+    must_include_count: int
+    judged_count: int  # papers the LLM judged for the current research questions
+    unranked_count: int  # papers without a similarity score yet (added since the last ranking)
     sources: list[SourceStatus]
     research_questions: list[dict[str, Any]]  # id + text, to show what each query targets
     subtopics: list[str]
@@ -91,6 +95,12 @@ class PaperRead(BaseModel):
     sources: list[str]
     found_by: list[str]
     selected: bool
+    must_include: bool
+    similarity: float | None
+    rq_similarity: dict[str, float]
+    relevance_score: float | None  # LLM judgement, 0–1
+    relevance_reason: str | None
+    relevance_rqs: list[str]
     parse_status: ParseStatus
     created_at: datetime
 
@@ -113,3 +123,22 @@ class LookupRequest(BaseModel):
 class LookupResult(BaseModel):
     paper: PaperRead
     created: bool  # False: it was already in the library
+
+
+class RankRequest(BaseModel):
+    top_n: int = Field(default=40, ge=1, le=200)  # most similar papers the LLM judges
+
+
+class PaperFlags(BaseModel):
+    selected: bool | None = None
+    must_include: bool | None = None  # implies selected
+
+
+class SelectionRequest(BaseModel):
+    mode: Literal["top", "none"]
+    k: int = Field(default=20, ge=1, le=200)  # "top": how many to select
+    min_score: float | None = Field(default=None, ge=0, le=1)  # "top": only papers the LLM scored at least this
+
+
+class SelectionResult(BaseModel):
+    selected: int

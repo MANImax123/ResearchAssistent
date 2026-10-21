@@ -11,6 +11,7 @@ from app.orchestrator.graph import StageAgent
 from app.services.academic.models import SearchSourceName
 from app.services.academic.sources import SearchClient, default_clients
 from app.services.context import format_context, load_context
+from app.services.embeddings import EmbeddingService, get_embeddings
 from app.services.llm import LLMService, SessionFactory, get_provider
 from app.services.storage import get_storage
 
@@ -43,3 +44,4 @@ agent_factory: Callable[[SessionFactory], dict[StageName, StageAgent]] = default
 llm_factory: Callable[[SessionFactory], Callable[[], LLMService]] = default_llm
 critic_factory: Callable[[SessionFactory], dict[str, CriticFn]] = default_critics
 academic_factory: Callable[[], dict[SearchSourceName, SearchClient]] = default_clients
+embeddings_factory: Callable[[], EmbeddingService] = get_embeddings

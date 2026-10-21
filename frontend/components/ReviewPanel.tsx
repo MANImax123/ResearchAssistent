@@ -75,6 +75,17 @@ export function ReviewPanel({
         </p>
       </div>
 
+      {stage === "literature" && (
+        <p role="note" className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-900">
+          Find, rank and select papers in the{" "}
+          <a href={`/projects/${projectId}/literature`} className="font-medium underline">
+            Literature workspace
+          </a>
+          . The written survey is drafted from your selected papers in a later step; until then the draft below is a
+          placeholder. Approving locks the paper library.
+        </p>
+      )}
+
       {section ? (
         <div className="space-y-1">
           <p className="text-xs text-slate-500">

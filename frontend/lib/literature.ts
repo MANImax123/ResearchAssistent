@@ -37,6 +37,10 @@ export type LiteratureWorkspace = {
   blocked_reason: string | null;
   queries: SearchQuery[];
   paper_count: number;
+  selected_count: number;
+  must_include_count: number;
+  judged_count: number; // papers the AI judged against the current research questions
+  unranked_count: number; // papers added since the last ranking
   sources: SourceStatus[];
   research_questions: { id: string; text: string }[];
   subtopics: string[];
@@ -61,14 +65,29 @@ export type Paper = {
   sources: PaperSource[];
   found_by: string[];
   selected: boolean;
+  must_include: boolean;
+  similarity: number | null; // best cosine similarity to a research question
+  rq_similarity: Record<string, number>;
+  relevance_score: number | null; // AI judgement 0–1 (only for papers it reviewed)
+  relevance_reason: string | null;
+  relevance_rqs: string[];
   parse_status: string;
   created_at: string;
   has_identifier: boolean;
 };
 
 export type PaperPage = { total: number; items: Paper[] };
-export type PaperSort = "added" | "year" | "citations" | "title";
-export type PaperFilters = { q?: string; source?: PaperSource | ""; sort?: PaperSort; limit?: number; offset?: number };
+export type PaperSort = "relevance" | "added" | "year" | "citations" | "title";
+export type PaperFilters = {
+  q?: string;
+  source?: PaperSource | "";
+  sort?: PaperSort;
+  selected?: boolean;
+  rq?: string;
+  min_score?: number;
+  limit?: number;
+  offset?: number;
+};
 
 export type DiscoverOptions = {
   sources: SearchSource[];
@@ -111,6 +130,17 @@ export const literatureApi = {
   },
   removePaper: (projectId: string, paperId: string) =>
     apiFetch<void>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}`, { method: "DELETE" }),
+  rank: (projectId: string, topN: number) =>
+    apiFetch<Job>(`${base(projectId)}/rank`, { method: "POST", json: { top_n: topN } }),
+  setFlags: (projectId: string, paperId: string, flags: { selected?: boolean; must_include?: boolean }) =>
+    apiFetch<Paper>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}`, { method: "PATCH", json: flags }),
+  selectTop: (projectId: string, k: number, minScore?: number | null) =>
+    apiFetch<{ selected: number }>(`${base(projectId)}/selection`, {
+      method: "POST",
+      json: { mode: "top", k, min_score: minScore ?? null },
+    }),
+  clearSelection: (projectId: string) =>
+    apiFetch<{ selected: number }>(`${base(projectId)}/selection`, { method: "POST", json: { mode: "none" } }),
   addByIdentifier: (projectId: string, identifier: string) =>
     apiFetch<AddResult>(`${base(projectId)}/papers/lookup`, { method: "POST", json: { identifier } }),
   uploadPdf: (
@@ -139,4 +169,12 @@ export function paperLink(paper: Paper): string | null {
   if (paper.doi) return `https://doi.org/${paper.doi}`;
   if (paper.arxiv_id) return `https://arxiv.org/abs/${paper.arxiv_id}`;
   return paper.url;
+}
+
+/** "8/10" for AI-judged papers; colours from off-topic (red) to directly relevant (green). */
+export function scoreTone(score: number): string {
+  if (score >= 0.8) return "bg-emerald-100 text-emerald-800";
+  if (score >= 0.6) return "bg-lime-100 text-lime-800";
+  if (score >= 0.3) return "bg-amber-100 text-amber-800";
+  return "bg-red-100 text-red-700";
 }

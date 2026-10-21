@@ -1,5 +1,5 @@
-"""Literature workspace, Discover (Step 4.1): search queries, discovery runs, the paper library,
-and adding papers by DOI / arXiv id or by uploading a PDF."""
+"""Literature workspace: search queries, discovery runs, the paper library, adding papers by DOI /
+arXiv id or PDF (Step 4.1); relevance ranking and the paper selection (Step 4.2)."""
 
 import uuid
 from typing import Annotated, Any, Literal
@@ -15,16 +15,21 @@ from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
 from app.db.models import Job, Paper, Project
 from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, StageName
+from app.orchestrator.service import selected_paper_ids
 from app.schemas.job import JobRead
 from app.schemas.literature import (
     DiscoverRequest,
     LiteratureWorkspaceRead,
     LookupRequest,
     LookupResult,
+    PaperFlags,
     PaperPage,
     PaperRead,
     QueriesWrite,
     QueryRead,
+    RankRequest,
+    SelectionRequest,
+    SelectionResult,
     SourceStatus,
 )
 from app.services import literature
@@ -37,8 +42,8 @@ from app.services.projects import get_project_for_user
 router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature"])
 log = get_logger(__name__)
 
-LITERATURE_JOBS = ("literature_plan", "literature_discover")
-SortKey = Literal["added", "year", "citations", "title"]
+LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank")
+SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
 def _source_statuses(settings: Any) -> list[SourceStatus]:
@@ -90,13 +95,27 @@ async def get_workspace(
     project, role = await get_project_for_user(db, project_id, user)
     reason = literature.blocker(project) if role != MemberRole.VIEWER else "You have view-only access"
     plan = plan_from_state(project.research_state.snapshot if project.research_state else {})
-    count = await db.scalar(select(func.count()).select_from(Paper).where(Paper.project_id == project_id))
+    counts = (
+        await db.execute(
+            select(
+                func.count(),
+                func.count().filter(Paper.selected.is_(True)),
+                func.count().filter(Paper.must_include.is_(True)),
+                func.count().filter(Paper.relevance_score.is_not(None)),
+                func.count().filter(Paper.similarity.is_(None)),
+            ).where(Paper.project_id == project_id)
+        )
+    ).one()
     return LiteratureWorkspaceRead(
         status=next(row.status for row in project.stages if row.name == StageName.LITERATURE),
         editable=reason is None,
         blocked_reason=reason,
         queries=[QueryRead.model_validate(q) for q in await literature.list_queries(db, project_id)],
-        paper_count=count or 0,
+        paper_count=counts[0],
+        selected_count=counts[1],
+        must_include_count=counts[2],
+        judged_count=counts[3],
+        unranked_count=counts[4],
         sources=_source_statuses(settings),
         research_questions=[{"id": q.id, "text": q.text} for q in plan.research_questions] if plan else [],
         subtopics=list(plan.subtopics) if plan else [],
@@ -162,6 +181,9 @@ async def list_papers(
     year_from: int | None = None,
     year_to: int | None = None,
     sort: SortKey = "added",
+    selected: bool | None = None,
+    rq: Annotated[str | None, Query(max_length=10)] = None,  # papers the LLM said inform this research question
+    min_score: Annotated[float | None, Query(ge=0, le=1)] = None,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> PaperPage:
@@ -178,8 +200,19 @@ async def list_papers(
         stmt = stmt.where(Paper.year >= year_from)
     if year_to:
         stmt = stmt.where(Paper.year <= year_to)
+    if selected is not None:
+        stmt = stmt.where(Paper.selected.is_(selected))
+    if rq:
+        stmt = stmt.where(Paper.relevance_rqs.contains([rq.upper()]))
+    if min_score is not None:
+        stmt = stmt.where(Paper.relevance_score >= min_score)
     total = await db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
     order: tuple[Any, ...] = {
+        "relevance": (
+            Paper.relevance_score.desc().nulls_last(),
+            Paper.similarity.desc().nulls_last(),
+            Paper.title,
+        ),
         "added": (Paper.created_at.desc(), Paper.title),
         "year": (Paper.year.desc().nulls_last(), Paper.title),
         "citations": (Paper.citation_count.desc().nulls_last(), Paper.title),
@@ -197,8 +230,64 @@ async def remove_paper(project_id: uuid.UUID, paper_id: uuid.UUID, user: Current
     if paper is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
     await db.delete(paper)
+    await _mirror_selection(db, project)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ─── Relevance ranking & selection (Step 4.2) ────────────────────────────
+
+
+async def _mirror_selection(db: DbSession, project: Project) -> None:
+    """Keep ResearchState's `selected_paper_ids` (as stored in the DB mirror) in step with the papers."""
+    await db.flush()
+    if project.research_state is not None:
+        ids = await selected_paper_ids(db, project.id)
+        project.research_state.snapshot = {**project.research_state.snapshot, "selected_paper_ids": ids}
+
+
+@router.post("/rank", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def rank(
+    project_id: uuid.UUID, body: RankRequest, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """L3: similarity of every paper to the research questions; the LLM judges the `top_n` most similar."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    if not await db.scalar(select(func.count()).select_from(Paper).where(Paper.project_id == project_id)):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Find some papers first")
+    params = {"project_id": str(project_id), "top_n": body.top_n}
+    return await start_job(db, dispatcher, user, "literature_rank", params, project_id)
+
+
+@router.patch("/papers/{paper_id}", response_model=PaperRead)
+async def update_paper_flags(
+    project_id: uuid.UUID, paper_id: uuid.UUID, body: PaperFlags, user: CurrentUser, db: DbSession
+) -> PaperRead:
+    """Select / deselect a paper, or mark it "must include" (which also selects it)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    paper = await db.scalar(select(Paper).where(Paper.id == paper_id, Paper.project_id == project_id))
+    if paper is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
+    literature.set_flags(paper, selected=body.selected, must_include=body.must_include)
+    await _mirror_selection(db, project)
+    await db.commit()
+    return PaperRead.model_validate(paper)
+
+
+@router.post("/selection", response_model=SelectionResult)
+async def bulk_select(
+    project_id: uuid.UUID, body: SelectionRequest, user: CurrentUser, db: DbSession
+) -> SelectionResult:
+    """ "top": select the k most relevant papers (must-include papers stay selected); "none": clear the rest."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    k = body.k if body.mode == "top" else 0
+    count = await literature.select_top(db, project_id, k, body.min_score if body.mode == "top" else None)
+    await _mirror_selection(db, project)
+    await db.commit()
+    log.info("papers_selected", project_id=str(project_id), mode=body.mode, selected=count)
+    return SelectionResult(selected=count)
 
 
 async def _resolve(identifier: str) -> PaperMetadata:

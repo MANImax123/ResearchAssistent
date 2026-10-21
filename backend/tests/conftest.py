@@ -207,3 +207,14 @@ def no_live_academic_apis(monkeypatch: pytest.MonkeyPatch) -> None:
         raise AssertionError("A test tried to call the real academic APIs; install stub clients")
 
     monkeypatch.setattr(registry, "academic_factory", refuse)
+
+
+@pytest.fixture(autouse=True)
+def no_live_embeddings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests that rank papers install FakeEmbeddings; the real provider would spend quota."""
+    from app.agents import registry
+
+    def refuse() -> Any:
+        raise AssertionError("A test tried to use the real embeddings provider; install FakeEmbeddings")
+
+    monkeypatch.setattr(registry, "embeddings_factory", refuse)
