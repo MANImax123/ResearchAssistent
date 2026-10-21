@@ -1,5 +1,5 @@
 # Progress
-Current step: 3.1
+Current step: 3.2
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -15,8 +15,8 @@ Current step: 3.1
 | 2.1  | ResearchState + LangGraph orchestrator skeleton | ✅ | 2026-10-21 | |
 | 2.2  | Approval checkpoints & feedback actions | ✅ | 2026-10-21 | |
 | 2.3  | Section editor with versioning | ✅ | 2026-10-21 | |
-| 3.1  | Research Planning + idea refinement | 🔄 in progress | | |
-| 3.2  | Critic agents (Novelty, Feasibility, Methodology) | ⬜ not started | | |
+| 3.1  | Research Planning + idea refinement | ✅ | 2026-10-21 | First real agent (Gemini) |
+| 3.2  | Critic agents (Novelty, Feasibility, Methodology) | 🔄 in progress | | |
 | 3.3  | Draft abstract | ⬜ not started | | |
 | 4.1  | Academic API clients + Paper Discovery agent | ⬜ not started | | |
 | 4.2  | Relevance Ranking agent + selection | ⬜ not started | | |

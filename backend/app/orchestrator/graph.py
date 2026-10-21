@@ -75,7 +75,10 @@ def make_stub_agent(stage: StageName) -> StageAgent:
 STUB_AGENTS: dict[StageName, StageAgent] = {stage: make_stub_agent(stage) for stage in StageName}
 
 
-REVIEW_ACTIONS = ("approve", "reject", "edit", "regenerate")
+REVIEW_ACTIONS = ("approve", "reject", "edit", "update", "regenerate")
+
+# ResearchState fields the researcher may change while a stage is under review
+UPDATABLE_FIELDS = frozenset({"idea", "problem", "objectives", "research_questions", "title"})
 
 
 def _status_update(state: ResearchState, changes: dict[str, str]) -> dict[str, Any]:
@@ -92,6 +95,7 @@ async def human_review(state: ResearchState) -> Command[str]:
       approve     → stage approved, run ends
       reject      → stage rejected, comment kept as feedback for the next run, run ends
       edit        → `content` replaces the draft, back to review
+      update      → structured `fields` (and a re-rendered `draft`) replace state values, back to review
       regenerate  → the stage's agent runs again with the comment as feedback, then back to review
     """
     stage = state["requested_stage"]
@@ -115,6 +119,16 @@ async def human_review(state: ResearchState) -> Command[str]:
             raise ValueError("Edit needs non-empty content")
         edited = StageOutput(draft=content, agent="user", generated_at=now_iso())
         return Command(update={"stage_outputs": {stage: edited}, "reopen": False}, goto=REVIEW_NODE)
+    if action == "update":
+        # Structured edits (e.g. the research plan cards), validated by the API before they get here
+        fields: dict[str, Any] = decision.get("fields") or {}
+        unknown = set(fields) - UPDATABLE_FIELDS
+        if unknown:
+            raise ValueError(f"Fields can't be updated in review: {sorted(unknown)}")
+        changes: dict[str, Any] = dict(fields)
+        if output is not None and decision.get("draft"):
+            changes["stage_outputs"] = {stage: {**output, "draft": decision["draft"], "generated_at": now_iso()}}
+        return Command(update={**changes, "reopen": False}, goto=REVIEW_NODE)
     if action == "regenerate":
         update = {
             **_status_update(state, {stage: StageStatus.RUNNING.value}),

@@ -30,6 +30,7 @@ from app.schemas.stage import (
     ProjectStateRead,
     RegenerateRequest,
     RejectRequest,
+    RunStageRequest,
     StageRunStarted,
     StageState,
 )
@@ -126,11 +127,17 @@ async def _queue_stage_job(
 
 @router.post("/stages/{stage}/run", response_model=StageRunStarted, status_code=status.HTTP_202_ACCEPTED)
 async def run_stage(
-    project_id: uuid.UUID, stage: StageName, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+    project_id: uuid.UUID,
+    stage: StageName,
+    user: CurrentUser,
+    db: DbSession,
+    dispatcher: DispatcherDep,
+    body: RunStageRequest | None = None,
 ) -> StageRunStarted:
     """Queue the stage's agent; when the job finishes the stage is `awaiting_review`.
 
     Allowed when the stage is not started, rejected or stale and all prerequisites are approved.
+    Optional `instructions` are given to the agent for this run.
     """
     project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
     rows = _rows(project)
@@ -139,7 +146,17 @@ async def run_stage(
     if rows[stage].status not in workflow.RUNNABLE:
         raise _conflict(f"{_label(stage)} is {rows[stage].status.value.replace('_', ' ')}; use Regenerate or Go back")
     _ensure_prerequisites(rows, stage)
-    return await _queue_stage_job(db, dispatcher, user, project_id, rows[stage], {"mode": "run"})
+    if stage == StageName.IDEA and not _raw_idea(project):
+        raise _conflict("Add your research idea to the project first")
+    params: dict[str, Any] = {"mode": "run"}
+    if body and body.instructions:
+        params["feedback"] = body.instructions
+    return await _queue_stage_job(db, dispatcher, user, project_id, rows[stage], params)
+
+
+def _raw_idea(project: Project) -> str:
+    snapshot: dict[str, Any] = project.research_state.snapshot if project.research_state else {}
+    return ((snapshot.get("idea") or {}).get("raw_idea") or "").strip()
 
 
 @router.post("/stages/{stage}/regenerate", response_model=StageRunStarted, status_code=status.HTTP_202_ACCEPTED)

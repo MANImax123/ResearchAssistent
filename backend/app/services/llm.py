@@ -182,8 +182,11 @@ class LLMService:
         for index, current in enumerate(models):
             is_last = index == len(models) - 1
             retries = self.settings.llm_max_retries if is_last else self.settings.llm_retries_before_fallback
+            timeout = self.settings.llm_timeout_s if is_last else self.settings.llm_primary_timeout_s
             try:
-                return await self._retry(current, retries, prompt, system, temperature, max_output_tokens, json_schema)
+                return await self._retry(
+                    current, retries, timeout, prompt, system, temperature, max_output_tokens, json_schema
+                )
             except Exception as exc:
                 if is_last or not self._is_transient(exc):
                     raise
@@ -194,6 +197,7 @@ class LLMService:
         self,
         model: str,
         retries: int,
+        timeout_s: float,
         prompt: str,
         system: str | None,
         temperature: float | None,
@@ -212,7 +216,7 @@ class LLMService:
                         max_output_tokens=max_output_tokens,
                         json_schema=json_schema,
                     ),
-                    timeout=self.settings.llm_timeout_s,
+                    timeout=timeout_s,
                 )
             except Exception as exc:
                 if attempt == attempts or not self._is_transient(exc):

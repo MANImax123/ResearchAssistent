@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import delete, pool, select
+from sqlalchemy import delete, pool, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from app.db.models import Job, ProjectMember, User
@@ -20,7 +20,7 @@ from app.workers.celery_app import celery_app
 from app.workers.dispatch import get_dispatcher
 from app.workers.handlers import HANDLERS
 from tests.conftest import TEST_DATABASE_URL
-from tests.helpers import RecordingDispatcher
+from tests.helpers import Flow, RecordingDispatcher
 
 PASSWORD = "s3cret-passw0rd"
 
@@ -211,3 +211,61 @@ def test_celery_task_rejects_unknown_type(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setattr(celery_app.conf, "task_always_eager", True)
     with pytest.raises(ValueError, match="Unknown job type"):
         tasks.run_job.apply(args=[str(uuid.uuid4()), "nope", {}]).get()
+
+
+# ─── Recovery after a worker restart ──────────────────────────────────
+
+
+async def test_interrupted_jobs_are_failed_and_stages_repaired(
+    flow: Flow, db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.db.models import Stage
+    from app.db.models.enums import StageName, StageStatus
+    from app.workers.recovery import INTERRUPTED, recover_interrupted_jobs
+    from tests.helpers import factory_for
+
+    # Stage 1 awaiting review in the graph; then a regenerate job starts and the worker dies mid-run
+    await flow.run("idea")
+    started = await flow.post("/stages/idea/regenerate", {"feedback": "shorter"})
+    job_id = uuid.UUID(started.json()["job"]["id"])
+    flow.dispatcher.queued.clear()
+    await db_session.execute(update(Job).where(Job.id == job_id).values(status=JobStatus.RUNNING))
+    alive = Job(id=uuid.uuid4(), type="demo", status=JobStatus.RUNNING, celery_task_id="still-running")
+    db_session.add(alive)
+    await db_session.flush()
+
+    recovered = await recover_interrupted_jobs(factory_for(db_session), active_task_ids={"still-running"})
+
+    assert recovered == [job_id]
+    job = await db_session.get(Job, job_id, populate_existing=True)
+    assert job is not None and job.status == JobStatus.FAILED and job.error == INTERRUPTED
+    assert (await db_session.get(Job, alive.id, populate_existing=True)).status == JobStatus.RUNNING  # type: ignore[union-attr]
+    stage = await db_session.scalar(
+        select(Stage)
+        .where(Stage.project_id == flow.pid, Stage.name == StageName.IDEA)
+        .execution_options(populate_existing=True)
+    )
+    # The graph never resumed (the job didn't run), so the review is still pending
+    assert stage is not None and stage.status == StageStatus.AWAITING_REVIEW
+
+
+async def test_stage_without_surviving_review_can_be_run_again(flow: Flow, db_session: AsyncSession) -> None:
+    from app.db.models import Stage
+    from app.db.models.enums import StageName, StageStatus
+    from app.workers.recovery import recover_interrupted_jobs
+    from tests.helpers import factory_for
+
+    started = await flow.post("/stages/idea/run")  # queued, never executed: no graph state at all
+    job_id = uuid.UUID(started.json()["job"]["id"])
+    flow.dispatcher.queued.clear()
+    await db_session.execute(update(Job).where(Job.id == job_id).values(status=JobStatus.RUNNING))
+
+    await recover_interrupted_jobs(factory_for(db_session), active_task_ids=set())
+
+    stage = await db_session.scalar(
+        select(Stage)
+        .where(Stage.project_id == flow.pid, Stage.name == StageName.IDEA)
+        .execution_options(populate_existing=True)
+    )
+    assert stage is not None and stage.status == StageStatus.REJECTED
+    assert next(s for s in (await flow.state())["stages"] if s["name"] == "idea")["can_run"] is True

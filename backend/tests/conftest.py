@@ -174,3 +174,11 @@ async def flow(
     dispatcher: RecordingDispatcher,
 ) -> Flow:
     return Flow(api_client, alice, project_id, db_session, dispatcher)
+
+
+@pytest.fixture(autouse=True)
+def stub_agents(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests run stages with the placeholder agents unless they install real ones (never a live LLM)."""
+    from app.agents import registry
+
+    monkeypatch.setattr(registry, "agent_factory", lambda session_factory: {})

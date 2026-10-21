@@ -10,10 +10,22 @@ import { relativeTime } from "@/lib/format";
 
 type Upload = { key: string; name: string; progress: number; error: string | null };
 
-export function FilesPanel({ projectId, canEdit }: { projectId: string; canEdit: boolean }) {
+export function FilesPanel({
+  projectId,
+  canEdit,
+  kinds,
+  title = "Files",
+}: {
+  projectId: string;
+  canEdit: boolean;
+  /** Restrict the panel to these file types (default: all). */
+  kinds?: FileKind[];
+  title?: string;
+}) {
+  const kindOptions = kinds ? FILE_KINDS.filter((k) => kinds.includes(k.value)) : FILE_KINDS;
   const [files, setFiles] = useState<ProjectFile[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [kind, setKind] = useState<FileKind>("paper_pdf");
+  const [kind, setKind] = useState<FileKind>(kindOptions[0].value);
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [dragging, setDragging] = useState(false);
   const [toDelete, setToDelete] = useState<ProjectFile | null>(null);
@@ -25,7 +37,7 @@ export function FilesPanel({ projectId, canEdit }: { projectId: string; canEdit:
     setLoadError(null);
     filesApi
       .list(projectId)
-      .then(setFiles)
+      .then((all) => setFiles(kinds ? all.filter((f) => kinds.includes(f.kind)) : all))
       .catch((err: Error) => setLoadError(err.message));
   }, [projectId]);
 
@@ -75,7 +87,7 @@ export function FilesPanel({ projectId, canEdit }: { projectId: string; canEdit:
   return (
     <section className="space-y-4" aria-labelledby={`${inputId}-heading`}>
       <h2 id={`${inputId}-heading`} className="text-base font-semibold">
-        Files
+        {title}
       </h2>
 
       {canEdit && (
@@ -87,7 +99,7 @@ export function FilesPanel({ projectId, canEdit }: { projectId: string; canEdit:
             onChange={(e) => setKind(e.target.value as FileKind)}
             hint={FILE_KINDS.find((k) => k.value === kind)!.extensions.join(" ")}
           >
-            {FILE_KINDS.map((k) => (
+            {kindOptions.map((k) => (
               <option key={k.value} value={k.value}>
                 {k.label}
               </option>

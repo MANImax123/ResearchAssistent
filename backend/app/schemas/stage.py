@@ -64,6 +64,10 @@ class RegenerateRequest(BaseModel):
     feedback: Comment | None = None
 
 
+class RunStageRequest(BaseModel):
+    instructions: Comment | None = None  # extra guidance for the agent on this run
+
+
 class EditRequest(BaseModel):
     content: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200_000)]
     change_note: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] | None = None

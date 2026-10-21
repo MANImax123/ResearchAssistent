@@ -71,11 +71,14 @@ class ApprovalRecord(TypedDict):
 
 
 class StageOutput(TypedDict):
-    """A stage's latest draft. Stub agents only produce `draft`; real agents add structured fields."""
+    """A stage's latest draft (readable summary). Structured results live in the state's own fields."""
 
     draft: str
     agent: str
     generated_at: str
+    agent_run_id: NotRequired[str]
+    # Text for the stage's paper section; defaults to `draft`. None: this output isn't section text.
+    section_draft: NotRequired[str | None]
 
 
 class ResearchState(TypedDict, total=False):

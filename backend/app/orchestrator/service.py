@@ -109,7 +109,7 @@ async def run_stage(
         fresh = _researcher_inputs(project)
 
     async with (factory or checkpointer_factory)() as saver:
-        graph = build_graph(saver, agents)
+        graph = build_graph(saver, agents if agents is not None else _default_agents(session_factory))
         current = await _snapshot(graph, project_id)
         if current.pending is not None:
             # New input would silently discard the pending review, so refuse
@@ -189,7 +189,7 @@ async def review(
     Regenerate re-runs the stage's agent before pausing again, so call it from a background job.
     """
     async with (factory or checkpointer_factory)() as saver:
-        graph = build_graph(saver, agents)
+        graph = build_graph(saver, agents if agents is not None else _default_agents(session_factory))
         current = await _snapshot(graph, project_id)
         if current.pending is None:
             raise NoPendingReviewError("No stage is awaiting review")
@@ -253,22 +253,25 @@ async def _record_draft(
     output = values.get("stage_outputs", {}).get(stage.value)
     if section_type is None or not output:
         return
+    text = output["section_draft"] if "section_draft" in output else output["draft"]
+    if text is None:
+        return  # this stage's output isn't section text (e.g. the research plan)
     section = await sections.get_or_create_section(session, project_id, section_type)
     current = await sections.current_version(session, section)
-    if current is not None and current.content == output["draft"]:
+    if current is not None and current.content == text:
         return
     if author is not None:
         await sections.add_version(
             session,
             section,
-            output["draft"],
+            text,
             sections.edited_source(current),
             created_by=author,
             change_note="Edited in review",
         )
     else:
         await sections.add_version(
-            session, section, output["draft"], VersionSource.AI, change_note=f"Drafted by {output['agent']} agent"
+            session, section, text, VersionSource.AI, change_note=f"Drafted by {output['agent']} agent"
         )
 
 
@@ -290,6 +293,12 @@ async def set_stage_status(
         if row is not None:
             row.status = status
             await session.commit()
+
+
+def _default_agents(session_factory: SessionFactory) -> dict[StageName, StageAgent]:
+    from app.agents import registry  # imported lazily: agents import orchestrator modules
+
+    return registry.agent_factory(session_factory)
 
 
 def _statuses(values: dict[str, Any]) -> dict[StageName, StageStatus]:

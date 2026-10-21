@@ -6,12 +6,17 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { JobProgress } from "@/components/JobProgress";
 import { ReviewPanel } from "@/components/ReviewPanel";
 import { StageTracker } from "@/components/StageTracker";
-import { Button, ErrorAlert, Spinner } from "@/components/ui";
+import { Button, ErrorAlert, LinkButton, Spinner } from "@/components/ui";
 import { TERMINAL, useJob, type Job } from "@/lib/jobs";
 import { STAGE_LABEL, type StageName } from "@/lib/stages";
 import { workflowApi, type ProjectState, type StageJob } from "@/lib/workflow";
 
 const POLL_WHILE_RUNNING_MS = 2000;
+
+/** Stages with a dedicated workspace page (more get added as their agents are built). */
+const STAGE_WORKSPACE: Partial<Record<StageName, (projectId: string) => string>> = {
+  idea: (projectId) => `/projects/${projectId}/idea`,
+};
 
 /** Stage tracker + review panel: runs stages, shows agent progress, applies review actions. */
 export function StagesWorkspace({ projectId, canEdit }: { projectId: string; canEdit: boolean }) {
@@ -105,6 +110,7 @@ export function StagesWorkspace({ projectId, canEdit }: { projectId: string; can
           key={`${pending.stage}-${state.checkpoint?.checkpoint_id}`}
           projectId={projectId}
           stage={pending.stage}
+          workspaceHref={STAGE_WORKSPACE[pending.stage]?.(projectId)}
           draft={pending.draft}
           canAct={canEdit}
           handlers={{
@@ -132,8 +138,14 @@ export function StagesWorkspace({ projectId, canEdit }: { projectId: string; can
           if (!canEdit || active) return null;
           const s = state.stages.find((x) => x.name === name);
           if (!s) return null;
+          const workspace = STAGE_WORKSPACE[name]?.(projectId);
           return (
             <>
+              {workspace && (
+                <LinkButton variant="secondary" className="h-8 px-3" href={workspace}>
+                  Open workspace
+                </LinkButton>
+              )}
               {s.can_run && (
                 <Button className="h-8 px-3" onClick={() => guarded(() => startJob(workflowApi.run(projectId, name)))}>
                   {s.status === "not_started" ? "Run" : "Run again"}

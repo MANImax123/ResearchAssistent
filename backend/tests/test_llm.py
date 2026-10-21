@@ -201,6 +201,29 @@ async def test_fallback_gets_full_retries_then_fails(db_session: AsyncSession, s
     assert sleeps == [1, 1, 2, 4]
 
 
+async def test_slow_main_model_falls_back_after_the_short_timeout(
+    db_session: AsyncSession, sleeps: list[float]
+) -> None:
+    class OverloadedMain(FakeLLM):
+        async def complete(self, *, model: str, **kwargs: Any) -> Any:
+            if model == "main-model":
+                self.calls.append(None)  # type: ignore[arg-type]
+                await asyncio.sleep(5)  # longer than llm_primary_timeout_s
+            return await super().complete(model=model, **kwargs)
+
+    fake = OverloadedMain(["fast answer"])
+    llm = make_service(
+        db_session, fake, sleeps, llm_model_fallback="backup-model", llm_primary_timeout_s=0.05, llm_timeout_s=10
+    )
+
+    started = asyncio.get_running_loop().time()
+    result = await llm.generate_text("x", agent="t")
+
+    assert result.text == "fast answer" and result.run.model == "fake/backup-model"
+    assert asyncio.get_running_loop().time() - started < 2  # didn't wait out the 5 s main model
+    assert sleeps == [1]  # one retry on the main model, then the fallback
+
+
 async def test_no_fallback_for_non_transient_errors(db_session: AsyncSession, sleeps: list[float]) -> None:
     fake = FakeLLM([PermissionError("API key invalid")])
     llm = make_service(db_session, fake, sleeps, llm_model_fallback="backup-model")

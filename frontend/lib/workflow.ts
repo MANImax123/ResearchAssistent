@@ -30,8 +30,11 @@ const stagePath = (projectId: string, stage: StageName, action: string) => `${ba
 
 export const workflowApi = {
   state: (projectId: string) => apiFetch<ProjectState>(`${base(projectId)}/state`),
-  run: (projectId: string, stage: StageName) =>
-    apiFetch<StageJob>(stagePath(projectId, stage, "run"), { method: "POST" }),
+  run: (projectId: string, stage: StageName, instructions?: string) =>
+    apiFetch<StageJob>(stagePath(projectId, stage, "run"), {
+      method: "POST",
+      json: { instructions: instructions?.trim() || null },
+    }),
   regenerate: (projectId: string, stage: StageName, feedback?: string) =>
     apiFetch<StageJob>(stagePath(projectId, stage, "regenerate"), {
       method: "POST",

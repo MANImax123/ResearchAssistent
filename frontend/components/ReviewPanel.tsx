@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { SectionEditor } from "@/components/editor/SectionEditor";
-import { Button, ErrorAlert, TextArea } from "@/components/ui";
+import { Button, ErrorAlert, LinkButton, TextArea } from "@/components/ui";
 import { SECTION_LABEL, STAGE_SECTION } from "@/lib/sections";
 import { STAGE_LABEL, type StageName } from "@/lib/stages";
 
@@ -23,12 +23,15 @@ export function ReviewPanel({
   draft,
   canAct,
   handlers,
+  workspaceHref,
 }: {
   projectId: string;
   stage: StageName;
   draft: string | null;
   canAct: boolean;
   handlers: ReviewHandlers;
+  /** Stages with their own workspace (e.g. the research plan) are edited there instead of as text. */
+  workspaceHref?: string;
 }) {
   // Stages that write a paper section are reviewed in the section editor (versioned, autosaved)
   const section = STAGE_SECTION[stage];
@@ -123,10 +126,16 @@ export function ReviewPanel({
               <Button onClick={() => submit(() => handlers.approve())} loading={busy}>
                 Approve
               </Button>
-              {!section && (
-                <Button variant="secondary" onClick={() => open("edit")} disabled={busy}>
-                  Edit
-                </Button>
+              {workspaceHref ? (
+                <LinkButton variant="secondary" href={workspaceHref}>
+                  Edit in workspace
+                </LinkButton>
+              ) : (
+                !section && (
+                  <Button variant="secondary" onClick={() => open("edit")} disabled={busy}>
+                    Edit
+                  </Button>
+                )
               )}
               <Button variant="secondary" onClick={() => open("regenerate")} disabled={busy}>
                 Regenerate
