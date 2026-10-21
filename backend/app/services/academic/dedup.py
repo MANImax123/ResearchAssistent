@@ -32,20 +32,40 @@ def is_preprint_doi(doi: str | None) -> bool:
 PREPRINT_LAG_YEARS = 3  # a preprint can appear in a journal years later
 
 
+# Repository deposits of a paper (code/data/PDF copies), dated whenever they were uploaded
+REPOSITORY_DOI_PREFIXES = ("10.6084/", "10.5281/")  # Figshare, Zenodo
+REPOSITORY_VENUES = ("figshare", "zenodo")
+
+
 def _is_preprint(paper: PaperMetadata) -> bool:
     return is_preprint_doi(paper.doi) or (paper.arxiv_id is not None and (not paper.doi or paper.venue == "arXiv"))
 
 
+def is_repository_copy(paper: PaperMetadata) -> bool:
+    venue = (paper.venue or "").lower()
+    return bool(paper.doi and paper.doi.startswith(REPOSITORY_DOI_PREFIXES)) or any(
+        r in venue for r in REPOSITORY_VENUES
+    )
+
+
 def _years_compatible(a: PaperMetadata, b: PaperMetadata) -> bool:
-    """Same year ±1; a preprint may precede its published version by up to PREPRINT_LAG_YEARS."""
+    """Same year ±1; a preprint may precede its published version by up to PREPRINT_LAG_YEARS; a repository
+    copy (Figshare, Zenodo) can be dated any time."""
     if a.year is None or b.year is None or abs(a.year - b.year) <= 1:
+        return True
+    if is_repository_copy(a) != is_repository_copy(b):
         return True
     earlier, later = (a, b) if a.year < b.year else (b, a)
     return _is_preprint(earlier) and not _is_preprint(later) and later.year - earlier.year <= PREPRINT_LAG_YEARS  # type: ignore[operator]
 
 
+def _is_secondary_doi(doi: str) -> bool:
+    """A preprint's or repository deposit's DOI: it never makes two records different papers."""
+    return is_preprint_doi(doi) or doi.startswith(REPOSITORY_DOI_PREFIXES)
+
+
 def _dois_conflict(a: PaperMetadata, b: PaperMetadata) -> bool:
-    return bool(a.doi and b.doi and a.doi != b.doi and not is_preprint_doi(a.doi) and not is_preprint_doi(b.doi))
+    return bool(a.doi and b.doi and a.doi != b.doi and not _is_secondary_doi(a.doi) and not _is_secondary_doi(b.doi))
 
 
 def same_title(a: str, b: str) -> bool:
@@ -63,6 +83,11 @@ def merge(base: PaperMetadata, other: PaperMetadata) -> PaperMetadata:
     for field in (*ID_FIELDS, "year", "url", "pdf_url"):
         if data[field] is None:
             data[field] = getattr(other, field)
+    # A repository deposit never supplies the year/venue when the real record is known
+    if is_repository_copy(base) and not is_repository_copy(other):
+        data["year"] = other.year or base.year
+        data["venue"] = other.venue or base.venue
+        data["doi"] = other.doi or base.doi
     # The published version's DOI, year and venue beat the preprint's
     if is_preprint_doi(base.doi) and other.doi and not is_preprint_doi(other.doi):
         data["doi"] = other.doi

@@ -15,15 +15,17 @@ from app.api.v1.files import StorageDep, save_upload
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
-from app.db.models import Job, Paper, PaperChunk, PaperDocument, Project
+from app.db.models import Job, Paper, PaperChunk, PaperDocument, PaperProfile, Project
 from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, StageName
 from app.db.session import request_session_factory
 from app.orchestrator.service import selected_paper_ids
 from app.schemas.job import JobRead
 from app.schemas.literature import (
+    AnalyzeRequest,
     AnswerRead,
     AskRequest,
     DiscoverRequest,
+    EvidenceRead,
     LiteratureWorkspaceRead,
     LookupRequest,
     LookupResult,
@@ -32,6 +34,9 @@ from app.schemas.literature import (
     PaperPage,
     PaperRead,
     ParseRequest,
+    ProfileRead,
+    ProfileValue,
+    ProfileWrite,
     QueriesWrite,
     QueryRead,
     RankRequest,
@@ -51,7 +56,8 @@ from app.services.projects import get_project_for_user
 router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature"])
 log = get_logger(__name__)
 
-LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index")
+LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index",
+                   "literature_analyze")  # fmt: skip
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -121,6 +127,12 @@ async def get_workspace(
         .group_by(Paper.parse_status)
     )
     indexed, pending = await retrieval.chunk_counts(db, project_id)
+    profiled = await db.scalar(
+        select(func.count())
+        .select_from(PaperProfile)
+        .join(Paper, Paper.id == PaperProfile.paper_id)
+        .where(Paper.project_id == project_id, Paper.selected.is_(True))
+    )
     return LiteratureWorkspaceRead(
         status=next(row.status for row in project.stages if row.name == StageName.LITERATURE),
         editable=reason is None,
@@ -134,6 +146,7 @@ async def get_workspace(
         parse_counts={status.value: n for status, n in parse_rows.all()},
         indexed_chunks=indexed,
         pending_chunks=pending,
+        profiled_count=profiled or 0,
         sources=_source_statuses(settings),
         research_questions=[{"id": q.id, "text": q.text} for q in plan.research_questions] if plan else [],
         subtopics=list(plan.subtopics) if plan else [],
@@ -236,8 +249,12 @@ async def list_papers(
         "citations": (Paper.citation_count.desc().nulls_last(), Paper.title),
         "title": (Paper.title,),
     }[sort]
-    rows = await db.scalars(stmt.order_by(*order).limit(limit).offset(offset))
-    return PaperPage(total=total, items=[PaperRead.model_validate(p) for p in rows])
+    rows = list(await db.scalars(stmt.order_by(*order).limit(limit).offset(offset)))
+    profiled = set(
+        await db.scalars(select(PaperProfile.paper_id).where(PaperProfile.paper_id.in_([p.id for p in rows])))
+    )
+    items = [PaperRead.model_validate(p).model_copy(update={"has_profile": p.id in profiled}) for p in rows]
+    return PaperPage(total=total, items=items)
 
 
 @router.delete("/papers/{paper_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -541,3 +558,114 @@ async def ask(project_id: uuid.UUID, body: AskRequest, user: CurrentUser, db: Db
         retrieved=len(sources),
         removed_markers=result.removed_markers,
     )
+
+
+# ─── Paper profiles (Step 4.5) ───────────────────────────────────────────
+
+TEXT_FIELDS = ("problem", "method", "results")
+LIST_FIELDS = ("dataset", "metrics", "limitations", "tech_stack")
+
+
+@router.post("/analyze", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def analyze(
+    project_id: uuid.UUID, body: AnalyzeRequest, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """L6: evidence-backed profiles for the given papers (default: selected parsed papers without one)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    ids = await literature.papers_to_analyze(db, project_id, body.paper_ids, body.force)
+    if not ids:
+        detail = "Those papers are not parsed" if body.paper_ids else "No parsed papers without a profile"
+        raise HTTPException(status.HTTP_409_CONFLICT, detail)
+    params = {"project_id": str(project_id), "paper_ids": [str(i) for i in ids]}
+    return await start_job(db, dispatcher, user, "literature_analyze", params, project_id)
+
+
+async def _profile_read(db: DbSession, profile: PaperProfile) -> ProfileRead:
+    evidence: dict[str, Any] = profile.evidence or {}
+    ids = {uuid.UUID(i) for name in TEXT_FIELDS for i in evidence.get(name, [])}
+    ids |= {uuid.UUID(i) for name in LIST_FIELDS for item in evidence.get(name, []) for i in item}
+    chunks = {c.id: c for c in await db.scalars(select(PaperChunk).where(PaperChunk.id.in_(ids)))} if ids else {}
+
+    def sources(chunk_ids: list[str]) -> list[EvidenceRead]:
+        found = [chunks.get(uuid.UUID(i)) for i in chunk_ids]
+        return [
+            EvidenceRead(chunk_id=c.id, section=c.section_name, kind=c.section_kind, page=c.page, text=c.text)
+            for c in found
+            if c is not None
+        ]
+
+    def text(name: str) -> ProfileValue | None:
+        value = getattr(profile, name)
+        return ProfileValue(value=value, evidence=sources(evidence.get(name, []))) if value else None
+
+    def items(name: str) -> list[ProfileValue]:
+        per_item = evidence.get(name, [])
+        return [
+            ProfileValue(value=v, evidence=sources(per_item[i] if i < len(per_item) else []))
+            for i, v in enumerate(getattr(profile, name) or [])
+        ]
+
+    return ProfileRead(
+        paper_id=profile.paper_id,
+        problem=text("problem"),
+        method=text("method"),
+        results=text("results"),
+        dataset=items("dataset"),
+        metrics=items("metrics"),
+        limitations=items("limitations"),
+        tech_stack=items("tech_stack"),
+        edited_fields=list(profile.edited_fields or []),
+        updated_at=profile.updated_at,
+    )
+
+
+@router.get("/papers/{paper_id}/profile", response_model=ProfileRead | None)
+async def get_profile(
+    project_id: uuid.UUID, paper_id: uuid.UUID, user: CurrentUser, db: DbSession
+) -> ProfileRead | None:
+    """The paper's profile, or null if it hasn't been analysed yet (a normal state, not an error)."""
+    await get_project_for_user(db, project_id, user)
+    await _paper(db, project_id, paper_id)
+    profile = await db.get(PaperProfile, paper_id)
+    return await _profile_read(db, profile) if profile is not None else None
+
+
+@router.put("/papers/{paper_id}/profile", response_model=ProfileRead)
+async def update_profile(
+    project_id: uuid.UUID, paper_id: uuid.UUID, body: ProfileWrite, user: CurrentUser, db: DbSession
+) -> ProfileRead:
+    """The researcher's corrections. Evidence may only point at this paper's passages; changed fields are
+    marked as edited (and keep only the evidence the researcher kept)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    await _paper(db, project_id, paper_id)
+    profile = await db.get(PaperProfile, paper_id)
+    if profile is None:
+        profile = PaperProfile(paper_id=paper_id, evidence={}, edited_fields=[], dataset=[], metrics=[],
+                               limitations=[], tech_stack=[])  # fmt: skip
+        db.add(profile)
+    own = set(await db.scalars(select(PaperChunk.id).where(PaperChunk.paper_id == paper_id)))
+    evidence: dict[str, Any] = dict(profile.evidence or {})
+    edited = set(profile.edited_fields or [])
+    for name in TEXT_FIELDS:
+        new = getattr(body, name)
+        if new != getattr(profile, name):
+            setattr(profile, name, new)
+            edited.add(name)
+            if not new:
+                evidence.pop(name, None)
+    for name in LIST_FIELDS:
+        new_items = getattr(body, name)
+        values = [item.value for item in new_items]
+        item_evidence = [[str(e) for e in item.evidence if e in own] for item in new_items]
+        if values != list(getattr(profile, name) or []) or item_evidence != evidence.get(name, []):
+            setattr(profile, name, values)
+            edited.add(name)
+        evidence[name] = item_evidence
+    profile.evidence = evidence
+    profile.edited_fields = sorted(edited)
+    await db.commit()
+    await db.refresh(profile)
+    log.info("paper_profile_edited", paper_id=str(paper_id), fields=sorted(edited))
+    return await _profile_read(db, profile)

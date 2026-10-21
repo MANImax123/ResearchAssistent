@@ -47,7 +47,7 @@ function paper(over: Partial<Paper>): Paper {
     openalex_id: "W1", url: null, pdf_url: null, pdf_file_id: null, citation_count: 1232, origin: "search",
     sources: ["openalex", "crossref"], found_by: ["Q1"], selected: false, parse_status: "not_started",
     created_at: new Date().toISOString(), has_identifier: true, must_include: false, similarity: null,
-    rq_similarity: {}, relevance_score: null, relevance_reason: null, relevance_rqs: [], parse_error: null, ...over,
+    rq_similarity: {}, relevance_score: null, relevance_reason: null, relevance_rqs: [], parse_error: null, has_profile: false, ...over,
   }; // prettier-ignore
 }
 
@@ -223,7 +223,7 @@ describe("helpers", () => {
 
 const WS: LiteratureWorkspace = {
   status: "not_started", editable: true, blocked_reason: null, queries: QUERIES, paper_count: 100,
-  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, indexed_chunks: 0, pending_chunks: 0,
+  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, indexed_chunks: 0, pending_chunks: 0, profiled_count: 0,
   sources: SOURCES,
   research_questions: [{ id: "RQ1", text: "Q?" }, { id: "RQ2", text: "H." }], subtopics: [],
 }; // prettier-ignore
@@ -297,7 +297,8 @@ describe("FullTextPanel", () => {
     vi.stubGlobal("fetch", fetchMock);
     const onParse = vi.fn();
     render(
-      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={onParse} onChanged={vi.fn()}
+      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={onParse} onAnalyse={vi.fn()}
+                     onChanged={vi.fn()}
                      ws={{ ...WS, selected_count: 3, parse_counts: { parsed: 1, upload_needed: 1, not_started: 1 } }} />,
     ); // prettier-ignore
 
@@ -319,7 +320,8 @@ describe("FullTextPanel", () => {
   it("says a new run only retries the open-access sources when only uploads are missing", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, { total: 0, items: [] })));
     render(
-      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={vi.fn()} onChanged={vi.fn()}
+      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={vi.fn()} onAnalyse={vi.fn()}
+                     onChanged={vi.fn()}
                      ws={{ ...WS, selected_count: 3, parse_counts: { parsed: 1, upload_needed: 2 } }} />,
     ); // prettier-ignore
     expect(screen.getByRole("button", { name: "Try open-access sources again" })).toBeEnabled();

@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { JobProgress } from "@/components/JobProgress";
+import { ProfilePanel } from "@/components/literature/ProfilePanel";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
 import { filesApi } from "@/lib/api";
+import { TERMINAL, useJob, type Job } from "@/lib/jobs";
 import {
   authorLine,
   literatureApi,
@@ -15,6 +18,7 @@ import {
   SECTION_KIND_LABEL,
   type DocumentSection,
   type PaperDocument,
+  type PaperProfile,
   type SectionKind,
 } from "@/lib/literature";
 
@@ -57,6 +61,42 @@ export default function PaperDocumentPage() {
   const { id, paperId } = useParams<{ id: string; paperId: string }>();
   const [doc, setDoc] = useState<PaperDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<PaperProfile | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
+  const [job, setJob] = useState<Job | null>(null);
+  const { job: polled, error: pollError } = useJob(job?.id ?? null, job);
+
+  const loadProfile = useCallback(async () => {
+    try {
+      setProfile(await literatureApi.profile(id, paperId));
+    } catch {
+      setProfile(null);
+    }
+  }, [id, paperId]);
+
+  useEffect(() => {
+    void loadProfile();
+    literatureApi
+      .get(id)
+      .then((ws) => setCanEdit(ws.editable))
+      .catch(() => setCanEdit(false));
+  }, [id, loadProfile]);
+
+  useEffect(() => {
+    if (!polled || !TERMINAL.has(polled.status)) return;
+    if (polled.status === "failed") setError(`The analysis failed: ${polled.error ?? "unknown error"}`);
+    setJob(null);
+    void loadProfile();
+  }, [polled, loadProfile]);
+
+  async function analyse() {
+    setError(null);
+    try {
+      setJob(await literatureApi.analyze(id, { paperIds: [paperId], force: true }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not start the analysis");
+    }
+  }
 
   useEffect(() => {
     literatureApi
@@ -70,13 +110,20 @@ export default function PaperDocumentPage() {
   }, [id, paperId]);
 
   // A citation links to "#sec-…": open that section and bring it into view once the paper is loaded
+  // (also when an evidence link on this page changes the hash)
   useEffect(() => {
-    if (!doc || !window.location.hash) return;
-    const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
-    if (target instanceof HTMLDetailsElement) {
-      target.open = true;
-      target.scrollIntoView?.({ block: "start" });
-    }
+    if (!doc) return;
+    const openTarget = () => {
+      if (!window.location.hash) return;
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      if (target instanceof HTMLDetailsElement) {
+        target.open = true;
+        target.scrollIntoView?.({ block: "start" });
+      }
+    };
+    openTarget();
+    window.addEventListener("hashchange", openTarget);
+    return () => window.removeEventListener("hashchange", openTarget);
   }, [doc]);
 
   async function openPdf() {
@@ -162,6 +209,21 @@ export default function PaperDocumentPage() {
         </div>
         {error && <ErrorAlert>{error}</ErrorAlert>}
       </div>
+
+      <ProfilePanel
+        projectId={id}
+        paperId={paperId}
+        profile={profile}
+        canEdit={canEdit}
+        analysing={job !== null}
+        onAnalyse={() => void analyse()}
+        onSaved={setProfile}
+      />
+      {job && polled && (
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <JobProgress key={job.id} job={polled} label="Paper analysis" pollError={pollError} />
+        </div>
+      )}
 
       <section aria-labelledby="key-heading" className="space-y-4">
         <h2 id="key-heading" className="text-base font-semibold">

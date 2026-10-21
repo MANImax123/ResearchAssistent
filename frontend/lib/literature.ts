@@ -44,6 +44,7 @@ export type LiteratureWorkspace = {
   parse_counts: Partial<Record<ParseStatus, number>>; // selected papers by parse status
   indexed_chunks: number; // passages "Ask the literature" can search
   pending_chunks: number; // parsed passages not indexed yet
+  profiled_count: number; // selected papers with an analysis profile
   sources: SourceStatus[];
   research_questions: { id: string; text: string }[];
   subtopics: string[];
@@ -76,6 +77,7 @@ export type Paper = {
   relevance_rqs: string[];
   parse_status: ParseStatus;
   parse_error: string | null;
+  has_profile: boolean; // the paper has an analysis profile
   created_at: string;
   has_identifier: boolean;
 };
@@ -223,6 +225,18 @@ export const literatureApi = {
   },
   document: (projectId: string, paperId: string) =>
     apiFetch<PaperDocument>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/document`),
+  analyze: (projectId: string, options: { paperIds?: string[]; force?: boolean } = {}) =>
+    apiFetch<Job>(`${base(projectId)}/analyze`, {
+      method: "POST",
+      json: { paper_ids: options.paperIds ?? null, force: options.force ?? false },
+    }),
+  profile: (projectId: string, paperId: string) =>
+    apiFetch<PaperProfile | null>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/profile`),
+  saveProfile: (projectId: string, paperId: string, profile: ProfileWrite) =>
+    apiFetch<PaperProfile>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/profile`, {
+      method: "PUT",
+      json: profile,
+    }),
   indexPassages: (projectId: string) => apiFetch<Job>(`${base(projectId)}/index`, { method: "POST" }),
   ask: (projectId: string, question: string, sectionKinds: AskSectionKind[] | null) =>
     apiFetch<Answer>(`${base(projectId)}/ask`, {
@@ -309,3 +323,34 @@ export function splitCitations(text: string): ({ text: string } | { marker: stri
   if (last < text.length) parts.push({ text: text.slice(last) });
   return parts;
 }
+
+export type Evidence = { chunk_id: string; section: string | null; kind: string | null; page: number | null; text: string };
+export type ProfileValue = { value: string; evidence: Evidence[] };
+export type ProfileTextField = "problem" | "method" | "results";
+export type ProfileListField = "dataset" | "metrics" | "limitations" | "tech_stack";
+
+export type PaperProfile = {
+  paper_id: string;
+  problem: ProfileValue | null;
+  method: ProfileValue | null;
+  results: ProfileValue | null;
+  dataset: ProfileValue[];
+  metrics: ProfileValue[];
+  limitations: ProfileValue[];
+  tech_stack: ProfileValue[];
+  edited_fields: string[];
+  updated_at: string;
+};
+
+export type ProfileWrite = Record<ProfileTextField, string | null> &
+  Record<ProfileListField, { value: string; evidence: string[] }[]>;
+
+export const PROFILE_LABEL: Record<ProfileTextField | ProfileListField, string> = {
+  problem: "Problem",
+  method: "Method",
+  results: "Results",
+  dataset: "Datasets",
+  metrics: "Metrics",
+  limitations: "Limitations",
+  tech_stack: "Tech stack",
+};

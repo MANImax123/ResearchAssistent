@@ -20,6 +20,7 @@ export function FullTextPanel({
   busy,
   refreshKey,
   onParse,
+  onAnalyse,
   onChanged,
 }: {
   projectId: string;
@@ -28,6 +29,7 @@ export function FullTextPanel({
   busy: boolean; // a literature job is running
   refreshKey: number;
   onParse: (options: { paperIds?: string[]; force?: boolean }) => void;
+  onAnalyse: () => void; // profile the parsed papers that have none yet
   onChanged: () => void;
 }) {
   const [papers, setPapers] = useState<Paper[] | null>(null);
@@ -88,6 +90,7 @@ export function FullTextPanel({
 
   const counts = ws.parse_counts;
   const todo = ws.selected_count - (counts.parsed ?? 0);
+  const toProfile = (counts.parsed ?? 0) - ws.profiled_count;
   // Only papers waiting for an upload left: a new run just retries the open-access sources
   const onlyUploads = todo > 0 && todo === (counts.upload_needed ?? 0);
 
@@ -139,6 +142,15 @@ export function FullTextPanel({
             >
               Parse all again
             </Button>
+            <Button
+              variant="secondary"
+              onClick={onAnalyse}
+              disabled={busy || toProfile <= 0}
+            >
+              {toProfile > 0
+                ? `Analyse ${toProfile} parsed paper${toProfile === 1 ? "" : "s"}`
+                : "All parsed papers analysed"}
+            </Button>
           </div>
         )}
       </div>
@@ -183,6 +195,11 @@ export function FullTextPanel({
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={status.className}>{status.label}</Badge>
+                    {p.has_profile && (
+                      <Badge className="bg-indigo-100 text-indigo-800">
+                        Profiled
+                      </Badge>
+                    )}
                     {p.parse_status === "parsed" && (
                       <Link
                         href={`/projects/${projectId}/literature/papers/${p.id}`}

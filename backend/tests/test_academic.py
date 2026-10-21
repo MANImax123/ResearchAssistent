@@ -281,6 +281,18 @@ def test_preprint_published_years_later_still_merges() -> None:
     assert len(dedup.papers) == 2
 
 
+def test_repository_copy_merges_with_the_paper() -> None:
+    """Live case: OpenAlex returned GraphDTA (Bioinformatics 2020) and a Figshare deposit of it dated 2024."""
+    dedup = Deduplicator()
+    dedup.add(paper("GraphDTA: Predicting drug target binding affinity with graph neural networks", year=2024,
+                    venue="Figshare", openalex_id="W2"))  # fmt: skip
+    dedup.add(paper("GraphDTA: predicting drug–target binding affinity with graph neural networks", year=2020,
+                    venue="Bioinformatics", doi="10.1093/bioinformatics/btaa921"))  # fmt: skip
+    assert len(dedup.papers) == 1
+    merged = dedup.papers[0]
+    assert (merged.year, merged.venue, merged.doi) == (2020, "Bioinformatics", "10.1093/bioinformatics/btaa921")
+
+
 def test_different_published_dois_stay_separate() -> None:
     conf = paper("Graph networks for affinity", doi="10.1145/1", year=2021)
     journal = paper("Graph Networks for Affinity", doi="10.1093/2", year=2022)

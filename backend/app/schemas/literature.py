@@ -56,6 +56,7 @@ class LiteratureWorkspaceRead(BaseModel):
     parse_counts: dict[str, int]  # selected papers by parse status
     indexed_chunks: int  # passages searchable by "Ask the literature"
     pending_chunks: int  # parsed passages not embedded yet
+    profiled_count: int  # selected papers with an analysis profile
     sources: list[SourceStatus]
     research_questions: list[dict[str, Any]]  # id + text, to show what each query targets
     subtopics: list[str]
@@ -106,6 +107,7 @@ class PaperRead(BaseModel):
     relevance_rqs: list[str]
     parse_status: ParseStatus
     parse_error: str | None
+    has_profile: bool = False  # set by the library list
     created_at: datetime
 
     @computed_field  # type: ignore[prop-decorator]
@@ -222,3 +224,52 @@ class AnswerRead(BaseModel):
     citations: list[SourceRead]  # every [S#] in the answer, in order of first use
     retrieved: int  # passages the model was given
     removed_markers: list[str]  # citations the model made up, removed from the answer
+
+
+class AnalyzeRequest(BaseModel):
+    paper_ids: list[uuid.UUID] | None = Field(default=None, max_length=200)  # None: selected parsed papers
+    force: bool = False  # also re-analyse papers that already have a profile (replaces researcher edits)
+
+
+class EvidenceRead(BaseModel):
+    chunk_id: uuid.UUID
+    section: str | None
+    kind: str | None
+    page: int | None
+    text: str
+
+
+class ProfileValue(BaseModel):
+    value: str
+    evidence: list[EvidenceRead]
+
+
+class ProfileRead(BaseModel):
+    paper_id: uuid.UUID
+    problem: ProfileValue | None
+    method: ProfileValue | None
+    results: ProfileValue | None
+    dataset: list[ProfileValue]
+    metrics: list[ProfileValue]
+    limitations: list[ProfileValue]
+    tech_stack: list[ProfileValue]
+    edited_fields: list[str]  # fields the researcher changed after the analysis
+    updated_at: datetime
+
+
+ProfileText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=3000)]
+
+
+class ProfileItemWrite(BaseModel):
+    value: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+    evidence: list[uuid.UUID] = Field(default_factory=list, max_length=20)  # kept from the analysis, or empty
+
+
+class ProfileWrite(BaseModel):
+    problem: ProfileText | None = None
+    method: ProfileText | None = None
+    results: ProfileText | None = None
+    dataset: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
+    metrics: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
+    limitations: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
+    tech_stack: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)

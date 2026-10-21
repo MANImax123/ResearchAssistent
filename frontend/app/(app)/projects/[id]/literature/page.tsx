@@ -30,6 +30,7 @@ const JOB_LABEL: Record<string, string> = {
   literature_rank: "Relevance ranking",
   literature_parse: "Full text",
   literature_index: "Indexing passages",
+  literature_analyze: "Paper analysis",
 };
 
 type Tab = "discover" | "fulltext" | "ask";
@@ -281,6 +282,7 @@ export default function LiteratureWorkspacePage() {
           onParse={(options) =>
             void start(() => literatureApi.parse(id, options))
           }
+          onAnalyse={() => void start(() => literatureApi.analyze(id))}
           onChanged={() => void load()}
         />
       ) : (

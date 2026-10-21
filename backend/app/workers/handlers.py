@@ -162,6 +162,16 @@ async def literature_index(reporter: JobReporter, project_id: str) -> dict[str, 
     return await literature.index_chunks(uuid.UUID(project_id), reporter.session_factory, progress=reporter.progress)
 
 
+async def literature_analyze(reporter: JobReporter, project_id: str, paper_ids: list[str]) -> dict[str, Any]:
+    """L6: a structured, evidence-backed profile for each paper."""
+    from app.services import literature
+
+    await reporter.progress(5, f"Analysing {len(paper_ids)} papers")
+    return await literature.run_analysis(
+        uuid.UUID(project_id), reporter.session_factory, [uuid.UUID(p) for p in paper_ids], progress=reporter.progress
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -173,4 +183,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_rank": literature_rank,
     "literature_parse": literature_parse,
     "literature_index": literature_index,
+    "literature_analyze": literature_analyze,
 }

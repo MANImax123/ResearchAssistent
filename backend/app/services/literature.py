@@ -1,5 +1,6 @@
 """Literature workspace (Step 4.1): search queries, discovery runs, and the project's paper library."""
 
+import asyncio
 import uuid
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
@@ -11,11 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents import registry
 from app.agents.idea.agent import plan_from_state
 from app.agents.idea.schemas import IdeaPlan
-from app.agents.literature import parsing, ranking
+from app.agents.literature import analysis, parsing, ranking
 from app.agents.literature.discovery import DiscoveryResult, Filters, Progress, discover
 from app.agents.literature.planning import PlannedQuery, plan_queries
 from app.core.logging import get_logger
-from app.db.models import Paper, Project, SearchQuery
+from app.db.models import Paper, PaperChunk, PaperProfile, Project, SearchQuery
 from app.db.models.enums import PaperOrigin, ParseStatus, QueryOrigin, StageName, StageStatus
 from app.services import retrieval
 from app.services.academic.models import Author, PaperMetadata, SearchSourceName
@@ -391,3 +392,81 @@ async def index_chunks(
     except Exception as exc:  # noqa: BLE001 - reported in the job result; the chunks stay pending
         log.warning("chunk_indexing_failed", project_id=str(project_id), error=str(exc)[:300])
         return {"indexed": 0, "index_error": f"Indexing for search failed ({type(exc).__name__}); try again."}
+
+
+# ─── Paper profiles (Step 4.5) ───────────────────────────────────────────
+
+
+async def papers_to_analyze(
+    session: AsyncSession, project_id: uuid.UUID, paper_ids: list[uuid.UUID] | None, force: bool
+) -> list[uuid.UUID]:
+    """The given parsed papers, or every selected parsed paper without a profile (all of them with `force`)."""
+    stmt = select(Paper.id).where(Paper.project_id == project_id, Paper.parse_status == ParseStatus.PARSED)
+    if paper_ids:
+        stmt = stmt.where(Paper.id.in_(paper_ids))
+    else:
+        stmt = stmt.where(Paper.selected.is_(True))
+        if not force:
+            stmt = stmt.where(~Paper.profile.has())
+    return list(await session.scalars(stmt.order_by(Paper.relevance_score.desc().nulls_last())))
+
+
+async def _passages(session: AsyncSession, paper_id: uuid.UUID) -> list[analysis.Passage]:
+    rows = await session.scalars(
+        select(PaperChunk).where(PaperChunk.paper_id == paper_id).order_by(PaperChunk.chunk_index)
+    )
+    return [analysis.Passage(c.id, c.section_name, c.section_kind, c.page, c.text) for c in rows]
+
+
+async def analyze_one(
+    project_id: uuid.UUID, paper_id: uuid.UUID, session_factory: SessionFactory, llm: LLMService
+) -> str:
+    """Profile one paper and store it (replacing any earlier profile). Returns "analysed" / "no_text"."""
+    async with session_factory() as session:
+        paper = await session.get(Paper, paper_id)
+        passages = await _passages(session, paper_id)
+    if paper is None or not passages:
+        return "no_text"
+    profile, _ = await analysis.analyze_paper(paper.title, passages, llm, project_id)
+    async with session_factory() as session:
+        row = await session.get(PaperProfile, paper_id)
+        if row is None:
+            row = PaperProfile(paper_id=paper_id)
+            session.add(row)
+        for name in (*analysis.TEXT_FIELDS, *analysis.LIST_FIELDS):
+            setattr(row, name, getattr(profile, name))
+        row.evidence = profile.evidence
+        row.agent_run_id = uuid.UUID(profile.run_id) if profile.run_id else None
+        row.edited_fields = []
+        await session.commit()
+    log.info("paper_profiled", paper_id=str(paper_id), dropped=profile.dropped)
+    return "analysed"
+
+
+async def run_analysis(
+    project_id: uuid.UUID,
+    session_factory: SessionFactory,
+    paper_ids: list[uuid.UUID],
+    *,
+    progress: Progress | None = None,
+) -> dict[str, Any]:
+    llm = registry.llm_factory(session_factory)()
+    limit = asyncio.Semaphore(3)
+    counts: dict[str, int] = {}
+    done = 0
+
+    async def run(pid: uuid.UUID) -> None:
+        nonlocal done
+        async with limit:
+            try:
+                outcome = await analyze_one(project_id, pid, session_factory, llm)
+            except Exception:  # noqa: BLE001 - one paper failing doesn't stop the others
+                log.exception("paper_profile_failed", paper_id=str(pid))
+                outcome = "failed"
+        counts[outcome] = counts.get(outcome, 0) + 1
+        done += 1
+        if progress is not None:
+            await progress(5 + 90 * done // max(len(paper_ids), 1), f"Analysed {done}/{len(paper_ids)} papers")
+
+    await asyncio.gather(*(run(pid) for pid in paper_ids))
+    return {"papers": len(paper_ids), **counts}

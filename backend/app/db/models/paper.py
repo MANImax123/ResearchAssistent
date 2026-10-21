@@ -65,8 +65,12 @@ class PaperProfile(TimestampMixin, Base):
     results: Mapped[str | None] = mapped_column(Text)
     limitations: Mapped[list[str]] = mapped_column(JSONB, default=list)
     tech_stack: Mapped[list[str]] = mapped_column(JSONB, default=list)
-    # field name -> list of supporting paper_chunks ids (A4.2 grounding)
+    # field name -> supporting paper_chunks ids (A4.2 grounding). Text fields (problem, method, results):
+    # a list of ids; list fields (dataset, metrics, limitations, tech_stack): one id list per item, by index.
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    # Step 4.5: the analysis run that wrote it, and the fields the researcher has edited since
+    agent_run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    edited_fields: Mapped[list[str]] = mapped_column(JSONB, default=list)
 
     paper: Mapped[Paper] = relationship(back_populates="profile")
 

@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.5
+Current step: 4.6
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -22,8 +22,8 @@ Current step: 4.5
 | 4.2  | Relevance Ranking agent + selection | ✅ | 2026-10-21 | Embeddings + LLM rerank with reasons; selection → selected_paper_ids |
 | 4.3  | PDF acquisition + Document Parsing agent | ✅ | 2026-10-21 | Legal OA PDFs; GROBID + PyMuPDF fallback; section chunks; upload-needed flow |
 | 4.4  | Embeddings + RAG Retrieval agent | ✅ | 2026-10-21 | HNSW + MMR retrieval; Ask the literature with verified chunk citations |
-| 4.5  | Paper Analysis agent | 🔄 in progress | | |
-| 4.6  | Comparative Analysis agent | ⬜ not started | | |
+| 4.5  | Paper Analysis agent | ✅ | 2026-10-21 | Evidence-backed profiles (every value cites passages); editable |
+| 4.6  | Comparative Analysis agent | 🔄 in progress | | |
 | 4.7  | Contradiction Detection agent | ⬜ not started | | |
 | 4.8  | Knowledge Graph agent + visualization | ⬜ not started | | |
 | 4.9  | Research Gap Detection agent | ⬜ not started | | |

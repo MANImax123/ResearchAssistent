@@ -58,3 +58,23 @@ ASK = PromptTemplate(
     ),
     template="Question: $question\n\nPassages:\n$passages\n\nAnswer the question from these passages.",
 )
+
+ANALYZE = PromptTemplate(
+    name="literature.analyze",
+    version="1",
+    description="L6 Paper Analysis: a structured profile of one paper, every field citing its passages.",
+    system=(
+        "You build a structured profile of ONE research paper from its numbered passages [C1]…[Cn]. Rules:\n"
+        "- Use only what the passages state. Never add knowledge about the paper from memory.\n"
+        '- Every field and every list item cites the passage ids it comes from in `evidence` (e.g. ["C3", '
+        '"C7"]). No evidence, no item.\n'
+        "- problem: the problem the paper addresses (1-2 sentences). method: what they propose/do (2-3 "
+        "sentences). results: the main quantitative/qualitative results as stated, with numbers if given "
+        "(2-3 sentences).\n"
+        "- datasets: names of datasets/benchmarks used. metrics: evaluation metrics. limitations: limitations "
+        "the AUTHORS state about their own work (not limitations of prior work they overcome). tech_stack: "
+        "models, libraries, tools or hardware named.\n"
+        "- Leave a text field null and a list empty when the passages don't say."
+    ),
+    template="Paper: $title\n\nPassages:\n$passages\n\nProfile this paper.",
+)
