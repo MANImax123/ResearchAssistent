@@ -1,14 +1,15 @@
 import uuid
+from datetime import datetime
 from typing import Any
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.config import get_settings
-from app.db.base import Base, TimestampMixin, UUIDPkMixin, str_enum
-from app.db.models.enums import ParseStatus
+from app.db.base import Base, CreatedAtMixin, TimestampMixin, UUIDPkMixin, str_enum
+from app.db.models.enums import PaperOrigin, ParseStatus, QueryOrigin
 
 
 class Paper(UUIDPkMixin, TimestampMixin, Base):
@@ -32,6 +33,12 @@ class Paper(UUIDPkMixin, TimestampMixin, Base):
     relevance_score: Mapped[float | None] = mapped_column(Float)
     selected: Mapped[bool] = mapped_column(Boolean, default=False)
     parse_status: Mapped[ParseStatus] = mapped_column(str_enum(ParseStatus), default=ParseStatus.NOT_STARTED)
+    # Discovery (Step 4.1)
+    origin: Mapped[PaperOrigin] = mapped_column(str_enum(PaperOrigin), default=PaperOrigin.SEARCH)
+    sources: Mapped[list[str]] = mapped_column(JSONB, default=list)  # academic sources that returned it
+    found_by: Mapped[list[str]] = mapped_column(JSONB, default=list)  # search query labels (Q1…)
+    citation_count: Mapped[int | None] = mapped_column(Integer)
+    pdf_url: Mapped[str | None] = mapped_column(String(2048))  # open-access PDF reported by a source
 
     profile: Mapped["PaperProfile | None"] = relationship(back_populates="paper", cascade="all, delete-orphan")
     chunks: Mapped[list["PaperChunk"]] = relationship(back_populates="paper", cascade="all, delete-orphan")
@@ -66,3 +73,19 @@ class PaperChunk(UUIDPkMixin, Base):
     page: Mapped[int | None] = mapped_column(Integer)
 
     paper: Mapped[Paper] = relationship(back_populates="chunks")
+
+
+class SearchQuery(UUIDPkMixin, CreatedAtMixin, Base):
+    """A literature search query (L1). The planning agent proposes them; the researcher edits them."""
+
+    __tablename__ = "search_queries"
+
+    project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), index=True)
+    position: Mapped[int] = mapped_column(Integer)
+    label: Mapped[str] = mapped_column(String(8))  # Q1, Q2… (stable while the list is unchanged)
+    text: Mapped[str] = mapped_column(String(300))
+    purpose: Mapped[str | None] = mapped_column(Text)
+    targets: Mapped[list[str]] = mapped_column(JSONB, default=list)  # research questions / subtopics it serves
+    origin: Mapped[QueryOrigin] = mapped_column(str_enum(QueryOrigin), default=QueryOrigin.AI)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_found: Mapped[int | None] = mapped_column(Integer)  # results across sources in the last run

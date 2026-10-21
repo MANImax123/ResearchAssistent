@@ -72,6 +72,17 @@ class FileKind(StrEnum):
     RESULT = "result"
 
 
+class PaperOrigin(StrEnum):
+    SEARCH = "search"  # found by discovery
+    MANUAL = "manual"  # added by DOI / arXiv id
+    UPLOAD = "upload"  # the researcher uploaded the PDF
+
+
+class QueryOrigin(StrEnum):
+    AI = "ai"
+    USER = "user"
+
+
 class ParseStatus(StrEnum):
     NOT_STARTED = "not_started"
     UPLOAD_NEEDED = "upload_needed"

@@ -5,9 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, HTTPException, Response, UploadFile, status
 from sqlalchemy import select
 
+from app.core.config import Settings
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
-from app.db.models import File
+from app.db.models import File, User
 from app.db.models.enums import FileKind, MemberRole
 from app.schemas.file import DownloadLink, FileRead
 from app.services.files import SNIFF_BYTES, UploadRejectedError, validate_upload
@@ -38,7 +39,24 @@ async def upload_file(
     settings: SettingsDep,
 ) -> File:
     await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    record = await save_upload(db, storage, settings, project_id, user, file, kind)
+    await db.commit()
+    return await _get_file(db, project_id, record.id)
 
+
+async def save_upload(
+    db: DbSession,
+    storage: Storage,
+    settings: Settings,
+    project_id: uuid.UUID,
+    user: User,
+    file: UploadFile,
+    kind: FileKind,
+) -> File:
+    """Validate and store an upload; the File row is flushed, the caller commits.
+
+    If the caller's commit fails, the stored object is orphaned; callers commit right away.
+    """
     size = file.size if file.size is not None else len(await file.read())
     max_bytes = settings.max_upload_mb * 1024 * 1024
     if size > max_bytes:
@@ -68,12 +86,12 @@ async def upload_file(
     )
     db.add(record)
     try:
-        await db.commit()
+        await db.flush()
     except Exception:
         await storage.delete(key)  # don't leave an orphaned object behind
         raise
     log.info("file_uploaded", project_id=str(project_id), file_id=str(file_id), kind=kind.value, size=size)
-    return await _get_file(db, project_id, file_id)
+    return record
 
 
 @router.get("", response_model=list[FileRead])

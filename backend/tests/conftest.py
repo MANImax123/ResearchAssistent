@@ -196,3 +196,14 @@ def no_live_llm(monkeypatch: pytest.MonkeyPatch) -> None:
         return llm
 
     monkeypatch.setattr(registry, "llm_factory", refuse)
+
+
+@pytest.fixture(autouse=True)
+def no_live_academic_apis(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Literature tests install stub clients; reaching for the real academic APIs fails loudly."""
+    from app.agents import registry
+
+    def refuse() -> Any:
+        raise AssertionError("A test tried to call the real academic APIs; install stub clients")
+
+    monkeypatch.setattr(registry, "academic_factory", refuse)

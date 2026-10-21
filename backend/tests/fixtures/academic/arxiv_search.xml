@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/fkDBfmA0HwUTm1zKC/mboH0MK3w</id>
+  <title>arXiv Query: search_query=all:"graph neural network" AND all:"binding affinity"&amp;id_list=&amp;start=0&amp;max_results=3</title>
+  <updated>2026-10-21T13:35:58Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=all:%22graph+neural+network%22+AND+all:%22binding+affinity%22&amp;start=0&amp;max_results=3&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>3</opensearch:itemsPerPage>
+  <opensearch:totalResults>37</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2008.12473v1</id>
+    <title>Pre-training of Graph Neural Network for Modeling Effects of Mutations on Protein-Protein Binding Affinity</title>
+    <updated>2020-08-28T04:07:39Z</updated>
+    <link href="https://arxiv.org/abs/2008.12473v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2008.12473v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Modeling the effects of mutations on the binding affinity plays a crucial role in protein engineering and drug design. In this study, we develop a novel deep learning based framework, named GraphPPI, to predict the binding affinity changes upon mutations based on the features provided by a graph neural network (GNN). In particular, GraphPPI first employs a well-designed pre-training scheme to enforce the GNN to capture the features that are predictive of the effects of mutations on binding affinity in an unsupervised manner and then integrates these graphical features with gradient-boosting trees to perform the prediction. Experiments showed that, without any annotated signals, GraphPPI can capture meaningful patterns of the protein structures. Also, GraphPPI achieved new state-of-the-art performance in predicting the binding affinity changes upon both single- and multi-point mutations on five benchmark datasets. In-depth analyses also showed GraphPPI can accurately estimate the effects of mutations on the binding affinity between SARS-CoV-2 and its neutralizing antibodies. These results have established GraphPPI as a powerful and useful computational tool in the studies of protein design.</summary>
+    <category term="q-bio.BM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="q-bio.QM" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-08-28T04:07:39Z</published>
+    <arxiv:primary_category term="q-bio.BM"/>
+    <author>
+      <name>Xianggen Liu</name>
+    </author>
+    <author>
+      <name>Yunan Luo</name>
+    </author>
+    <author>
+      <name>Sen Song</name>
+    </author>
+    <author>
+      <name>Jian Peng</name>
+    </author>
+    <arxiv:doi>10.1371/journal.pcbi.1009284</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1371/journal.pcbi.1009284" title="doi"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2107.10670v1</id>
+    <title>Structure-aware Interactive Graph Neural Networks for the Prediction of Protein-Ligand Binding Affinity</title>
+    <updated>2021-07-21T03:34:09Z</updated>
+    <link href="https://arxiv.org/abs/2107.10670v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2107.10670v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Drug discovery often relies on the successful prediction of protein-ligand binding affinity. Recent advances have shown great promise in applying graph neural networks (GNNs) for better affinity prediction by learning the representations of protein-ligand complexes. However, existing solutions usually treat protein-ligand complexes as topological graph data, thus the biomolecular structural information is not fully utilized. The essential long-range interactions among atoms are also neglected in GNN models. To this end, we propose a structure-aware interactive graph neural network (SIGN) which consists of two components: polar-inspired graph attention layers (PGAL) and pairwise interactive pooling (PiPool). Specifically, PGAL iteratively performs the node-edge aggregation process to update embeddings of nodes and edges while preserving the distance and angle information among atoms. Then, PiPool is adopted to gather interactive edges with a subsequent reconstruction loss to reflect the global interactions. Exhaustive experimental study on two benchmarks verifies the superiority of SIGN.</summary>
+    <category term="q-bio.QM" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2021-07-21T03:34:09Z</published>
+    <arxiv:comment>11 pages, 8 figures, Accepted by KDD 2021 (Research Track)</arxiv:comment>
+    <arxiv:primary_category term="q-bio.QM"/>
+    <author>
+      <name>Shuangli Li</name>
+    </author>
+    <author>
+      <name>Jingbo Zhou</name>
+    </author>
+    <author>
+      <name>Tong Xu</name>
+    </author>
+    <author>
+      <name>Liang Huang</name>
+    </author>
+    <author>
+      <name>Fan Wang</name>
+    </author>
+    <author>
+      <name>Haoyi Xiong</name>
+    </author>
+    <author>
+      <name>Weili Huang</name>
+    </author>
+    <author>
+      <name>Dejing Dou</name>
+    </author>
+    <author>
+      <name>Hui Xiong</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2508.01924v1</id>
+    <title>Pi-SAGE: Permutation-invariant surface-aware graph encoder for binding affinity prediction</title>
+    <updated>2025-08-03T21:19:20Z</updated>
+    <link href="https://arxiv.org/abs/2508.01924v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2508.01924v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Protein surface fingerprint encodes chemical and geometric features that govern protein-protein interactions and can be used to predict changes in binding affinity between two protein complexes. Current state-of-the-art models for predicting binding affinity change, such as GearBind, are all-atom based geometric models derived from protein structures. Although surface properties can be implicitly learned from the protein structure, we hypothesize that explicit knowledge of protein surfaces can improve a structure-based model's ability to predict changes in binding affinity. To this end, we introduce Pi-SAGE, a novel Permutation-Invariant Surface-Aware Graph Encoder. We first train Pi-SAGE to create a protein surface codebook directly from the structure and assign a token for each surface-exposed residue. Next, we augment the node features of the GearBind model with surface features from domain-adapted Pi-SAGE to predict binding affinity change on the SKEMPI dataset. We show that explicitly incorporating local, context-aware chemical properties of residues enhances the predictive power of all-atom graph neural networks in modeling binding affinity changes between wild-type and mutant proteins.</summary>
+    <category term="q-bio.BM" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-08-03T21:19:20Z</published>
+    <arxiv:primary_category term="q-bio.BM"/>
+    <arxiv:journal_ref>PMLR 267, 2025</arxiv:journal_ref>
+    <author>
+      <name>Sharmi Banerjee</name>
+    </author>
+    <author>
+      <name>Mostafa Karimi</name>
+    </author>
+    <author>
+      <name>Melih Yilmaz</name>
+    </author>
+    <author>
+      <name>Tommi Jaakkola</name>
+    </author>
+    <author>
+      <name>Bella Dubrov</name>
+    </author>
+    <author>
+      <name>Shang Shang</name>
+    </author>
+    <author>
+      <name>Ron Benson</name>
+    </author>
+  </entry>
+</feed>

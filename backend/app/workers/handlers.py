@@ -93,10 +93,51 @@ async def idea_abstract(reporter: JobReporter, project_id: str) -> dict[str, Any
     return {"words": result.word_count, "within_limit": result.within_limit, "attempts": result.attempts}
 
 
+async def literature_plan(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L1: search queries from the approved research plan."""
+    from app.services import literature
+
+    await reporter.progress(10, "Planning search queries")
+    queries = await literature.generate_queries(uuid.UUID(project_id), reporter.session_factory)
+    return {"queries": len(queries)}
+
+
+async def literature_discover(
+    reporter: JobReporter,
+    project_id: str,
+    sources: list[str],
+    per_source: int,
+    max_new: int,
+    query_ids: list[str] | None = None,
+    year_from: int | None = None,
+    year_to: int | None = None,
+    venue: str | None = None,
+) -> dict[str, Any]:
+    """L2: run the queries on the academic sources and add the deduplicated papers to the library."""
+    from app.agents.literature.discovery import Filters
+    from app.services import literature
+    from app.services.academic.sources import SOURCE_LABEL
+
+    await reporter.progress(5, "Searching")
+    result = await literature.run_discovery(
+        uuid.UUID(project_id),
+        reporter.session_factory,
+        query_ids=[uuid.UUID(q) for q in query_ids] if query_ids else None,
+        sources=sources,  # type: ignore[arg-type]
+        filters=Filters(year_from=year_from, year_to=year_to, venue=venue),
+        per_source=per_source,
+        max_new=max_new,
+        progress=reporter.progress,
+    )
+    return literature.summary(result, lambda s: SOURCE_LABEL.get(s, s))
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
     "idea_critique": idea_critique,
     "idea_revise": idea_revise,
     "idea_abstract": idea_abstract,
+    "literature_plan": literature_plan,
+    "literature_discover": literature_discover,
 }

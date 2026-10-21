@@ -1,0 +1,71 @@
+{
+ "status": "ok",
+ "message": {
+  "DOI": "10.1093/bioinformatics/btaa921",
+  "title": [
+   "GraphDTA: predicting drug\u2013target binding affinity with graph neural networks"
+  ],
+  "author": [
+   {
+    "given": "Thin",
+    "family": "Nguyen"
+   },
+   {
+    "given": "Hang",
+    "family": "Le"
+   },
+   {
+    "given": "Thomas P",
+    "family": "Quinn"
+   },
+   {
+    "given": "Tri",
+    "family": "Nguyen"
+   },
+   {
+    "given": "Thuc Duy",
+    "family": "Le"
+   },
+   {
+    "given": "Svetha",
+    "family": "Venkatesh"
+   }
+  ],
+  "issued": {
+   "date-parts": [
+    [
+     2020,
+     10,
+     24
+    ]
+   ]
+  },
+  "container-title": [
+   "Bioinformatics"
+  ],
+  "abstract": "<jats:title>Abstract</jats:title>\n                  <jats:sec>\n                    <jats:title>Summary</jats:title>\n                    <jats:p>The development of new drugs is costly, time consuming and often accompanied with safety issues. Drug repurposing can avoid the expensive and lengthy process of drug development by finding new uses for already approved drugs. In order to repurpose drugs effectively, it is useful to know which proteins are targeted by which drugs. Computational models that estimate the interaction strength of new drug\u2013target pairs have the potential to expedite drug repurposing. Several models have been proposed for this task. However, these models represent the drugs as strings, which is not a natural way to represent molecules. We propose a new model called GraphDTA that represents drugs as graphs and uses graph neural networks to predict drug\u2013target affinity. We show that graph neural networks not only predict drug\u2013target affinity better than non-deep learning models, but also outperform competing deep learning methods. Our results confirm that deep learning models are appropriate for drug\u2013target binding affinity prediction, and that representing drugs as graphs can lead to further improvements.</jats:p>\n                  </jats:sec>\n                  <jats:sec>\n                    <jats:title>Availability of implementation</jats:title>\n                    <jats:p>The proposed models are implemented in Python. Related data, pre-trained models and source code are publicly available at https://github.com/thinng/GraphDTA. All scripts and data needed to reproduce the post hoc statistical analysis are available from https://doi.org/10.5281/zenodo.3603523.</jats:p>\n                  </jats:sec>\n                  <jats:sec>\n                    <jats:title>Supplementary information</jats:title>\n                    <jats:p>Supplementary data are available at Bioinformatics online.</jats:p>\n                  </jats:sec>",
+  "URL": "https://doi.org/10.1093/bioinformatics/btaa921",
+  "type": "journal-article",
+  "is-referenced-by-count": 1238,
+  "link": [
+   {
+    "URL": "http://academic.oup.com/bioinformatics/advance-article-pdf/doi/10.1093/bioinformatics/btaa921/34053365/btaa921.pdf",
+    "content-type": "application/pdf",
+    "content-version": "am",
+    "intended-application": "syndication"
+   },
+   {
+    "URL": "https://academic.oup.com/bioinformatics/article-pdf/37/8/1140/50340643/btaa921.pdf",
+    "content-type": "application/pdf",
+    "content-version": "vor",
+    "intended-application": "syndication"
+   },
+   {
+    "URL": "https://academic.oup.com/bioinformatics/article-pdf/37/8/1140/50340643/btaa921.pdf",
+    "content-type": "unspecified",
+    "content-version": "vor",
+    "intended-application": "similarity-checking"
+   }
+  ]
+ }
+}

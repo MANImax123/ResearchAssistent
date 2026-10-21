@@ -4,7 +4,7 @@ from app.db.models.activity import AgentRun, Feedback, Job
 from app.db.models.analysis import Comparison, Contradiction, ResearchGap
 from app.db.models.figure import Figure, ManuscriptTable
 from app.db.models.file import File
-from app.db.models.paper import Paper, PaperChunk, PaperProfile
+from app.db.models.paper import Paper, PaperChunk, PaperProfile, SearchQuery
 from app.db.models.project import Project, ProjectMember, ResearchStateSnapshot, Stage
 from app.db.models.reference import Reference
 from app.db.models.section import Section, SectionVersion
@@ -27,6 +27,7 @@ __all__ = [
     "Reference",
     "ResearchGap",
     "ResearchStateSnapshot",
+    "SearchQuery",
     "Section",
     "SectionVersion",
     "Stage",

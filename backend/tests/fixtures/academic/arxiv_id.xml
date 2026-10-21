@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/O7edzBXr0K2Pcrkb1Bgz6exABg8</id>
+  <title>arXiv Query: search_query=&amp;id_list=2003.06505&amp;start=0&amp;max_results=10</title>
+  <updated>2026-10-21T13:35:58Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=10&amp;id_list=2003.06505" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>10</opensearch:itemsPerPage>
+  <opensearch:totalResults>1</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2003.06505v1</id>
+    <title>AutoGluon-Tabular: Robust and Accurate AutoML for Structured Data</title>
+    <updated>2020-03-13T23:10:39Z</updated>
+    <link href="https://arxiv.org/abs/2003.06505v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2003.06505v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We introduce AutoGluon-Tabular, an open-source AutoML framework that requires only a single line of Python to train highly accurate machine learning models on an unprocessed tabular dataset such as a CSV file. Unlike existing AutoML frameworks that primarily focus on model/hyperparameter selection, AutoGluon-Tabular succeeds by ensembling multiple models and stacking them in multiple layers. Experiments reveal that our multi-layer combination of many models offers better use of allocated training time than seeking out the best. A second contribution is an extensive evaluation of public and commercial AutoML platforms including TPOT, H2O, AutoWEKA, auto-sklearn, AutoGluon, and Google AutoML Tables. Tests on a suite of 50 classification and regression tasks from Kaggle and the OpenML AutoML Benchmark reveal that AutoGluon is faster, more robust, and much more accurate. We find that AutoGluon often even outperforms the best-in-hindsight combination of all of its competitors. In two popular Kaggle competitions, AutoGluon beat 99% of the participating data scientists after merely 4h of training on the raw data.</summary>
+    <category term="stat.ML" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2020-03-13T23:10:39Z</published>
+    <arxiv:primary_category term="stat.ML"/>
+    <author>
+      <name>Nick Erickson</name>
+    </author>
+    <author>
+      <name>Jonas Mueller</name>
+    </author>
+    <author>
+      <name>Alexander Shirkov</name>
+    </author>
+    <author>
+      <name>Hang Zhang</name>
+    </author>
+    <author>
+      <name>Pedro Larroy</name>
+    </author>
+    <author>
+      <name>Mu Li</name>
+    </author>
+    <author>
+      <name>Alexander Smola</name>
+    </author>
+  </entry>
+</feed>

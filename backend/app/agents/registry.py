@@ -8,6 +8,8 @@ from app.agents.idea.critique import CRITICS, CriticFn, make_llm_critic
 from app.core.config import get_settings
 from app.db.models.enums import StageName
 from app.orchestrator.graph import StageAgent
+from app.services.academic.models import SearchSourceName
+from app.services.academic.sources import SearchClient, default_clients
 from app.services.context import format_context, load_context
 from app.services.llm import LLMService, SessionFactory, get_provider
 from app.services.storage import get_storage
@@ -40,3 +42,4 @@ def default_critics(session_factory: SessionFactory) -> dict[str, CriticFn]:
 agent_factory: Callable[[SessionFactory], dict[StageName, StageAgent]] = default_agents
 llm_factory: Callable[[SessionFactory], Callable[[], LLMService]] = default_llm
 critic_factory: Callable[[SessionFactory], dict[str, CriticFn]] = default_critics
+academic_factory: Callable[[], dict[SearchSourceName, SearchClient]] = default_clients

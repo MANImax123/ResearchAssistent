@@ -1,0 +1,346 @@
+{
+ "status": "ok",
+ "message-type": "work-list",
+ "message-version": "1.0.0",
+ "message": {
+  "facets": {},
+  "total-results": 779589,
+  "items": [
+   {
+    "abstract": "<jats:title>Abstract</jats:title><jats:sec><jats:title>Motivation</jats:title><jats:p>Computational approaches for identifying the protein\u2013ligand binding affinity can greatly facilitate drug discovery and development. At present, many deep learning-based models are proposed to predict the protein\u2013ligand binding affinity and achieve significant performance improvement. However, protein\u2013ligand binding affinity prediction still has fundamental challenges. One challenge is that the mutual information between proteins and ligands is hard to capture. Another challenge is how to find and highlight the important atoms of the ligands and residues of the proteins.</jats:p></jats:sec><jats:sec><jats:title>Results</jats:title><jats:p>To solve these limitations, we develop a novel graph neural network strategy with the Vina distance optimization terms (GraphscoreDTA) for predicting protein\u2013ligand binding affinity, which takes the combination of graph neural network, bitransport information mechanism and physics-based distance terms into account for the first time. Unlike other methods, GraphscoreDTA can not only effectively capture the protein\u2013ligand pairs\u2019 mutual information but also highlight the important atoms of the ligands and residues of the proteins. The results show that GraphscoreDTA significantly outperforms existing methods on multiple test sets. Furthermore, the tests of drug\u2013target selectivity on the cyclin-dependent kinase and the homologous protein families demonstrate that GraphscoreDTA is a reliable tool for protein\u2013ligand binding affinity prediction.</jats:p></jats:sec><jats:sec><jats:title>Availability and implementation</jats:title><jats:p>The resource codes are available at https://github.com/CSUBioGroup/GraphscoreDTA.</jats:p></jats:sec>",
+    "DOI": "10.1093/bioinformatics/btad340",
+    "type": "journal-article",
+    "is-referenced-by-count": 90,
+    "title": [
+     "GraphscoreDTA: optimized graph neural network for protein\u2013ligand binding affinity prediction"
+    ],
+    "author": [
+     {
+      "given": "Kaili",
+      "family": "Wang",
+      "sequence": "first",
+      "affiliation": [
+       {
+        "name": "School of Computer Science and Engineering, Central South University , Changsha 410083, China"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Renyi",
+      "family": "Zhou",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "School of Computer Science and Engineering, Central South University , Changsha 410083, China"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Jing",
+      "family": "Tang",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Research Program in Systems Oncology, University of Helsinki , 00014 Helsinki, Finland"
+       },
+       {
+        "name": "Department of Biochemistry and Developmental Biology, University of Helsinki , 00014 Helsinki, Finland"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "ORCID": "https://orcid.org/0000-0002-0188-1394",
+      "authenticated-orcid": false,
+      "given": "Min",
+      "family": "Li",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "School of Computer Science and Engineering, Central South University , Changsha 410083, China"
+       },
+       {
+        "name": "Hunan Provincial Engineering Research Center of Intelligent Computing in Biology and Medicine , Changsha 410083, China"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Bioinformatics"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2023,
+       5,
+       24
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1093/bioinformatics/btad340"
+   },
+   {
+    "abstract": "<jats:p>Background/Objectives: Accurately predicting protein\u2013ligand binding affinity is essential in drug discovery for identifying effective compounds. While existing sequence-based machine learning models for binding affinity prediction have shown potential, they lack accuracy and robustness in pattern recognition, which limits their generalizability across diverse and novel binding complexes. To overcome these limitations, we developed GNNSeq, a novel hybrid machine learning model that integrates a Graph Neural Network (GNN) with Random Forest (RF) and XGBoost. Methods: GNNSeq predicts ligand binding affinity by extracting molecular characteristics and sequence patterns from protein and ligand sequences. The fully optimized GNNSeq model was trained and tested on subsets of the PDBbind dataset. The novelty of GNNSeq lies in its exclusive reliance on sequence features, a hybrid GNN framework, and an optimized kernel-based context-switching design. By relying exclusively on sequence features, GNNSeq eliminates the need for pre-docked complexes or high-quality structural data, allowing for accurate binding affinity predictions even when interaction-based or structural information is unavailable. The integration of GNN, XGBoost, and RF improves GNNSeq performance by hierarchical sequence learning, handling complex feature interactions, reducing variance, and forming a robust ensemble that improves predictions and mitigates overfitting. The GNNSeq unique kernel-based context switching scheme optimizes model efficiency and runtime, dynamically adjusts feature weighting between sequence and basic structural information, and improves predictive accuracy and model generalization. Results: In benchmarking, GNNSeq performed comparably to several existing sequence-based models and achieved a Pearson correlation coefficient (PCC) of 0.784 on the PDBbind v.2020 refined set and 0.84 on the PDBbind v.2016 core set. During external validation with the DUDE-Z v.2023.06.20 dataset, GNNSeq attained an average area under the curve (AUC) of 0.74, demonstrating its ability to distinguish active ligands from decoys across diverse ligand\u2013receptor pairs. To further evaluate its performance, we combined GNNSeq with two additional specialized models that integrate structural and protein\u2013ligand interaction features. When tested on a curated set of well-characterized drug\u2013target complexes, the hybrid models achieved an average PCC of 0.89, with the top-performing model reaching a PCC of 0.97. GNNSeq was designed with a strong emphasis on computational efficiency, training on 5000+ complexes in 1 h and 32 min, with real-time affinity predictions for test complexes. Conclusions: GNNSeq provides an efficient and scalable approach for binding affinity prediction, offering improved accuracy and generalizability while enabling large-scale virtual screening and cost-effective hit identification. GNNSeq is publicly available in a server-based graphical user interface (GUI) format.</jats:p>",
+    "DOI": "10.3390/ph18030329",
+    "type": "journal-article",
+    "is-referenced-by-count": 23,
+    "title": [
+     "GNNSeq: A Sequence-Based Graph Neural Network for Predicting Protein\u2013Ligand Binding Affinity"
+    ],
+    "author": [
+     {
+      "ORCID": "https://orcid.org/0009-0003-0616-5906",
+      "authenticated-orcid": false,
+      "given": "Somanath",
+      "family": "Dandibhotla",
+      "sequence": "first",
+      "affiliation": [
+       {
+        "name": "Department of Computer Science, College of Engineering and Computing, George Mason University, Fairfax, VA 22030, USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Madhav",
+      "family": "Samudrala",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Department of Statistics, College of Arts and Sciences, The University of Virginia, Charlottesville, VA 22903, USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Arjun",
+      "family": "Kaneriya",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Department of Computer Science, School of Computing, Data Sciences & Physics, College of William and Mary, Williamsburg, VA 23185, USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "ORCID": "https://orcid.org/0000-0003-3681-4121",
+      "authenticated-orcid": false,
+      "given": "Sivanesan",
+      "family": "Dakshanamurthy",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Department of Oncology, Lombardi Comprehensive Cancer Center, Georgetown University Medical Center, Washington, DC 20007, USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Pharmaceuticals"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2025,
+       2,
+       26
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.3390/ph18030329"
+   },
+   {
+    "abstract": "<jats:title>Abstract</jats:title>\n                  <jats:p>Predicting protein-ligand binding affinity is a fundamental challenge in drug discovery. Recent advances in deep learning have led to the development of numerous models, many of which rely on three-dimensional protein-ligand complex structures and focus primarily on affinity prediction. In this study, we introduce an Algebraic Graph Neural Network (AGNN) model designed to encode molecular structures into a low-dimensional graph representation while preserving critical biochemical interactions. While algebraic graph theory has been widely used in physical modeling and molecular studies, traditional methods often struggle to accurately capture the complexity of biomolecular interactions. To address this limitation, our proposed AGNN model leverages multiscale weighted colored subgraphs to describe molecular interactions through a graph neural network. These representations allow the model to effectively learn the geometric and topological features of protein-ligand complexes. The AGNN model integrates graph convolution layers and attention mechanisms to refine feature extraction and improve the interpretability of learned embeddings. Furthermore, we incorporate gradient boosting decision trees (GBDTs) to enhance the prediction of binding affinities by capturing nonlinear relationships between molecular features. Our approach is extensively validated using benchmark datasets, including PDBBind and CASF-2016, demonstrating superior performance in binding affinity prediction compared to state-of-the-art scoring functions.</jats:p>",
+    "DOI": "10.1515/cmb-2025-0035",
+    "type": "journal-article",
+    "is-referenced-by-count": 0,
+    "title": [
+     "An algebraic graph neural network model for\u00a0protein-ligand binding affinity prediction"
+    ],
+    "author": [
+     {
+      "ORCID": "https://orcid.org/0009-0004-6661-0335",
+      "authenticated-orcid": false,
+      "given": "Augustine",
+      "family": "Ouru",
+      "sequence": "first",
+      "affiliation": [
+       {
+        "name": "Department of Mathematical Sciences , University of Arkansas , Fayetteville , AR , 72701 , USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "ORCID": "https://orcid.org/0009-0006-7970-2372",
+      "authenticated-orcid": false,
+      "given": "Xi",
+      "family": "Chen",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "The Frazer School , Gainesville , FL , 32606 , USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "given": "Cameron",
+      "family": "Yeagle",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Department of Mathematics , University of Maryland , College Park , MD , 20742 , USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     },
+     {
+      "ORCID": "https://orcid.org/0000-0001-5416-6231",
+      "authenticated-orcid": false,
+      "given": "Jiahui",
+      "family": "Chen",
+      "sequence": "additional",
+      "affiliation": [
+       {
+        "name": "Department of Mathematical Sciences , University of Arkansas , Fayetteville , AR , 72701 , USA"
+       }
+      ],
+      "role": [
+       {
+        "vocabulary": "crossref",
+        "role": "author"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Computational and Mathematical Biophysics"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2026,
+       1,
+       1
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1515/cmb-2025-0035"
+   },
+   {
+    "abstract": "<jats:title>Abstract</jats:title>\n                  <jats:p>\n                    Alzheimer\u2019s disease (AD) requires the discovery of new therapeutic targets, but traditional molecular docking methods for virtual screening are often computationally expensive. This study introduces PhysDual-GCN, a physics-informed graph neural network designed to approximate\n                    <jats:italic>docking-derived</jats:italic>\n                    binding affinity scores for DYRK2, an understudied yet biologically relevant target in Alzheimer\u2019s disease (AD). The model jointly processes ligand molecular graphs and a sequence-based graph representation of DYRK2, while explicitly incorporating Coulomb and Lennard\u2013Jones interaction terms as analytical physical energy components. Because no experimentally measured binding affinities are available for DYRK2-drug pairs, all reference labels used for evaluation were obtained exclusively from widely used classical docking tools (AutoDock Vina, Smina, QVina, CB-DOCK). These tools exhibit an inherent uncertainty of approximately\u2009\u00b1\u20090.5\u20131.5\u00a0kcal/mol, which constrains the interpretability of absolute deviations. PhysDual-GCN was trained solely on docking-derived scores and evaluated using a strict ligand-level separation to avoid circularity during model development. Due to the limited number of ligands (\n                    <jats:italic>n</jats:italic>\n                    \u2009=\u20094 FDA-approved AD drugs: brexpiprazole, donepezil, galantamine, rivastigmine), the results should be viewed as\n                    <jats:italic>agreement with computational references</jats:italic>\n                    rather than generalizable predictive performance. The model achieved low absolute errors (MAE\u2009=\u20090.31\u00a0kcal/mol; RMSE\u2009=\u20090.44\u00a0kcal/mol) relative to the reference docking scores and correctly identified stronger binders such as donepezil (\u2212 10.8\u00a0kcal/mol) and brexpiprazole (\u2212 10.0\u00a0kcal/mol). These findings demonstrate that integrating physical interaction terms into a GNN framework can enhance interpretability while providing a computationally efficient surrogate for classical docking workflows. Overall, PhysDual-GCN offers a biologically meaningful and explainable approximation tool for DYRK2 interaction scoring. While the present results are constrained by the small number of compounds and the absence of 3D protein features, the approach establishes a foundation for future large-scale, experimentally validated studies in AD drug repurposing.\n                  </jats:p>",
+    "DOI": "10.1038/s41598-026-35102-7",
+    "type": "journal-article",
+    "is-referenced-by-count": 1,
+    "title": [
+     "A physics-informed graph neural network to approximate docking-based binding affinity for DYRK2 in Alzheimer\u2019s drug repurposing"
+    ],
+    "author": [
+     {
+      "given": "Veysel",
+      "family": "Gider",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     },
+     {
+      "given": "Cafer",
+      "family": "Budak",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+       {
+        "role": "author",
+        "vocabulary": "crossref"
+       }
+      ]
+     }
+    ],
+    "container-title": [
+     "Scientific Reports"
+    ],
+    "issued": {
+     "date-parts": [
+      [
+       2026,
+       2,
+       11
+      ]
+     ]
+    },
+    "URL": "https://doi.org/10.1038/s41598-026-35102-7"
+   }
+  ],
+  "items-per-page": 4,
+  "query": {
+   "start-index": 0,
+   "search-terms": null
+  }
+ }
+}

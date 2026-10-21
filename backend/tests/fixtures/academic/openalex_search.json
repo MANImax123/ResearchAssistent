@@ -1,0 +1,1643 @@
+{
+ "meta": {
+  "notice": "No API key, so this request shares one free daily budget ($0.10) with everyone on your network's IP address. Get a free key with its own $1/day at https://openalex.org/settings/api and add api_key=YOUR_KEY to your requests. An AI agent can get one for its user in one call: POST https://api.openalex.org/api-keys with {\"email\": \"<your user's email>\"}; we email them a link, and the key works once they click it. Docs for agents: https://help.openalex.org/llms.txt",
+  "count": 24988,
+  "db_response_time_ms": 122,
+  "page": 1,
+  "per_page": 3,
+  "groups_count": null,
+  "x_query": {
+   "oql": "get works where published since 2019-01-01\n  and full text has (graph neural network binding affinity)",
+   "x_new_oql": "get works since 2019-01-01 with (graph neural network binding affinity) in the full text",
+   "oqo": {
+    "get_rows": "works",
+    "filter_rows": [
+     {
+      "column_id": "from_publication_date",
+      "value": "2019-01-01"
+     },
+     {
+      "column_id": "fulltext.search",
+      "value": "graph neural network binding affinity",
+      "operator": "has"
+     }
+    ]
+   },
+   "url": "/works?filter=from_publication_date:2019-01-01,fulltext.search:graph neural network binding affinity&per_page=3"
+  },
+  "cost_usd": 0.001
+ },
+ "results": [
+  {
+   "id": "https://openalex.org/W3096561213",
+   "doi": "https://doi.org/10.1093/bioinformatics/btaa921",
+   "title": "GraphDTA: predicting drug\u2013target binding affinity with graph neural networks",
+   "display_name": "GraphDTA: predicting drug\u2013target binding affinity with graph neural networks",
+   "publication_year": 2020,
+   "ids": {
+    "openalex": "https://openalex.org/W3096561213",
+    "doi": "https://doi.org/10.1093/bioinformatics/btaa921",
+    "mag": "3096561213",
+    "pmid": "https://pubmed.ncbi.nlm.nih.gov/33119053"
+   },
+   "primary_location": {
+    "id": "doi:10.1093/bioinformatics/btaa921",
+    "doi": "https://doi.org/10.1093/bioinformatics/btaa921",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1093/bioinformatics/btaa921",
+    "pdf_url": null,
+    "source": {
+     "display_name": "Bioinformatics"
+    },
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Bioinformatics",
+    "raw_type": "journal-article"
+   },
+   "type": "article",
+   "open_access": {
+    "is_oa": false,
+    "oa_status": "closed",
+    "oa_url": null,
+    "any_repository_has_fulltext": false
+   },
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Hang Le"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thomas P. Quinn"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thuc Duy Le"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Svetha Venkatesh"
+     }
+    }
+   ],
+   "cited_by_count": 1232,
+   "best_oa_location": null,
+   "abstract_inverted_index": {
+    "SUMMARY:": [
+     0
+    ],
+    "The": [
+     1,
+     169
+    ],
+    "development": [
+     2,
+     27
+    ],
+    "of": [
+     3,
+     25,
+     61
+    ],
+    "new": [
+     4,
+     30,
+     62,
+     100
+    ],
+    "drugs": [
+     5,
+     40,
+     85,
+     106,
+     158
+    ],
+    "is": [
+     6,
+     43,
+     89
+    ],
+    "costly,": [
+     7
+    ],
+    "time": [
+     8
+    ],
+    "consuming": [
+     9
+    ],
+    "and": [
+     10,
+     22,
+     109,
+     155,
+     180,
+     190
+    ],
+    "often": [
+     11
+    ],
+    "accompanied": [
+     12
+    ],
+    "with": [
+     13
+    ],
+    "safety": [
+     14
+    ],
+    "issues.": [
+     15
+    ],
+    "Drug": [
+     16
+    ],
+    "repurposing": [
+     17
+    ],
+    "can": [
+     18,
+     161
+    ],
+    "avoid": [
+     19
+    ],
+    "the": [
+     20,
+     58,
+     66,
+     84,
+     195
+    ],
+    "expensive": [
+     21
+    ],
+    "lengthy": [
+     23
+    ],
+    "process": [
+     24
+    ],
+    "drug": [
+     26,
+     70
+    ],
+    "by": [
+     28,
+     51
+    ],
+    "finding": [
+     29
+    ],
+    "uses": [
+     31,
+     110
+    ],
+    "for": [
+     32,
+     77,
+     150
+    ],
+    "already": [
+     33
+    ],
+    "approved": [
+     34
+    ],
+    "drugs.": [
+     35,
+     53
+    ],
+    "In": [
+     36
+    ],
+    "order": [
+     37
+    ],
+    "to": [
+     38,
+     45,
+     68,
+     94,
+     114,
+     163,
+     193
+    ],
+    "repurpose": [
+     39
+    ],
+    "effectively,": [
+     41
+    ],
+    "it": [
+     42
+    ],
+    "useful": [
+     44
+    ],
+    "know": [
+     46
+    ],
+    "which": [
+     47,
+     52,
+     88
+    ],
+    "proteins": [
+     48
+    ],
+    "are": [
+     49,
+     148,
+     172,
+     183,
+     200,
+     208
+    ],
+    "targeted": [
+     50
+    ],
+    "Computational": [
+     54
+    ],
+    "models": [
+     55,
+     73,
+     82,
+     147,
+     171,
+     179
+    ],
+    "that": [
+     56,
+     104,
+     120,
+     144,
+     156
+    ],
+    "estimate": [
+     57
+    ],
+    "interaction": [
+     59
+    ],
+    "strength": [
+     60
+    ],
+    "drug-target": [
+     63,
+     116,
+     127,
+     151
+    ],
+    "pairs": [
+     64
+    ],
+    "have": [
+     65,
+     74
+    ],
+    "potential": [
+     67
+    ],
+    "expedite": [
+     69
+    ],
+    "repurposing.": [
+     71
+    ],
+    "Several": [
+     72
+    ],
+    "been": [
+     75
+    ],
+    "proposed": [
+     76,
+     170
+    ],
+    "this": [
+     78
+    ],
+    "task.": [
+     79
+    ],
+    "However,": [
+     80
+    ],
+    "these": [
+     81
+    ],
+    "represent": [
+     83,
+     95
+    ],
+    "as": [
+     86,
+     107,
+     159
+    ],
+    "strings,": [
+     87
+    ],
+    "not": [
+     90,
+     124
+    ],
+    "a": [
+     91,
+     99
+    ],
+    "natural": [
+     92
+    ],
+    "way": [
+     93
+    ],
+    "molecules.": [
+     96
+    ],
+    "We": [
+     97,
+     118
+    ],
+    "propose": [
+     98
+    ],
+    "model": [
+     101
+    ],
+    "called": [
+     102
+    ],
+    "GraphDTA": [
+     103
+    ],
+    "represents": [
+     105
+    ],
+    "graphs": [
+     108,
+     160
+    ],
+    "graph": [
+     111,
+     121
+    ],
+    "neural": [
+     112,
+     122
+    ],
+    "networks": [
+     113,
+     123
+    ],
+    "predict": [
+     115,
+     126
+    ],
+    "affinity.": [
+     117
+    ],
+    "show": [
+     119
+    ],
+    "only": [
+     125
+    ],
+    "affinity": [
+     128,
+     153
+    ],
+    "better": [
+     129
+    ],
+    "than": [
+     130
+    ],
+    "non-deep": [
+     131
+    ],
+    "learning": [
+     132,
+     139,
+     146
+    ],
+    "models,": [
+     133
+    ],
+    "but": [
+     134
+    ],
+    "also": [
+     135
+    ],
+    "outperform": [
+     136
+    ],
+    "competing": [
+     137
+    ],
+    "deep": [
+     138,
+     145
+    ],
+    "methods.": [
+     140
+    ],
+    "Our": [
+     141
+    ],
+    "results": [
+     142
+    ],
+    "confirm": [
+     143
+    ],
+    "appropriate": [
+     149
+    ],
+    "binding": [
+     152
+    ],
+    "prediction,": [
+     154
+    ],
+    "representing": [
+     157
+    ],
+    "lead": [
+     162
+    ],
+    "further": [
+     164
+    ],
+    "improvements.": [
+     165
+    ],
+    "AVAILABILITY": [
+     166
+    ],
+    "OF": [
+     167
+    ],
+    "IMPLEMENTATION:": [
+     168
+    ],
+    "implemented": [
+     173
+    ],
+    "in": [
+     174
+    ],
+    "Python.": [
+     175
+    ],
+    "Related": [
+     176
+    ],
+    "data,": [
+     177
+    ],
+    "pre-trained": [
+     178
+    ],
+    "source": [
+     181
+    ],
+    "code": [
+     182
+    ],
+    "publicly": [
+     184
+    ],
+    "available": [
+     185,
+     201,
+     209
+    ],
+    "at": [
+     186,
+     210
+    ],
+    "https://github.com/thinng/GraphDTA.": [
+     187
+    ],
+    "All": [
+     188
+    ],
+    "scripts": [
+     189
+    ],
+    "data": [
+     191,
+     207
+    ],
+    "needed": [
+     192
+    ],
+    "reproduce": [
+     194
+    ],
+    "post": [
+     196
+    ],
+    "hoc": [
+     197
+    ],
+    "statistical": [
+     198
+    ],
+    "analysis": [
+     199
+    ],
+    "from": [
+     202
+    ],
+    "https://doi.org/10.5281/zenodo.3603523.": [
+     203
+    ],
+    "SUPPLEMENTARY": [
+     204
+    ],
+    "INFORMATION:": [
+     205
+    ],
+    "Supplementary": [
+     206
+    ],
+    "Bioinformatics": [
+     211
+    ],
+    "online.": [
+     212
+    ]
+   }
+  },
+  {
+   "id": "https://openalex.org/W2955251621",
+   "doi": "https://doi.org/10.1101/684662",
+   "title": "GraphDTA: Predicting drug\u2013target binding affinity with graph neural networks",
+   "display_name": "GraphDTA: Predicting drug\u2013target binding affinity with graph neural networks",
+   "publication_year": 2019,
+   "ids": {
+    "openalex": "https://openalex.org/W2955251621",
+    "doi": "https://doi.org/10.1101/684662",
+    "mag": "2955251621"
+   },
+   "primary_location": {
+    "id": "doi:10.1101/684662",
+    "doi": "https://doi.org/10.1101/684662",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1101/684662",
+    "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2020/10/02/684662.full.pdf",
+    "source": {
+     "display_name": "bioRxiv (Cold Spring Harbor Laboratory)"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": "acceptedVersion",
+    "is_accepted": true,
+    "is_published": false,
+    "raw_source_name": "bioRxiv",
+    "raw_type": "posted-content"
+   },
+   "type": "preprint",
+   "open_access": {
+    "is_oa": true,
+    "oa_status": "green",
+    "oa_url": "https://www.biorxiv.org/content/biorxiv/early/2020/10/02/684662.full.pdf",
+    "any_repository_has_fulltext": true
+   },
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Hang Le"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thomas P. Quinn"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thin Nguyen"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Thuc Duy Le"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Svetha Venkatesh"
+     }
+    }
+   ],
+   "cited_by_count": 102,
+   "best_oa_location": {
+    "id": "doi:10.1101/684662",
+    "doi": "https://doi.org/10.1101/684662",
+    "is_oa": true,
+    "landing_page_url": "https://doi.org/10.1101/684662",
+    "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2020/10/02/684662.full.pdf",
+    "source": {
+     "display_name": "bioRxiv (Cold Spring Harbor Laboratory)"
+    },
+    "license": "cc-by",
+    "license_id": "https://openalex.org/licenses/cc-by",
+    "version": "acceptedVersion",
+    "is_accepted": true,
+    "is_published": false,
+    "raw_source_name": "bioRxiv",
+    "raw_type": "posted-content"
+   },
+   "abstract_inverted_index": {
+    "Abstract": [
+     0
+    ],
+    "The": [
+     1,
+     171
+    ],
+    "development": [
+     2,
+     27
+    ],
+    "of": [
+     3,
+     25,
+     61,
+     167
+    ],
+    "new": [
+     4,
+     30,
+     62,
+     100
+    ],
+    "drugs": [
+     5,
+     40,
+     85,
+     106,
+     158
+    ],
+    "is": [
+     6,
+     43,
+     89
+    ],
+    "costly,": [
+     7
+    ],
+    "time": [
+     8
+    ],
+    "consuming,": [
+     9
+    ],
+    "and": [
+     10,
+     22,
+     109,
+     155,
+     169,
+     182,
+     193
+    ],
+    "often": [
+     11
+    ],
+    "accompanied": [
+     12
+    ],
+    "with": [
+     13
+    ],
+    "safety": [
+     14
+    ],
+    "issues.": [
+     15
+    ],
+    "Drug": [
+     16
+    ],
+    "repurposing": [
+     17
+    ],
+    "can": [
+     18,
+     161
+    ],
+    "avoid": [
+     19
+    ],
+    "the": [
+     20,
+     58,
+     66,
+     84,
+     198
+    ],
+    "expensive": [
+     21
+    ],
+    "lengthy": [
+     23
+    ],
+    "process": [
+     24
+    ],
+    "drug": [
+     26,
+     70
+    ],
+    "by": [
+     28,
+     51
+    ],
+    "finding": [
+     29
+    ],
+    "uses": [
+     31,
+     110
+    ],
+    "for": [
+     32,
+     77,
+     150
+    ],
+    "already": [
+     33
+    ],
+    "approved": [
+     34
+    ],
+    "drugs.": [
+     35,
+     53
+    ],
+    "In": [
+     36
+    ],
+    "order": [
+     37
+    ],
+    "to": [
+     38,
+     45,
+     68,
+     94,
+     114,
+     163,
+     196
+    ],
+    "repurpose": [
+     39
+    ],
+    "effectively,": [
+     41
+    ],
+    "it": [
+     42
+    ],
+    "useful": [
+     44
+    ],
+    "know": [
+     46
+    ],
+    "which": [
+     47,
+     52,
+     88
+    ],
+    "proteins": [
+     48
+    ],
+    "are": [
+     49,
+     148,
+     174,
+     185,
+     202
+    ],
+    "targeted": [
+     50
+    ],
+    "Computational": [
+     54
+    ],
+    "models": [
+     55,
+     73,
+     82,
+     147,
+     173
+    ],
+    "that": [
+     56,
+     104,
+     120,
+     144,
+     156
+    ],
+    "estimate": [
+     57
+    ],
+    "interaction": [
+     59
+    ],
+    "strength": [
+     60
+    ],
+    "drug--target": [
+     63,
+     116,
+     127,
+     151
+    ],
+    "pairs": [
+     64
+    ],
+    "have": [
+     65,
+     74
+    ],
+    "potential": [
+     67
+    ],
+    "expedite": [
+     69
+    ],
+    "repurposing.": [
+     71
+    ],
+    "Several": [
+     72
+    ],
+    "been": [
+     75
+    ],
+    "proposed": [
+     76,
+     172
+    ],
+    "this": [
+     78
+    ],
+    "task.": [
+     79
+    ],
+    "However,": [
+     80
+    ],
+    "these": [
+     81
+    ],
+    "represent": [
+     83,
+     95
+    ],
+    "as": [
+     86,
+     107,
+     159
+    ],
+    "strings,": [
+     87
+    ],
+    "not": [
+     90,
+     124
+    ],
+    "a": [
+     91,
+     99
+    ],
+    "natural": [
+     92
+    ],
+    "way": [
+     93
+    ],
+    "molecules.": [
+     96
+    ],
+    "We": [
+     97,
+     118
+    ],
+    "propose": [
+     98
+    ],
+    "model": [
+     101
+    ],
+    "called": [
+     102
+    ],
+    "GraphDTA": [
+     103
+    ],
+    "represents": [
+     105
+    ],
+    "graphs": [
+     108,
+     160
+    ],
+    "graph": [
+     111,
+     121
+    ],
+    "neural": [
+     112,
+     122
+    ],
+    "networks": [
+     113,
+     123
+    ],
+    "predict": [
+     115,
+     126
+    ],
+    "affinity.": [
+     117
+    ],
+    "show": [
+     119
+    ],
+    "only": [
+     125
+    ],
+    "affinity": [
+     128,
+     153
+    ],
+    "better": [
+     129
+    ],
+    "than": [
+     130
+    ],
+    "non-deep": [
+     131
+    ],
+    "learning": [
+     132,
+     139,
+     146
+    ],
+    "models,": [
+     133,
+     181
+    ],
+    "but": [
+     134
+    ],
+    "also": [
+     135
+    ],
+    "outperform": [
+     136
+    ],
+    "competing": [
+     137
+    ],
+    "deep": [
+     138,
+     145
+    ],
+    "methods.": [
+     140
+    ],
+    "Our": [
+     141
+    ],
+    "results": [
+     142
+    ],
+    "confirm": [
+     143
+    ],
+    "appropriate": [
+     149
+    ],
+    "binding": [
+     152
+    ],
+    "prediction,": [
+     154
+    ],
+    "representing": [
+     157
+    ],
+    "lead": [
+     162
+    ],
+    "further": [
+     164
+    ],
+    "improvements.": [
+     165
+    ],
+    "Availability": [
+     166
+    ],
+    "data": [
+     168,
+     194
+    ],
+    "materials": [
+     170
+    ],
+    "implemented": [
+     175
+    ],
+    "in": [
+     176
+    ],
+    "Python.": [
+     177
+    ],
+    "Related": [
+     178
+    ],
+    "data,": [
+     179
+    ],
+    "pre-trained": [
+     180
+    ],
+    "source": [
+     183
+    ],
+    "code": [
+     184
+    ],
+    "publicly": [
+     186
+    ],
+    "available": [
+     187,
+     203
+    ],
+    "at": [
+     188
+    ],
+    "https://github.com/thinng/GraphDTA": [
+     189
+    ],
+    ".": [
+     190,
+     206
+    ],
+    "All": [
+     191
+    ],
+    "scripts": [
+     192
+    ],
+    "needed": [
+     195
+    ],
+    "reproduce": [
+     197
+    ],
+    "post-hoc": [
+     199
+    ],
+    "statistical": [
+     200
+    ],
+    "analysis": [
+     201
+    ],
+    "from": [
+     204
+    ],
+    "https://doi.org/10.5281/zenodo.3603523": [
+     205
+    ],
+    "Contact": [
+     207
+    ],
+    "Thin.Nguyen@deakin.edu.au": [
+     208
+    ]
+   }
+  },
+  {
+   "id": "https://openalex.org/W3167575787",
+   "doi": "https://doi.org/10.1145/3447548.3467311",
+   "title": "Structure-aware Interactive Graph Neural Networks for the Prediction of Protein-Ligand Binding Affinity",
+   "display_name": "Structure-aware Interactive Graph Neural Networks for the Prediction of Protein-Ligand Binding Affinity",
+   "publication_year": 2021,
+   "ids": {
+    "openalex": "https://openalex.org/W3167575787",
+    "doi": "https://doi.org/10.1145/3447548.3467311",
+    "mag": "3167575787"
+   },
+   "primary_location": {
+    "id": "doi:10.1145/3447548.3467311",
+    "doi": "https://doi.org/10.1145/3447548.3467311",
+    "is_oa": false,
+    "landing_page_url": "https://doi.org/10.1145/3447548.3467311",
+    "pdf_url": null,
+    "source": null,
+    "license": null,
+    "license_id": null,
+    "version": "publishedVersion",
+    "is_accepted": true,
+    "is_published": true,
+    "raw_source_name": "Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery &amp; Data Mining",
+    "raw_type": "proceedings-article"
+   },
+   "type": "conference-paper",
+   "open_access": {
+    "is_oa": false,
+    "oa_status": "closed",
+    "oa_url": null,
+    "any_repository_has_fulltext": false
+   },
+   "authorships": [
+    {
+     "author": {
+      "display_name": "Shuangli Li"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Jingbo Zhou"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Tong Xu"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Liang Huang"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Fan Wang"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Haoyi Xiong"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Weili Huang"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Dejing Dou"
+     }
+    },
+    {
+     "author": {
+      "display_name": "Hui Xiong"
+     }
+    }
+   ],
+   "cited_by_count": 214,
+   "best_oa_location": null,
+   "abstract_inverted_index": {
+    "Drug": [
+     0
+    ],
+    "discovery": [
+     1
+    ],
+    "often": [
+     2
+    ],
+    "relies": [
+     3
+    ],
+    "on": [
+     4,
+     139
+    ],
+    "the": [
+     5,
+     30,
+     47,
+     98,
+     111,
+     133,
+     143
+    ],
+    "successful": [
+     6
+    ],
+    "prediction": [
+     7,
+     27
+    ],
+    "of": [
+     8,
+     32,
+     81,
+     105,
+     145
+    ],
+    "protein-ligand": [
+     9,
+     33,
+     40
+    ],
+    "binding": [
+     10
+    ],
+    "affinity.": [
+     11
+    ],
+    "Recent": [
+     12
+    ],
+    "advances": [
+     13
+    ],
+    "have": [
+     14
+    ],
+    "shown": [
+     15
+    ],
+    "great": [
+     16
+    ],
+    "promise": [
+     17
+    ],
+    "in": [
+     18,
+     64
+    ],
+    "applying": [
+     19
+    ],
+    "graph": [
+     20,
+     44,
+     75,
+     85
+    ],
+    "neural": [
+     21,
+     76
+    ],
+    "networks": [
+     22
+    ],
+    "(GNNs)": [
+     23
+    ],
+    "for": [
+     24
+    ],
+    "better": [
+     25
+    ],
+    "affinity": [
+     26
+    ],
+    "by": [
+     28
+    ],
+    "learning": [
+     29
+    ],
+    "representations": [
+     31
+    ],
+    "complexes.": [
+     34
+    ],
+    "However,": [
+     35
+    ],
+    "existing": [
+     36
+    ],
+    "solutions": [
+     37
+    ],
+    "usually": [
+     38
+    ],
+    "treat": [
+     39
+    ],
+    "complexes": [
+     41
+    ],
+    "as": [
+     42
+    ],
+    "topological": [
+     43
+    ],
+    "data,": [
+     45
+    ],
+    "thus": [
+     46
+    ],
+    "biomolecular": [
+     48
+    ],
+    "structural": [
+     49
+    ],
+    "information": [
+     50,
+     115
+    ],
+    "is": [
+     51,
+     120
+    ],
+    "not": [
+     52
+    ],
+    "fully": [
+     53
+    ],
+    "utilized.": [
+     54
+    ],
+    "The": [
+     55
+    ],
+    "essential": [
+     56
+    ],
+    "long-range": [
+     57
+    ],
+    "interactions": [
+     58
+    ],
+    "among": [
+     59,
+     116
+    ],
+    "atoms": [
+     60
+    ],
+    "are": [
+     61
+    ],
+    "also": [
+     62
+    ],
+    "neglected": [
+     63
+    ],
+    "GNN": [
+     65
+    ],
+    "models.": [
+     66
+    ],
+    "To": [
+     67
+    ],
+    "this": [
+     68
+    ],
+    "end,": [
+     69
+    ],
+    "we": [
+     70
+    ],
+    "propose": [
+     71
+    ],
+    "a": [
+     72,
+     127
+    ],
+    "structure-aware": [
+     73
+    ],
+    "interactive": [
+     74,
+     91,
+     124
+    ],
+    "network": [
+     77
+    ],
+    "(SIGN)": [
+     78
+    ],
+    "which": [
+     79
+    ],
+    "consists": [
+     80
+    ],
+    "two": [
+     82,
+     140
+    ],
+    "components:": [
+     83
+    ],
+    "polar-inspired": [
+     84
+    ],
+    "attention": [
+     86
+    ],
+    "layers": [
+     87
+    ],
+    "(PGAL)": [
+     88
+    ],
+    "and": [
+     89,
+     107,
+     113
+    ],
+    "pairwise": [
+     90
+    ],
+    "pooling": [
+     92
+    ],
+    "(PiPool).": [
+     93
+    ],
+    "Specifically,": [
+     94
+    ],
+    "PGAL": [
+     95
+    ],
+    "iteratively": [
+     96
+    ],
+    "performs": [
+     97
+    ],
+    "node-edge": [
+     99
+    ],
+    "aggregation": [
+     100
+    ],
+    "process": [
+     101
+    ],
+    "to": [
+     102,
+     122,
+     131
+    ],
+    "update": [
+     103
+    ],
+    "embeddings": [
+     104
+    ],
+    "nodes": [
+     106
+    ],
+    "edges": [
+     108,
+     125
+    ],
+    "while": [
+     109
+    ],
+    "preserving": [
+     110
+    ],
+    "distance": [
+     112
+    ],
+    "angle": [
+     114
+    ],
+    "atoms.": [
+     117
+    ],
+    "Then,": [
+     118
+    ],
+    "PiPool": [
+     119
+    ],
+    "adopted": [
+     121
+    ],
+    "gather": [
+     123
+    ],
+    "with": [
+     126
+    ],
+    "subsequent": [
+     128
+    ],
+    "reconstruction": [
+     129
+    ],
+    "loss": [
+     130
+    ],
+    "reflect": [
+     132
+    ],
+    "global": [
+     134
+    ],
+    "interactions.": [
+     135
+    ],
+    "Exhaustive": [
+     136
+    ],
+    "experimental": [
+     137
+    ],
+    "study": [
+     138
+    ],
+    "benchmarks": [
+     141
+    ],
+    "verifies": [
+     142
+    ],
+    "superiority": [
+     144
+    ],
+    "SIGN.": [
+     146
+    ]
+   }
+  }
+ ]
+}
