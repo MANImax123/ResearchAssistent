@@ -142,6 +142,19 @@ async def literature_rank(reporter: JobReporter, project_id: str, top_n: int) ->
     )
 
 
+async def literature_parse(reporter: JobReporter, project_id: str, paper_ids: list[str]) -> dict[str, Any]:
+    """L4: fetch open-access PDFs, parse them (GROBID, PyMuPDF fallback) and chunk the text."""
+    from app.services import literature
+
+    await reporter.progress(5, f"Getting full text for {len(paper_ids)} papers")
+    return await literature.run_parsing(
+        uuid.UUID(project_id),
+        reporter.session_factory,
+        [uuid.UUID(p) for p in paper_ids],
+        progress=reporter.progress,
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -151,4 +164,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_plan": literature_plan,
     "literature_discover": literature_discover,
     "literature_rank": literature_rank,
+    "literature_parse": literature_parse,
 }

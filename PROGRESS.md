@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.3
+Current step: 4.4
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -20,8 +20,8 @@ Current step: 4.3
 | 3.3  | Draft abstract | ✅ | 2026-10-21 | Venue word range with length control; approved with the plan |
 | 4.1  | Academic API clients + Paper Discovery agent | ✅ | 2026-10-21 | S2, OpenAlex, arXiv, Crossref; dedup; manual DOI/arXiv/PDF add |
 | 4.2  | Relevance Ranking agent + selection | ✅ | 2026-10-21 | Embeddings + LLM rerank with reasons; selection → selected_paper_ids |
-| 4.3  | PDF acquisition + Document Parsing agent | 🔄 in progress | | |
-| 4.4  | Embeddings + RAG Retrieval agent | ⬜ not started | | |
+| 4.3  | PDF acquisition + Document Parsing agent | ✅ | 2026-10-21 | Legal OA PDFs; GROBID + PyMuPDF fallback; section chunks; upload-needed flow |
+| 4.4  | Embeddings + RAG Retrieval agent | 🔄 in progress | | |
 | 4.5  | Paper Analysis agent | ⬜ not started | | |
 | 4.6  | Comparative Analysis agent | ⬜ not started | | |
 | 4.7  | Contradiction Detection agent | ⬜ not started | | |

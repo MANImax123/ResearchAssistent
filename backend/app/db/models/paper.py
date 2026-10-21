@@ -47,8 +47,10 @@ class Paper(UUIDPkMixin, TimestampMixin, Base):
     relevance_rqs: Mapped[list[str]] = mapped_column(JSONB, default=list)  # RQ ids the LLM says it informs
     ranked_for: Mapped[str | None] = mapped_column(String(16))  # fingerprint of the RQs it was judged against
     must_include: Mapped[bool] = mapped_column(Boolean, default=False)
+    parse_error: Mapped[str | None] = mapped_column(Text)  # why parsing failed / no PDF was found (Step 4.3)
 
     profile: Mapped["PaperProfile | None"] = relationship(back_populates="paper", cascade="all, delete-orphan")
+    document: Mapped["PaperDocument | None"] = relationship(back_populates="paper", cascade="all, delete-orphan")
     chunks: Mapped[list["PaperChunk"]] = relationship(back_populates="paper", cascade="all, delete-orphan")
 
 
@@ -97,3 +99,29 @@ class SearchQuery(UUIDPkMixin, CreatedAtMixin, Base):
     origin: Mapped[QueryOrigin] = mapped_column(str_enum(QueryOrigin), default=QueryOrigin.AI)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     last_found: Mapped[int | None] = mapped_column(Integer)  # results across sources in the last run
+
+
+class PaperDocument(TimestampMixin, Base):
+    """A paper's parsed full text (Step 4.3): sections with kinds and pages, figure/table captions.
+
+    Kept apart from `papers` because it is large and only needed when a paper is opened.
+    """
+
+    __tablename__ = "paper_documents"
+
+    paper_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("papers.id", ondelete="CASCADE"), primary_key=True)
+    file_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("files.id", ondelete="SET NULL")
+    )  # the PDF that was parsed
+    pdf_source: Mapped[str] = mapped_column(String(32))  # upload | arxiv | open_access | unpaywall
+    pdf_url: Mapped[str | None] = mapped_column(String(2048))  # where it was downloaded from
+    parser: Mapped[str] = mapped_column(String(16))  # grobid | pymupdf
+    page_count: Mapped[int | None] = mapped_column(Integer)
+    title: Mapped[str | None] = mapped_column(Text)
+    abstract: Mapped[str | None] = mapped_column(Text)
+    sections: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    captions: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    limitations: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    reference_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    paper: Mapped[Paper] = relationship(back_populates="document")

@@ -1,0 +1,1537 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Structure-aware Interactive Graph Neural Networks for the Prediction of Protein-Ligand Binding Affinity</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability  status="unknown">
+					<licence/>
+				</availability>
+				<date type="published" when="2021-07-21">21 Jul 2021</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName><forename type="first">Shuangli</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China</orgName>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China</orgName>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Jingbo</forename><surname>Zhou</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Tong</forename><surname>Xu</surname></persName>
+							<email>tongxu@ustc.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China</orgName>
+							</affiliation>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Liang</forename><surname>Huang</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="institution">Baidu Research USA</orgName>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="institution">Oregon State University</orgName>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="institution">Baidu Research USA</orgName>
+							</affiliation>
+							<affiliation key="aff4">
+								<orgName type="institution">Oregon State University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Fan</forename><surname>Wang</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Haoyi</forename><surname>Xiong</surname></persName>
+							<email>hxiong@rutgers.edu</email>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Weili</forename><surname>Huang</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+							<affiliation key="aff5">
+								<orgName type="institution">HWL Consulting LLC</orgName>
+							</affiliation>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+							<affiliation key="aff5">
+								<orgName type="institution">HWL Consulting LLC</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Dejing</forename><surname>Dou</surname></persName>
+							<email>doudejing@baidu.com</email>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="department">Business Intelligence Lab</orgName>
+								<address>
+									<country>Baidu Research</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hui</forename><surname>Xiong</surname></persName>
+							<affiliation key="aff6">
+								<orgName type="institution">Rutgers University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Haoyi</forename><surname>Xiong</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">Baidu Inc</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Hui</forename><surname>Xiong</surname></persName>
+							<affiliation key="aff6">
+								<orgName type="institution">Rutgers University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Structure-aware Interactive Graph Neural Networks for the Prediction of Protein-Ligand Binding Affinity</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2021-07-21">21 Jul 2021</date>
+						</imprint>
+					</monogr>
+					<idno type="MD5">33E43CCA460223EF5349FD61862827FD</idno>
+					<idno type="DOI">10.1145/3447548.3467311</idno>
+					<idno type="arXiv">arXiv:2107.10670v1[q-bio.QM]</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.8.1" ident="GROBID" when="2026-10-21T15:04+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Binding Affinity Prediction</term>
+					<term>Graph Neural Network</term>
+					<term>Drug Discovery</term>
+				</keywords>
+			</textClass>
+			<abstract>
+<div xmlns="http://www.tei-c.org/ns/1.0"><p coords="1,53.80,230.84,241.76,8.97;1,53.80,241.80,240.25,8.97;1,53.80,252.76,241.76,8.97;1,53.80,263.72,241.63,8.97;1,53.80,274.68,240.25,8.97;1,53.80,285.64,241.76,8.97;1,53.80,296.59,240.24,8.97;1,53.80,307.55,240.25,8.97;1,53.80,318.51,240.78,8.97;1,53.47,329.47,240.58,8.97;1,53.80,340.43,241.76,8.97;1,53.80,351.39,240.25,8.97;1,53.80,362.35,241.76,8.97;1,53.80,373.31,240.25,8.97;1,53.80,384.27,240.25,8.97;1,53.80,395.22,240.25,8.97;1,53.80,406.18,180.98,8.97">Drug discovery often relies on the successful prediction of proteinligand binding affinity. Recent advances have shown great promise in applying graph neural networks (GNNs) for better affinity prediction by learning the representations of protein-ligand complexes. However, existing solutions usually treat protein-ligand complexes as topological graph data, thus the biomolecular structural information is not fully utilized. The essential long-range interactions among atoms are also neglected in GNN models. To this end, we propose a structure-aware interactive graph neural network (SIGN) which consists of two components: polar-inspired graph attention layers (PGAL) and pairwise interactive pooling (PiPool). Specifically, PGAL iteratively performs the node-edge aggregation process to update embeddings of nodes and edges while preserving the distance and angle information among atoms. Then, PiPool is adopted to gather interactive edges with a subsequent reconstruction loss to reflect the global interactions. Exhaustive experimental study on two benchmarks verifies the superiority of SIGN.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="1,53.80,427.51,81.02,9.37">CCS CONCEPTS</head><p coords="1,53.80,441.33,240.25,8.97;1,53.80,452.67,207.00,8.44">• Computing methodologies → Neural networks; • Applied computing → Bioinformatics; Computational biology.</p></div>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<facsimile>
+		<surface n="1" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="2" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="3" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="4" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="5" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="6" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="7" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="8" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="9" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="10" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+		<surface n="11" ulx="0.0" uly="0.0" lrx="612.0" lry="792.0"/>
+	</facsimile>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1" coords="1,317.96,401.87,102.73,9.37">INTRODUCTION</head><p coords="1,317.69,415.69,240.75,8.97;1,317.96,426.65,240.25,8.97;1,317.96,437.61,55.67,8.97;1,389.39,437.61,170.33,8.97;1,317.96,448.57,240.25,8.97;1,317.96,459.53,240.25,8.97;1,317.96,470.49,240.25,8.97;1,317.96,481.44,241.76,8.97;1,317.96,492.40,240.25,8.97;1,317.96,503.36,240.25,8.97;1,317.96,514.32,240.25,8.97;1,317.96,525.28,240.25,8.97;1,317.96,536.24,240.25,8.97;1,317.96,547.20,240.25,8.97;1,317.96,558.16,240.41,8.97;1,317.96,569.12,222.85,8.97;1,556.27,569.12,3.31,8.97">The prediction of protein-ligand binding affinity has been widely considered as one of the most important tasks in computational drug discovery <ref type="bibr" target="#b15">[16]</ref>. Here ligands are usually drug candidates including small molecules and biologics which can interact with proteins as agonists or inhibitors in the biological processes to cure diseases. The binding affinity, defined as the strength of the binding interaction between a protein and a ligand (e.g., drug), can be measured by experimental methods. However, those biological tests are laborious and time-consuming. With the computer aided simulation methods and the data-driven learning models, binding affinities can be predicted in the early stage of drug discovery. Instead of applying costly biological methods directly to screen numerous candidate molecules, the prediction of binding affinity can help to rank drug candidates and prioritize the appropriate ones for subsequent testing to accelerate the process of drug screening <ref type="bibr" target="#b20">[21]</ref>.</p><p coords="1,327.92,580.08,230.28,8.97;1,317.96,591.03,190.14,8.97;1,519.82,591.03,38.38,8.97;1,317.96,601.99,241.76,8.97;1,317.96,612.95,202.70,8.97;1,556.23,612.95,3.35,8.97;1,317.96,623.91,241.76,8.97;1,317.96,634.87,146.20,8.97;1,480.55,634.87,77.64,8.97;1,317.96,645.83,240.25,8.97;1,317.96,656.79,240.25,8.97;1,317.96,667.75,240.48,8.97;1,317.96,678.71,103.56,8.97;1,432.95,678.71,125.25,8.97;1,317.96,689.66,181.97,8.97;1,505.41,689.66,52.79,8.97;1,317.96,700.62,240.48,8.97;2,53.80,86.92,159.43,8.97;2,253.47,86.92,42.09,8.97;2,53.80,97.88,240.25,8.97;2,53.80,108.84,240.25,8.97;2,53.80,119.80,240.46,8.97;2,53.47,130.76,240.58,8.97;2,53.80,141.72,95.97,8.97;2,179.83,141.72,115.20,8.97;2,53.47,152.68,241.96,8.97;2,53.80,163.64,240.25,8.97;2,53.80,174.60,31.99,8.97;2,114.29,174.60,179.76,8.97;2,53.80,185.55,240.25,8.97;2,53.80,196.51,240.24,8.97;2,53.80,207.47,146.69,8.97">With the development of structural biology and protein structure prediction, especially the recent Alphafold II model <ref type="bibr" target="#b3">[4]</ref>, there are growing three-dimensional (3D) structure protein data, which enables a new paradigm for structure-based drug discovery <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b26">27]</ref>. It has been demonstrated that 3D structural information can effectively contribute to the drug design <ref type="bibr" target="#b17">[18]</ref>. Indeed, since there are already many accurate and robust algorithms to find poses of protein-ligand complexes (e.g., binding site prediction methods and docking methods), it is significant to focus on the much harder task of binding affinity prediction <ref type="bibr" target="#b1">[2]</ref>. To learn useful 3D structure from a protein-ligand complex, as illustrated in Figure <ref type="figure" target="#fig_0">1</ref>, many efforts have been devoted to estimating more accurate binding affinity for effective drug design. Docking methods <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b37">38]</ref> play an important role to predict how a specific ligand binds to the target protein with affordable computational costs. While the docking process can identify the binding pose of the protein-ligand complex with relatively high accuracy, its prediction of binding affinity is inaccurate and unreliable <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b27">28]</ref> due to poor scoring functions, which limits the applicability of docking methods in drug discovery. Compared to docking calculations, traditional machine learning methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b13">14]</ref> have improved the performance by learning the extracted features from protein-ligand complexes. However, these approaches with limited generalizability require expert knowledge and heavily rely on feature engineering.</p><p coords="2,63.76,218.43,231.80,8.97;2,53.80,229.39,240.46,8.97;2,53.80,240.35,63.62,8.97;2,133.79,240.35,70.41,8.97;2,224.83,240.35,51.48,8.97;2,53.80,251.31,240.24,8.97;2,53.80,262.27,240.25,8.97;2,53.80,273.23,241.76,8.97;2,53.80,284.18,37.68,8.97;2,137.65,284.18,156.40,8.97;2,53.80,295.14,241.76,8.97;2,53.80,306.10,240.48,8.97;2,53.47,317.06,240.58,8.97;2,53.80,328.02,240.25,8.97;2,53.80,338.98,229.33,8.97">Recently, deep learning for binding affinity prediction have become an emerging research area, which represents the complex as sequence data <ref type="bibr" target="#b30">[31]</ref>, 3D grid-like data <ref type="bibr" target="#b39">[40]</ref> or graph data <ref type="bibr" target="#b29">[30]</ref> to employ various neural networks. One of the key challenges of deep learning in structural biology is how to model the 3D spatial structure for better performance. To this end, most of the existing works <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b34">35,</ref><ref type="bibr" target="#b39">40]</ref> attempt to apply 3D convolutional neural networks (3D CNNs) by treating the complex as a 3D-grid representation. However, the cost of these models is huge, especially when considering long-range interactions. What's more, both the absence of topological information and the sensitivity to rotation in the complex have a negative effect on the prediction results.</p><p coords="2,63.76,349.94,230.28,8.97;2,53.80,360.90,98.48,8.97;2,191.58,360.90,102.47,8.97;2,81.97,371.86,213.45,8.97;2,53.80,382.81,240.25,8.97;2,53.80,393.77,115.74,8.97;2,197.53,393.77,98.03,8.97;2,53.80,404.73,49.22,8.97;2,147.43,404.73,81.07,8.97;2,240.20,404.73,54.84,8.97;2,53.80,415.69,240.24,8.97;2,53.80,426.65,240.25,8.97;2,53.80,437.61,240.25,8.97;2,53.80,448.57,240.24,8.97;2,53.80,459.53,240.25,8.97;2,53.80,470.49,240.25,8.97;2,53.80,481.44,240.48,8.97;2,67.15,492.40,205.12,8.97">Despite the powerful ability of graph neural networks (GNNs) to learn graph representations <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b46">47]</ref>, there are only a few studies <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b29">30]</ref> on using GNNs to predict the protein-ligand binding affinity. By contrast, many researchers have greatly developed GNN models in other fields of drug discovery <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b44">45]</ref>, such as predicting molecular property <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b43">44]</ref> and chemical reaction <ref type="bibr" target="#b6">[7]</ref>. Nevertheless, these domain-specific models tend to lose their effectiveness when modeling the larger biomolecules, e.g., protein-ligand complexes. In general, most of the existing GNNs in drug design aim to learn the spatial structure by incorporating the distance information, which is insufficient to model the 3D structure of complex. Moreover, the fundamental long-range interactive information between proteins and ligands, which is valuable for predicting the binding affinity <ref type="bibr" target="#b18">[19]</ref>, cannot be handled under the current GNN framework.</p><p coords="2,63.76,503.36,231.80,8.97;2,53.80,514.32,241.76,8.97;2,53.80,525.28,240.24,8.97;2,53.80,536.24,241.77,8.97;2,53.80,547.20,240.25,8.97;2,53.80,558.16,240.24,8.97;2,53.80,569.12,241.76,8.97;2,53.80,580.08,240.41,8.97;2,53.80,591.03,241.77,8.97;2,53.80,601.99,240.25,8.97;2,53.80,612.95,240.25,8.97;2,53.80,623.91,240.25,8.97;2,53.80,634.87,241.63,8.97">To overcome the above limitations, we propose a novel Structureaware Interactive Graph Neural Network (SIGN) to learn the constructed complex graph for predicting the protein-ligand binding affinity. SIGN is equipped with two designed components to correspondingly address the challenges, namely the polar-inspired graph attention layers (PGAL) for modeling 3D spatial structure and the pairwise interactive pooling (PiPool) for leveraging long-range interactions. Firstly, the key idea of PGAL is to establish a polar coordinate system for each central target and to preserve both distance and angle information of neighbors when performing the aggregation process. More specifically, we apply the node-edge interactive scheme iteratively with graph attention to integrate spatial factors for effectively learning the 3D structure of complex.</p><p coords="2,63.76,645.83,230.28,8.97;2,53.80,656.79,240.48,8.97;2,53.80,667.75,240.25,8.97;2,53.80,678.71,240.25,8.97;2,53.80,689.66,240.25,8.97;2,53.80,700.62,240.24,8.97;2,317.96,86.92,240.25,8.97;2,317.96,97.88,240.25,8.97;2,317.96,108.84,240.25,8.97;2,317.96,119.80,240.25,8.97;2,317.96,130.76,152.04,8.97">In view of the large size of the protein, it is redundant to contain the complete protein structure in the complex graph, but in this way the long-range interactive information between the protein and the ligand is also lost. To deal with this issue, PiPool, the secondary part of SIGN is designed to incorporate such global interactions into our model, which employs an atomic type-aware pooling process on edges with introducing an auxiliary learning task to reconstruct the atomic interaction matrix. By this means, SIGN can enhance the representation learning for complexes with involving both 3D spatial structures and global interactions. To summarize, the main contributions of this paper are as follows:</p><p coords="2,317.96,144.71,240.24,8.97;2,326.40,155.67,231.80,8.97;2,326.40,166.63,170.08,8.97;2,317.96,177.58,240.25,8.97;2,326.40,188.54,233.32,8.97;2,326.40,199.50,231.80,8.97;2,326.40,210.46,231.80,8.97;2,326.40,221.42,168.68,8.97;2,317.96,232.38,240.24,8.97;2,326.40,243.34,233.32,8.97;2,326.40,254.30,233.14,8.97">• To the best of our knowledge, we are among the first to develop graph neural networks from the perspective of polar coordinates for structure-based binding affinity prediction. • We propose a novel structure-aware interactive graph neural network (SIGN), which can capture not only 3D spatial information through polar-inspired graph attention layers (PGAL), but also global long-range interactions through pairwise interactive pooling (PiPool) in a semi-supervised manner. • We conduct extensive experiments using two benchmark datasets to evaluate the performance of the proposed model, which demonstrates the effectiveness of our SIGN with better generalizability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2" coords="2,317.96,270.36,103.79,9.37">RELATED WORK</head><p coords="2,317.96,284.18,241.77,8.97;2,317.96,295.14,240.25,8.97;2,317.96,306.10,164.26,8.97">In this section, we first review the related literatures about predicting protein-ligand binding affinity and then detail recent advances in graph neural networks for drug discovery.</p><p coords="2,327.92,317.06,230.28,8.97;2,317.96,328.02,241.76,8.97;2,317.96,338.98,174.98,8.97;2,521.22,338.98,36.98,8.97;2,317.96,349.94,240.25,8.97;2,317.96,360.90,114.37,8.97;2,470.88,360.90,88.84,8.97;2,317.96,371.86,240.24,8.97;2,317.96,382.81,241.62,8.97;2,317.96,393.77,213.25,8.97;2,546.61,393.77,11.60,8.97;2,317.96,404.73,241.23,8.97;2,317.62,415.69,240.58,8.97;2,317.96,426.65,170.70,8.97;2,505.11,426.65,34.73,8.97;2,556.21,426.65,3.37,8.97;2,317.69,437.61,242.03,8.97;2,317.96,448.57,240.25,8.97;2,317.96,459.53,101.24,8.97;2,438.36,459.53,121.36,8.97;2,317.96,470.49,240.25,8.97;2,317.96,481.44,240.41,8.97;2,317.96,492.40,199.05,8.97">Protein-Ligand Binding Affinity Prediction. As a crucial stage in drug discovery, predicting protein-ligand binding affinity has been intensively studied for a long time <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b33">34]</ref>, which is of great importance for efficient and accurate drug screening. The earlier empirical-based methods <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b37">38,</ref><ref type="bibr" target="#b41">42]</ref> design docking and scoring functions specially to make predictions, while expert domain knowledge is required to encode internal biochemical interactions. Later on, statistical and machine learning-based methods <ref type="bibr" target="#b4">[5]</ref> are developed to predict binding affinity based on data-driven learning, which attempt to extract protein-ligand features and use classic models for regression, such as random forest <ref type="bibr" target="#b1">[2]</ref> and SVM <ref type="bibr" target="#b13">[14]</ref>. These approaches are dependent on the quality of hand-crafted features and lack of generality on the larger dataset. Recently, several deep learning-based models <ref type="bibr" target="#b30">[31]</ref> utilize 1D convolutions and pooling to capture potential patterns from raw sequence information of both ligand and protein. However, only using separate character representations fails to achieve desirable performance.</p><p coords="2,327.92,503.36,217.78,8.97;2,317.96,514.32,240.25,8.97;2,331.18,525.28,227.02,8.97;2,317.96,536.24,241.76,8.97;2,317.96,547.20,240.25,8.97;2,347.50,558.16,210.70,8.97;2,317.96,569.12,241.76,8.97;2,317.96,580.08,241.76,8.97;2,317.96,591.03,240.25,8.97;2,317.96,601.99,241.77,8.97;2,317.96,612.95,240.24,8.97;2,317.96,623.91,188.64,8.97;2,526.90,623.91,31.30,8.97;2,317.96,634.87,240.25,8.97;2,317.96,645.83,241.77,8.97;2,317.96,656.79,240.25,8.97;2,317.96,667.75,162.96,8.97;2,495.94,667.75,62.26,8.97;2,317.96,678.71,241.76,8.97;2,317.96,689.66,241.76,8.97;2,317.96,700.62,240.25,8.97;3,53.80,358.62,241.24,8.97;3,53.47,369.58,240.58,8.97;3,53.80,380.54,238.94,8.97">With the recent advances in predicting structures of proteins <ref type="bibr" target="#b3">[4]</ref> and the increasing availability of 3D-structure protein-ligand data <ref type="bibr" target="#b40">[41]</ref>, there is another hot research area of studying structure-based approaches, which focus on learning from 3D-structure proteinligand complexes to predict binding affinity. Some recent works <ref type="bibr" target="#b31">[32,</ref><ref type="bibr" target="#b34">35]</ref> represent the protein-ligand complex as 3D grid-like data and use 3D convolutions (3D-CNNs) to take advantage of spatiallylocal correlations. Though these approaches can learn spatial information, one limitation is that positions of proteins and ligands in different complexes are changeable, such as different angle rotations, which means the spatial structure of 3D grid-like modeling is inevitably incomplete. More recently, OnionNet <ref type="bibr" target="#b45">[46]</ref> employs CNN models to learn the complex representation from the extracted element-specific interaction features between a protein and its ligand. However, all the above models neglect the critical topological structure information of complex. In the work <ref type="bibr" target="#b22">[23]</ref>, a protein-ligand complex is represented as a weighted graph with distance information. Then graph attention networks are applied to predicting the interactions. Nevertheless, only distance information between atoms  is not adequate to model 3D-structure interactions. In this paper, we also focus on the structure-based prediction of protein-ligand binding affinity with incorporating abundant spatial information.</p><formula xml:id="formula_0">! " ! # $ #" ! % ! &amp; ! ' ! ( ! "" ! ) ! * ! "+ ! , ! "# ! "% $ "% $ *" $ ,% $ (%</formula><p coords="3,63.76,391.50,230.52,8.97;3,53.80,402.46,240.25,8.97;3,53.80,413.42,240.24,8.97;3,53.80,424.38,107.23,8.97;3,176.29,424.38,119.27,8.97;3,53.80,435.34,47.63,8.97;3,120.11,435.34,74.90,8.97;3,210.29,435.34,83.76,8.97;3,53.80,446.30,240.25,8.97;3,53.80,457.25,223.25,8.97;3,53.80,468.21,70.67,8.97;3,165.90,468.21,129.65,8.97;3,53.80,479.17,240.25,8.97;3,53.80,490.13,240.25,8.97;3,53.80,501.09,241.63,8.97;3,53.53,512.05,240.52,8.97;3,53.80,523.01,91.13,8.97;3,189.38,523.01,104.67,8.97;3,53.80,533.97,240.25,8.97;3,53.80,544.93,240.25,8.97;3,53.80,555.89,136.69,8.97;3,219.25,555.89,26.08,8.97;3,261.30,555.89,32.75,8.97;3,53.80,566.84,39.51,8.97;3,105.02,566.84,189.02,8.97;3,53.80,577.80,241.76,8.97;3,53.80,588.76,137.02,8.97;3,210.21,588.76,84.07,8.97;3,53.80,599.72,240.41,8.97;3,53.80,610.68,240.25,8.97;3,53.80,621.64,240.47,8.97;3,53.47,632.60,230.48,8.97">Graph Neural Networks for Drug Discovery. Inspired by the great advantage of graph neural networks (GNNs) in modeling graph data, much attention has been devoted to applying them in computational drug discovery <ref type="bibr" target="#b36">[37]</ref>, such as the prediction of molecular property <ref type="bibr" target="#b9">[10]</ref> and protein interface <ref type="bibr" target="#b24">[25]</ref>. Treating the molecule as a graph, GNNs can learn the graph-level representation for drug or protein by aggregating structural information. GraphDTA <ref type="bibr" target="#b29">[30]</ref> adopts GNN models <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b38">39,</ref><ref type="bibr" target="#b42">43]</ref> to learn drug presentation with combining the protein representation from 1D convolutions to predict binding affinity. In attributed molecular graphs, the edges between atoms contain valuable information, such as distance or bond order. To leverage rich attributes in the molecule, edge-oriented message passing neural networks <ref type="bibr" target="#b32">[33,</ref><ref type="bibr" target="#b43">44,</ref><ref type="bibr" target="#b47">48]</ref> are proposed to update both node and edge embeddings . Meanwhile, there are also some efforts to model the 3D-structure of molecule by improving GNNs with spatial information, such as distance <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b25">26]</ref>, angle <ref type="bibr" target="#b16">[17]</ref>, and 3D coordinate <ref type="bibr" target="#b5">[6]</ref>. However, these models fail to consider the spatial interactions between proteins and ligands. In addition, the function of learning angle information in <ref type="bibr" target="#b16">[17]</ref> is designed for density functional theory, which is only beneficial for predicting molecular properties rather than protein-ligand binding affinity. To overcome these limitations, we propose an interaction-aware GNN framework with integrating both distance and angle factors harmoniously.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3" coords="3,53.80,653.92,101.88,9.37">PRELIMINARIES</head><p coords="3,53.80,667.75,240.25,8.97;3,53.80,678.71,241.76,8.97;3,53.80,689.66,240.41,8.97;3,53.80,700.62,89.89,8.97;3,149.00,700.62,3.07,8.97;3,327.92,196.18,231.80,8.97;3,317.96,207.14,121.31,8.97;3,443.81,207.14,114.39,8.97;3,317.96,218.28,99.19,8.97;3,417.65,218.59,3.93,3.24;3,425.61,218.67,16.30,7.93;3,442.11,218.59,3.93,3.24;3,442.22,222.82,3.38,7.27;3,447.00,218.59,21.84,6.52;3,464.57,224.06,6.28,3.24;3,471.84,218.28,30.44,8.97;3,502.78,218.59,4.02,3.24;3,510.36,218.67,16.30,7.93;3,526.87,218.59,4.02,3.24;3,526.97,222.82,3.38,7.27;3,531.37,218.59,21.94,6.52;3,549.11,224.06,4.17,3.24;3,554.29,218.67,3.69,7.70;3,317.62,230.60,99.87,8.97;3,421.39,230.98,13.46,8.58;3,434.39,230.91,14.56,3.24;3,451.30,230.60,26.83,8.97;3,481.56,230.98,13.46,8.58;3,494.72,230.91,12.44,3.24;3,509.52,230.60,48.69,8.97;3,317.96,241.56,240.24,8.97;3,317.96,252.52,113.53,8.97;3,431.06,257.69,2.21,3.24;3,437.19,252.52,121.01,8.97;3,317.96,264.04,30.94,7.70;3,349.40,263.96,3.93,3.24;3,357.17,264.04,16.48,7.70;3,374.15,263.96,4.02,3.24;3,381.87,263.66,91.36,8.97;3,474.70,264.04,11.34,7.70;3,486.54,263.96,16.44,7.78;3,503.48,263.96,35.99,6.52;3,540.23,263.66,17.97,8.97;3,317.96,274.62,240.25,8.97;3,317.96,285.58,190.02,8.97;3,327.92,423.29,238.18,8.02;3,317.96,433.45,241.76,8.97;3,317.96,444.40,159.08,8.97;3,476.61,449.58,2.21,3.24;3,483.00,444.40,75.20,8.97;3,317.96,455.55,100.49,8.97;3,419.67,455.55,28.24,8.97;3,448.67,455.55,109.53,8.97;3,318.40,466.51,24.31,8.97;3,342.30,471.68,2.21,3.24;3,346.22,466.51,211.98,8.97;3,317.96,477.46,116.51,8.97">In this section, we introduce some definitions used in our model and formulate the structure-based prediction problem for proteinligand binding affinity. The frequently used notations in this paper are summarized in Table <ref type="table" target="#tab_0">1</ref>.  Definition 3.1. Complex Interaction Graph. Given a proteinligand complex as shown in Figure <ref type="figure" target="#fig_1">2</ref>(a), we define the atom node sets of protein and ligand as V 𝑃 = {𝑎 𝑃 1 , ..., 𝑎 𝑃 𝑚 } and V 𝐿 = {𝑎 𝐿 1 , ..., 𝑎 𝐿 𝑛 } with the position matrix 𝑀 𝑃 ∈ R 𝑚×3 and 𝑀 𝐿 ∈ R 𝑛×3 for 3D atomic coordinates, respectively. Then we define the complex interaction graph as a directional graph G 𝐼 =&lt; V, E &gt;, where the vertex set V ⊆ V 𝑃 ∪ V 𝐿 and the edge set E = 𝑓 𝑒 (V 𝑃 , V 𝐿 , 𝑀 𝑃 , 𝑀 𝐿 ) are constructed based on the spatial positions of atoms. The graph construction process is introduced in Appendix A.1. Definition 3.3. Structure-based Protein-Ligand Binding Affinity Prediction. Given a protein-ligand complex with 3D structure, i.e., the complex interaction graph G 𝐼 and the 3D position matrix 𝑀 consisting of 𝑀 𝑃 and 𝑀 𝐿 , our goal is to learn a model 𝑓 : (G 𝐼 |𝑀) → 𝑦 to precisely predict the binding affinity 𝑦 with preserving the spatial structure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4" coords="3,317.96,498.51,130.89,9.37">MODEL FRAMEWORK</head><p coords="3,317.96,512.33,241.76,8.97;3,317.96,523.29,240.25,8.97;3,317.96,534.25,221.14,8.97">In this section, we present the proposed SIGN model for proteinligand binding affinity prediction. We first introduce the overall framework and then describe the details of each component.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1" coords="3,317.96,555.29,71.73,9.37">Overview</head><p coords="3,317.69,569.12,241.50,8.97;3,317.96,580.08,186.21,8.97;3,509.38,580.08,49.04,8.97;3,317.96,591.03,241.76,8.97;3,317.96,601.99,240.25,8.97;3,317.96,612.95,172.56,8.97;3,505.63,612.95,52.57,8.97;3,317.96,623.91,240.24,8.97;3,317.96,634.87,240.25,8.97;3,317.96,645.83,240.24,8.97;3,317.96,656.79,239.63,8.97">To make accurate predictions for protein-ligand binding affinity, there are two challenges. Firstly, as shown in Figure <ref type="figure" target="#fig_1">2</ref>, the complex graph has the unique spatial structure, which is different with general graph. Secondly, the long-range interactions between protein and ligand are also critical to the binding affinity <ref type="bibr" target="#b18">[19]</ref>. However, the existing GNNs are incapable of capturing such spatial information and interactions. To overcome the limitations, we propose a novel Structure-aware Interactive Graph Neural Network (SIGN) to model the 3D structural complex and protein-ligand spatial interactions.</p><p coords="3,327.92,667.75,22.83,8.97;3,359.18,667.75,200.54,8.97;3,317.96,678.71,56.06,8.97;3,373.59,683.88,2.21,3.24;3,379.49,678.71,178.72,8.97;3,317.96,689.66,240.25,8.97;3,317.96,700.62,240.24,8.97">Figure <ref type="figure" target="#fig_6">4</ref> exhibits the architecture which takes the complex interaction graph G 𝐼 as input. We start with the polar-inspired graph attention layers (PGAL), which are composed of node→edge and edge→node interaction layers. PGAL can propagate the node's and</p><formula xml:id="formula_1">! " ! # ! → % &amp;'' % #" % (# % )# % *# … Domain Divider % → % &amp;'' , % → % &amp;'' - % → % &amp;'' . … * #",, * #",. * #",- % #" … % #" % (" … % → ! &amp;'' ! "</formula><p coords="4,369.55,246.17,5.76,7.84;4,53.80,343.01,240.25,8.97;4,53.80,353.97,240.25,8.97;4,53.80,364.93,241.23,8.97;4,53.47,375.89,242.10,8.97;4,53.80,386.84,240.25,8.97;4,53.80,397.80,240.25,8.97;4,53.80,408.76,241.77,8.97;4,53.80,419.72,240.25,8.97;4,53.80,430.68,240.25,8.97;4,53.80,441.64,237.95,8.97">! "  edge's embeddings alternately with learning the spatial distance and angle information. The two parts of PGAL play a synergistic effect on modeling the spatial structure of the complex. After that, we apply a pairwise interactive pooling layer (PiPool) which performs on the edges' representations to obtain the atomic type-based interaction matrix of the complex. From a global view, PiPool aims to approximate the overall interactions between proteins and ligands to improve the prediction performance. Finally, the model is trained through multi-task learning with augmented constraints for the interaction matrix, which serves as a self-supervised task.</p><note type="other">Node→Edge</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2" coords="4,53.80,467.89,239.51,9.37">Polar Coordinate-Inspired Graph Attention</head><p coords="4,53.80,481.72,241.76,8.97;4,53.80,492.68,240.25,8.97;4,53.80,503.63,240.25,8.97;4,53.80,514.59,240.25,8.97;4,53.80,525.55,188.20,8.97;4,253.96,525.55,41.07,8.97;4,53.80,536.51,240.25,8.97;4,53.80,547.47,241.76,8.97;4,53.80,558.43,240.25,8.97;4,53.80,569.39,94.70,8.97;4,167.65,569.39,34.07,8.97;4,217.28,569.39,76.77,8.97;4,53.80,580.35,240.48,8.97;4,53.80,591.31,221.55,8.97;4,291.66,591.31,3.37,8.97;4,53.47,602.26,242.09,8.97;4,53.80,613.22,240.25,8.97;4,53.80,624.18,240.25,8.97;4,53.80,635.14,240.24,8.97;4,53.80,646.10,209.34,8.97">Standard GNNs have shown great advantages in learning topological structure of the general graph, which cannot take atom's spatial position into account in the 3-dimensional space. To model the 3D structure of a complex, an intuitive method is to provide atom's 3-dimensional coordinate in the GNN architecture <ref type="bibr" target="#b5">[6]</ref>. However, the position information under the Cartesian coordinate system is sensitive to both translations and rotations, causing poor generalization of model when learning the complex representation. Several models, such as GNN-DTI <ref type="bibr" target="#b16">[17]</ref> and MAT <ref type="bibr" target="#b25">[26]</ref>, manage to combine the distance information in the aggregation process, while only pairwise distance is not adequate. Different from DimeNet <ref type="bibr" target="#b16">[17]</ref>, which specially designs Bessel functions in GNN for density functional theory (DFT) approximation with limited ability to model the larger biological complex, we employ iterative node→edge and edge→node interaction layers to incorporate both distance and angle information from a spatial distribution perspective.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.1" coords="4,53.80,668.55,76.67,8.04">Polar-Inspired</head><p coords="4,133.00,667.75,161.28,8.97;4,53.80,678.71,240.42,8.97;4,53.80,689.66,240.48,8.97;4,53.80,700.62,240.25,8.97;4,317.96,343.01,223.06,8.97;4,546.67,343.01,12.53,8.97;4,317.62,353.97,106.54,8.97;4,425.37,353.97,133.00,8.97;4,317.96,364.93,241.77,8.97;4,317.96,375.89,108.22,8.97;4,429.50,375.89,128.70,8.97;4,318.40,386.84,239.80,8.97;4,317.96,397.80,240.25,8.97;4,317.96,408.76,233.97,8.97;4,327.92,419.72,231.80,8.97;4,317.96,430.68,177.74,8.97;4,505.30,430.68,54.42,8.97;4,317.96,441.64,240.25,8.97;4,317.96,452.60,240.25,8.97;4,317.96,463.56,241.76,8.97;4,317.96,474.52,241.63,8.97;4,317.64,485.47,241.55,8.97;4,317.62,496.43,240.58,8.97;4,317.96,507.39,124.24,8.97;4,445.45,507.39,22.66,8.97;4,469.32,507.39,72.82,8.97;4,547.34,507.39,11.85,8.97;4,317.62,518.35,240.57,8.97;4,317.96,529.31,177.06,8.97;4,495.13,534.22,5.35,3.24;4,501.69,529.31,56.74,8.97;4,317.96,540.27,241.26,8.97">Attentive Learning Architecture. Inspired by polar coordinate which is composed of radial distance 𝑟 and polar angle 𝜙, we develop an interaction-based graph attention network to leverage both the distance between nodes and the angle between edges in a collaborative framework. As illustrated in Figure <ref type="figure" target="#fig_6">4</ref>(e), when aggregating for edge 𝑒 𝑖 𝑗 , we treat it as the polar axis 𝐿. Under such a definite polar coordinate system, the edge-oriented neighbors are distributed around 𝑒 𝑖 𝑗 with unique identifying coordinates (𝑟, 𝜙). Through the method of dividing angle domains, the spatial distribution for the complex can be taken into account by means of angle-oriented attention in the first aggregation stage for edges. Moreover, the distance factor is also helpful for structure modeling, which reveals spatial correlations. Figure <ref type="figure" target="#fig_3">3</ref> shows the statistical distribution of distance between atoms. It can be seen that the distances of covalent bonds mainly range from 1 to 2 Å, while noncovalent interactions, like hydrophobic and van der Waals interactions, and hydrogen bonds, are distributed over longer distances. Atomic interactions in the complex vary from different distances, which indicate different spatial relations for atom pairs. Given the radial distance 𝑟 between atoms 𝑎 𝑖 and 𝑎 𝑗 , as shown in Figure <ref type="figure" target="#fig_6">4</ref>(f), we first map 𝑟 to a bucket (i.e., a distance domain corresponding to a type of relation) and obtain the one-hot vector 𝒙 𝑖 𝑗 . Then we apply a dense layer transformation to get the spatial relation embedding:</p><formula xml:id="formula_2">𝒅 𝑖 𝑗 = 𝑾 𝑠 𝒙 𝑖 𝑗 ,<label>(1)</label></formula><p coords="4,317.62,579.05,33.42,8.97;4,350.44,583.95,2.91,3.24;4,357.95,579.43,14.36,8.58;4,371.95,577.37,15.45,6.29;4,391.00,579.05,167.21,8.97;4,317.96,590.00,240.25,8.97;4,317.96,600.96,240.25,8.97;4,317.96,611.92,180.23,8.97;4,503.62,611.92,54.59,8.97;4,317.96,622.88,199.02,8.97">where 𝑾 𝑠 ∈ R 𝑑 𝑠 ×𝑏 is the transformation weight matrix and 𝑏 is the number of buckets (i.e., spatial relations). To factor in these correlations, we design the distance-aware attention in the second aggregation stage for nodes. As shown in Figure <ref type="figure" target="#fig_6">4</ref>(a), the overall attentive interaction process at 𝑙-th layer is defined as:</p><formula xml:id="formula_3">𝒆 (𝑙) 𝑖 𝑗 = 𝑓 (𝑙) (𝒂 (𝑙-1) 𝑘 , 𝒂 (𝑙-1) 𝑖 ), ∀𝑒 𝑘𝑖 ∈ N 𝑒 (𝑒 𝑖 𝑗 ) ,<label>(2)</label></formula><formula xml:id="formula_4">𝒂 (𝑙) 𝑗 = 𝑔 (𝑙) 𝒂 (𝑙-1) 𝑗 , 𝒆 (𝑙) 𝑘 𝑗 , ∀𝑒 𝑘 𝑗 ∈ N 𝑒 (𝑎 𝑗 ) ,<label>(3)</label></formula><p coords="4,317.62,688.55,23.21,8.97">where</p><formula xml:id="formula_5">𝒆 (𝑙)</formula><p coords="4,346.86,695.41,5.34,3.24;4,358.84,688.55,91.80,8.97">𝑖 𝑗 is the edge embedding, 𝒂</p><formula xml:id="formula_6">(𝑙)</formula><p coords="4,451.53,695.41,2.09,3.24;4,462.64,688.55,97.08,8.97;4,317.96,700.62,240.25,8.97;5,53.80,86.92,75.54,8.97;5,128.68,91.83,3.22,3.24;5,133.38,87.31,6.63,7.70;5,140.03,91.83,5.34,3.24;5,146.59,86.92,27.50,8.97;5,173.43,91.83,3.22,3.24;5,178.13,87.31,7.41,7.70;5,186.43,91.83,2.09,3.24;5,189.74,86.92,105.83,8.97;5,53.80,97.88,55.63,8.97;5,112.89,97.88,43.02,8.97;5,159.36,97.88,45.48,8.97">𝑗 is the node (atom) embedding, 𝑓 (•) and 𝑔(•) are interaction functions of node→edge and edge→node layers, N 𝑒 (𝑒 𝑖 𝑗 ) and N 𝑒 (𝑎 𝑗 ) are the edge-oriented neighbors of edge 𝑒 𝑖 𝑗 and node 𝑎 𝑗 respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.2" coords="5,53.80,116.43,164.46,8.04">Angle-oriented Node→Edge Interaction</head><p coords="5,220.52,115.62,75.04,8.97;5,53.80,126.58,240.25,8.97;5,53.80,137.54,240.25,8.97;5,53.80,148.49,240.42,8.97;5,53.80,159.45,241.76,8.97;5,53.80,170.41,240.24,8.97;5,53.80,181.37,31.98,8.97;5,90.75,181.37,203.30,8.97;5,53.80,192.33,65.50,8.97">Layer. Failing to distinguish neighbor nodes from different directions in the aggregation process is a weakness of the existing GNN models. To overcome this inadequacy, we adopt an angle-oriented graph attention layer to update the edge representations with integrating spatial angle information. Since the angle exists between the two edges, as shown in Figure <ref type="figure" target="#fig_6">4</ref>(c), we first get the edge embedding through aggregating the node features:</p><formula xml:id="formula_7">𝒆 (𝑙) 𝑖 𝑗 = 𝜎 (𝑾 (𝑙) 𝑎→𝑒 • [𝒂 (𝑙-1) 𝑖 ∥ 𝒂 (𝑙-1) 𝑗 ∥ 𝒅 𝑖 𝑗 ]),<label>(4)</label></formula><p coords="5,53.47,231.42,22.60,8.97">where</p><formula xml:id="formula_8">𝑾 (𝑙)</formula><p coords="5,85.26,237.13,14.56,3.24;5,103.08,231.42,191.95,8.97;5,53.80,242.38,241.62,8.97">𝑎→𝑒 is the transformation matrix for atomic combination, the operator ∥ represents concatenation, and 𝜎 is the Relu function.</p><p coords="5,63.76,255.23,144.28,8.97;5,209.04,252.22,7.69,6.25">After obtaining the representations {𝒆 (𝑙)</p><formula xml:id="formula_9">𝑖 𝑗 , 𝒆 (𝑙) 𝑘𝑖 , .., 𝒆 (𝑙)</formula><p coords="5,249.36,262.09,8.49,3.24;5,259.49,255.23,34.55,8.97;5,53.48,269.92,8.96,5.34;5,66.06,267.12,227.98,8.97;5,53.80,278.07,241.23,10.04;5,53.47,289.03,240.58,8.97;5,53.80,299.99,168.88,8.97;5,228.13,299.99,66.09,8.97;5,53.80,310.95,240.24,9.89;5,53.80,321.91,28.88,8.97;5,83.90,321.91,210.15,8.97;5,53.80,332.87,223.28,8.97;5,280.54,332.87,13.51,8.97;5,53.80,343.83,240.25,8.97;5,53.80,354.79,23.76,8.97;5,83.21,354.79,98.77,8.97;5,185.57,354.79,108.48,10.04;5,53.80,365.75,63.81,8.97;5,120.86,365.75,126.17,8.97">𝑚𝑖 } of edge 𝑒 𝑖 𝑗 and its neighbors, we further separate the neighboring edges in 3-dimensional space by applying an angle-domain divider 𝑫 𝑨 , which plays an intermediate role to assign each neighbor to the specific angle domain. For example, in Figure <ref type="figure" target="#fig_6">4</ref>(e), there are four edge-oriented neighbors 𝑒 1𝑖 , 𝑒 2𝑖 , 𝑒 3𝑖 and 𝑒 4𝑖 around the central target edge 𝑒 𝑖 𝑗 . These neighboring edges are located in three different local angle domains according to the angles between edge 𝑒 𝑖 𝑗 and its neighbors. Given the number of angle domains 𝑁 (e.g., 𝑁 = 3 in Figure <ref type="figure" target="#fig_6">4</ref>(e)) and the target edge 𝑒 𝑖 𝑗 for aggregation, 𝑫 𝑨 can map each neighbor 𝑒 𝑘𝑖 to the located angle domain index:</p><formula xml:id="formula_10">𝐼𝑛𝑑 𝑘𝑖 = 𝑫 𝑨 (𝑒 𝑘𝑖 , 𝑒 𝑖 𝑗 , 𝑁 ) = ⌈𝑁 • 𝜙 𝑘𝑖 𝑗 180 ⌉,<label>(5)</label></formula><p coords="5,53.47,408.89,241.57,8.97">where ⌈•⌉ denotes rounding operation to get the integer index,</p><formula xml:id="formula_11">𝜙 𝑘𝑖 𝑗 ∈ [0, 180 • ]</formula><p coords="5,113.14,419.85,151.17,8.97;5,267.55,419.85,24.65,8.97;5,293.42,419.85,2.01,8.97">is the calculated angle between edges 𝑒 𝑘𝑖 and 𝑒 𝑖 𝑗 .</p><p coords="5,53.53,430.81,240.51,8.97;5,53.40,441.77,134.30,8.97">Then the subset of edge-oriented neighbors which are located in 𝑞-th angle domain can be defined as:</p><formula xml:id="formula_12">N 𝑞 𝑒 (𝑒 𝑖 𝑗 ) = {𝑒 𝑘𝑖 | 𝑒 𝑘𝑖 ∈ N 𝑒 (𝑒 𝑖 𝑗 ) ∧ 𝐼𝑛𝑑 𝑘𝑖 = 𝑞}.<label>(6)</label></formula><p coords="5,53.48,476.53,135.40,8.97;5,191.69,476.53,102.36,10.04;5,53.80,487.49,240.25,8.97;5,53.80,498.44,240.25,8.97;5,53.80,509.40,241.63,8.97;5,53.80,520.36,240.25,8.97;5,53.80,531.32,118.61,8.97">After reorganizing the neighbors of 𝑒 𝑖 𝑗 through divider 𝑫 𝑨 based on the polar coordinate system, we then feed 𝑁 neighbor subsets from different angle domains into 𝑁 independent propagation layers to capture long-range dependencies in the complex interaction graph. Firstly, we devise the domain-specific aggregation process along edges for the 𝑞-th angle domain:</p><formula xml:id="formula_13">𝒎 (𝑙) 𝑖 𝑗,𝑞 = ∑︁ 𝑒 𝑘𝑖 ∈N 𝑞 𝑒 (𝑒 𝑖 𝑗 ) 𝛼 (𝑙) 𝑘𝑖,𝑞 • 𝒆 (𝑙) 𝑘𝑖 , 1 ≤ 𝑞 ≤ 𝑁 ,<label>(7)</label></formula><p coords="5,53.47,582.95,23.26,8.97">where</p><formula xml:id="formula_14">𝒎 (𝑙)</formula><p coords="5,86.82,589.81,11.28,3.24;5,101.96,582.95,192.08,8.97;5,53.39,598.68,44.55,8.97;5,99.28,595.67,7.69,6.25;5,98.04,606.22,12.01,3.24;5,113.76,598.68,180.29,8.97;5,53.48,614.31,9.90,5.96;5,66.63,611.51,228.93,8.97;5,53.80,623.00,194.24,8.97;5,245.92,628.78,3.95,3.24;5,252.92,623.00,41.13,8.97;5,53.80,634.07,240.25,8.97;5,53.80,645.03,130.79,8.97">𝑖 𝑗,𝑞 is the 𝑞-th local aggregated edge representation at 𝑙-th layer, 𝛼 (𝑙) 𝑘𝑖,𝑞 is the attention weight of the neighboring edge 𝑒 𝑘𝑖 across the 𝑞-th angle domain. Concretely, we apply the angleoriented attention mechanism, which first uses 𝑎𝑡𝑡𝑛 𝑙 𝑞 function to calculate the coefficient between two edges and then adopts the softmax function for normalization:</p><formula xml:id="formula_15">𝑎𝑡𝑡𝑛 𝑙 𝑞 (𝑒 𝑖 𝑗 , 𝑒 𝑘𝑖 ) = 𝒖 𝑇 𝑙,𝑞 • 𝑡𝑎𝑛ℎ 𝑾 (𝑙) 𝑒,𝑞 • [𝒆 (𝑙) 𝑖 𝑗 ∥ 𝒆 (𝑙) 𝑘𝑖 ] + 𝒃 (𝑙) 𝑒,𝑞 ,<label>(8)</label></formula><formula xml:id="formula_16">𝛼 (𝑙) 𝑘𝑖,𝑞 = exp 𝑎𝑡𝑡𝑛 𝑙 𝑞 (𝑒 𝑖 𝑗 , 𝑒 𝑘𝑖 ) 𝑒 𝑡𝑖 ∈N 𝑞 𝑒 (𝑒 𝑖 𝑗 ) exp 𝑎𝑡𝑡𝑛 𝑙 𝑞 (𝑒 𝑖 𝑗 , 𝑒 𝑡𝑖 ) ,<label>(9)</label></formula><p coords="5,317.62,86.92,29.11,8.97;5,346.71,92.45,8.03,3.24;5,355.54,86.92,11.69,8.97">where 𝒖 𝑙,𝑞 , 𝑾</p><formula xml:id="formula_17">(𝑙)</formula><p coords="5,366.67,92.49,8.96,3.24;5,379.75,86.92,19.52,8.97;5,400.49,83.91,7.69,6.25">𝑒,𝑞 and 𝒃 (𝑙)</p><p coords="5,399.24,92.49,8.96,3.24;5,411.50,86.92,146.70,8.97;5,317.96,97.88,240.41,8.97;5,317.96,108.84,71.49,8.97">𝑒,𝑞 are the learnable attention parameters of the specific 𝑞-th angle domain, and we use tanh as the nonlinear activation function.</p><p coords="5,327.92,119.80,230.29,8.97;5,317.96,130.76,32.81,8.97;5,362.65,130.76,195.56,8.97;5,317.96,141.72,240.25,8.97;5,317.96,152.68,241.30,8.97;5,511.43,212.11,5.35,3.24;5,521.18,205.24,37.03,8.97;5,317.96,217.13,241.76,8.97;5,317.96,228.09,241.76,8.97;5,317.96,239.05,240.25,8.97;5,317.96,250.01,241.76,8.97;5,317.96,260.97,240.25,8.97;5,317.96,271.93,241.76,8.97;5,317.96,282.88,240.25,8.97;5,317.96,293.84,241.76,8.97;5,317.96,306.61,146.89,9.05;5,465.84,303.68,7.69,6.25;5,464.87,313.56,5.34,3.24;5,476.85,306.61,19.81,9.05;5,497.66,303.68,15.70,6.25">Secondly, we combine all aggregated edge embeddings obtained from Eq. <ref type="bibr" target="#b6">(7)</ref>. To completely preserve the spatial information in different local angle domains, we concatenate the representations as the global aggregation to update the angle-aware edge embedding: 𝑖 𝑗 , we make further efforts to develop an attention-based edge→node interaction layer to incorporate another spatial factor in the polar coordinate system, that is distance. As we stated in Section 4.2.1, the distance between atoms is implicated in different meaningful correlations. Therefore, it's momentous to explore the influence of distance while learning representations for protein-ligand complexes. Specifically, since edges and nodes (atoms) have different feature spaces, we first convert the edge embedding and node embedding into the hidden representation ẽ (𝑙) 𝑖 𝑗 and ã (𝑙-1)</p><formula xml:id="formula_18">𝒆 (𝑙) 𝑖 𝑗 = [𝒎 (𝑙) 𝑖 𝑗,1 ∥ 𝒎 (𝑙) 𝑖 𝑗,2 ∥ • • • ∥ 𝒎 (𝑙) 𝑖 𝑗,𝑁 ].<label>(10</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="5,497.56,313.56,2.09,3.24">𝑗</head><p coords="5,516.68,306.69,41.52,8.97;5,317.73,317.65,47.43,8.97">in the same vector space:</p><formula xml:id="formula_19">ẽ (𝑙) 𝑖 𝑗 = 𝑾 (𝑙) 𝑒 • 𝒆 (𝑙) 𝑖 𝑗 ,<label>(11)</label></formula><formula xml:id="formula_20">ã (𝑙) 𝑗 = 𝑾 (𝑙) 𝑎 • 𝒂 (𝑙-1) 𝑗 ,<label>(12)</label></formula><p coords="5,317.62,378.77,32.54,8.97;5,327.92,401.80,230.28,8.97;5,317.96,412.76,241.76,8.97;5,317.96,423.72,241.77,8.97;5,317.96,434.68,192.98,8.97;5,516.59,434.68,42.59,8.97;5,317.62,445.64,136.95,8.97;5,472.65,445.64,85.56,8.97;5,317.96,456.60,240.25,8.97;5,317.96,467.55,199.90,8.97">where 𝑾 As a result of the variant distances and atomic attributes, the neighboring edges have different impacts on the target node. However, the existing GNN models cannot effectively capture the influence of the distance factor. Hence, as shown in Figure <ref type="figure" target="#fig_6">4</ref>(d) and 4(f), we propose to extend the original GAT <ref type="bibr" target="#b38">[39]</ref> with the distance-aware attention to fuse the distance information with the capability of discriminating multiple spatial relations among atoms:</p><formula xml:id="formula_21">𝑤 (𝑙) 𝑖 𝑗 = 𝐿𝑒𝑎𝑘𝑦𝑅𝑒𝑙𝑢 (𝒗 𝑇 𝑙 • [ ẽ (𝑙) 𝑖 𝑗 ∥ ã (𝑙) 𝑗 ∥ 𝑾 (𝑙) 𝑑 𝒅 𝑖 𝑗 ]),<label>(13)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="5,354.28,517.51,4.23,4.02">𝛽</head><p coords="5,359.76,511.69,7.69,6.25">(𝑙)</p><formula xml:id="formula_22">𝑖 𝑗 = exp(𝑤 (𝑙) 𝑖 𝑗 ) 𝑒 𝑡 𝑗 ∈N 𝑒 (𝑎 𝑗 ) exp(𝑤 (𝑙) 𝑡 𝑗 ) ,<label>(14)</label></formula><p coords="5,317.62,543.24,30.01,8.97;5,347.61,548.76,2.12,3.24;5,353.68,543.24,205.51,8.97">where 𝒗 𝑙 is the parameter of edge→node attention at 𝑙-th layer,</p><formula xml:id="formula_23">𝑾 (𝑙)</formula><p coords="5,324.79,563.62,3.91,3.24;5,337.99,556.09,221.19,8.97;5,317.96,570.84,142.29,8.97;5,461.49,567.83,7.69,6.25;5,460.27,577.70,5.35,3.24;5,472.70,570.84,85.50,8.97;5,317.96,582.73,40.86,8.97;5,362.05,582.73,60.39,8.97;5,423.66,582.73,134.55,8.97;5,317.96,593.68,240.48,8.97;5,317.96,604.64,196.58,8.97">𝑑 is the trainable parameter matrix for distance transformation, the final calculated attention weight 𝛽 (𝑙) 𝑖 𝑗 reflects how important the edge 𝑒 𝑖 𝑗 is for the node 𝑎 𝑗 . Then we develop the distance-aware attention to multi-head attention version as GAT for better stability and apply the aggregation process from edge to node:</p><formula xml:id="formula_24">𝒂 (𝑙) 𝑗 = 1 𝐶 𝐶 ∑︁ 𝑐=1 ∑︁ 𝑒 𝑖 𝑗 ∈N 𝑒 (𝑎 𝑗 ) 𝛽 (𝑙) 𝑖 𝑗,𝑐 • ẽ (𝑙) 𝑖 𝑗,𝑐 ,<label>(15)</label></formula><p coords="5,317.62,660.42,240.58,8.97;5,317.96,673.18,133.53,9.05;5,452.48,670.26,7.69,6.25;5,451.51,680.13,10.46,3.24;5,465.24,673.27,92.95,8.97;5,317.96,688.73,77.20,8.97;5,396.40,685.72,7.69,6.25;5,395.18,695.60,10.47,3.24;5,406.67,688.73,151.76,8.97;5,317.96,700.62,173.15,8.97">where 𝐶 is the number of independent attention heads. Due to the angle injection for edge embedding ẽ (𝑙) 𝑖 𝑗,𝑐 and the distance injection for attention weight 𝛽 (𝑙) 𝑖 𝑗,𝑐 , our proposed model can comprehensively incorporate spatial information in the complex.</p><p coords="6,63.76,86.92,231.80,8.97;6,53.80,99.77,95.66,8.97;6,150.46,96.77,9.38,6.25;6,150.36,106.64,2.09,3.24;6,163.08,99.77,39.97,8.97;6,206.42,99.77,87.62,8.97;6,53.84,116.11,3.72,7.95;6,58.56,112.23,9.38,6.25;6,57.59,122.11,5.35,3.24;6,71.26,115.24,63.75,8.97;6,138.26,115.24,22.79,8.97;6,162.26,115.24,1.97,8.97">After performing 𝐿 polar-inspired graph attention layers, we obtain the node embedding 𝒂 (𝐿) 𝑗 for atom 𝑎 𝑗 and the edge embedding 𝒆 (𝐿) 𝑖 𝑗 between atoms 𝑎 𝑖 and 𝑎 𝑗 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3" coords="6,53.80,138.98,220.66,9.37">Pairwise Interactive Pooling Constraint</head><p coords="6,53.48,152.80,237.42,8.97;6,290.48,157.98,2.21,3.24;6,53.80,163.76,240.25,8.97;6,53.80,174.72,241.76,8.97;6,53.80,185.68,240.25,8.97;6,53.80,196.64,57.65,8.97;6,135.63,196.64,35.22,8.97;6,170.43,201.81,2.21,3.24;6,176.26,196.64,117.79,8.97;6,53.80,207.60,240.46,8.97;6,53.53,218.56,240.52,8.97;6,53.80,229.52,240.25,8.97;6,53.80,240.48,240.25,8.97;6,53.80,251.43,240.25,8.97;6,53.80,262.39,141.53,8.97">As introduced in Appendix A.1, the constructed complex graph G 𝐼 only contains the partial protein structure due to the limitation of graph size and needless noise. However, the long-range intermolecular interactions between protein and ligand have effects on the binding affinity <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b18">19]</ref>, while G 𝐼 cannot provide such interactive information. To capture the long-range interactions in the complex (e.g., the Carbon-Carbon co-occurrence interaction), we design an atomic type-aware pooling layer for edges between the protein and the ligand, which generates a proximity interaction matrix of atom type pair and enhances the representation learning process through the additional self-supervised training.</p><p coords="6,63.76,273.35,230.50,8.97;6,53.80,285.25,24.84,8.58;6,79.36,283.19,29.39,6.29;6,112.34,284.86,181.71,8.97;6,53.53,298.63,8.25,5.61;6,65.25,295.82,24.03,8.97;6,92.29,295.82,201.76,8.97;6,53.80,306.78,39.92,8.97;6,97.54,306.78,18.16,8.97;6,119.68,306.78,16.49,8.97;6,140.11,306.78,18.26,8.97;6,161.88,306.78,133.15,8.97;6,53.80,317.74,240.24,8.97;6,53.47,328.70,19.45,8.97;6,85.30,328.70,208.75,8.97;6,53.80,339.66,68.60,8.97;6,121.89,342.47,13.86,5.96;6,136.94,339.66,22.02,8.97;6,180.57,339.66,113.48,8.97;6,53.80,350.62,195.57,8.97">Specifically, we first construct the pairwise interaction matrix 𝒁 ∈ R |𝑆 𝑃 |× |𝑆 𝐿 | from the complete protein and its ligand, where 𝑆 𝑃 and 𝑆 𝐿 are atomic type sets of the protein and its ligand. Each element 𝑇 𝑘 in 𝑆 𝑃 or 𝑇 𝑙 in 𝑆 𝐿 represents the atomic number (e.g., 6) of a certain atom (e.g., carbon atom C). Following the previous work <ref type="bibr" target="#b1">[2]</ref>, we calculate the number of occurrences for a specific atomic type pair (𝑇 𝑘 ,𝑇 𝑙 ) (e.g., <ref type="bibr" target="#b5">(6,</ref><ref type="bibr" target="#b6">7)</ref> for &lt;C,N&gt; pair) within a certain distance and normalize the result to get the matrix 𝒁 :</p><formula xml:id="formula_25">𝑛(𝑇 𝑘 ,𝑇 𝑙 ) = ∑︁ 𝑎 𝑖 ∈V 𝑃 ∑︁ 𝑎 𝑗 ∈V 𝐿 𝛿 (𝜏 (𝑎 𝑖 ),𝑇 𝑘 )𝛿 (𝜏 (𝑎 𝑗 ),𝑇 𝑙 )Θ(𝑑 𝜌 -𝑑 𝑖 𝑗 ),<label>(16)</label></formula><formula xml:id="formula_26">𝒁 𝑘𝑙 = 𝑛(𝑇 𝑘 ,𝑇 𝑙 ) (𝑎 𝑖 ,𝑎 𝑗 ) ∈V 𝑃 ×V 𝐿 Θ(𝑑 𝜌 -𝑑 𝑖 𝑗 ) ,<label>(17)</label></formula><p coords="6,53.47,439.06,85.50,8.97;6,138.99,443.96,2.23,3.24;6,142.23,439.06,111.83,8.97;6,255.07,439.06,38.97,8.97;6,53.80,450.01,240.25,8.97;6,53.80,460.97,16.20,8.97;6,73.79,460.97,19.04,8.97;6,94.03,460.97,78.69,8.97;6,176.51,460.97,117.54,8.97;6,53.80,471.93,240.25,8.97;6,53.80,482.89,202.87,8.97;6,257.73,482.89,1.97,8.97;6,63.76,493.85,230.29,8.97;6,53.80,504.81,240.25,8.97;6,53.80,515.77,22.83,8.97;6,81.90,515.77,57.45,8.97;6,139.61,520.94,3.93,3.24;6,145.12,516.15,17.60,7.70;6,162.97,520.94,4.02,3.24;6,168.11,515.77,125.94,8.97;6,53.80,526.73,240.42,8.97;6,54.25,538.07,7.50,7.70;6,61.24,540.49,13.86,5.96;6,76.29,537.69,83.81,8.97">where the function 𝜏 (𝑎 𝑖 ) returns the atomic type of 𝑎 𝑖 , 𝛿 (•, •) is a Kronecker delta function which outputs 1 only if the type of atom is 𝑇 𝑘 (or 𝑇 𝑙 ) and 0 otherwise, 𝑑 𝜌 is referred to as the interaction cutoff distance and a Heaviside step function Θ is adopted to count protein-ligand atomic type pairs within the distance 𝑑 𝜌 . Secondly, we take the edge embeddings obtained from PGAL as input to the atomic type-aware pooling layer, which is shown in Figure <ref type="figure" target="#fig_6">4</ref>(b). There are |𝑆 𝑃 | × |𝑆 𝐿 | pooling blocks for type pairs. One block to gather edge representations belonging to atomic type pair (𝑇 𝑘 ,𝑇 𝑙 ) can be formulated as:</p><formula xml:id="formula_27">𝒉 𝑘,𝑙 = ∑︁ 𝑒 𝑖 𝑗 ∈ E 𝐼 𝛿 (𝜏 (𝑎 𝑖 ),𝑇 𝑘 )𝛿 (𝜏 (𝑎 𝑗 ),𝑇 𝑙 ) Divider 𝑾 ℎ 𝒆 (𝐿) 𝑖 𝑗 ,<label>(18)</label></formula><p coords="6,53.47,594.01,32.02,8.97;6,84.85,599.53,4.09,3.24;6,91.88,594.01,181.01,8.97;6,272.96,599.18,2.21,3.24;6,279.28,594.39,14.22,7.70;6,53.80,604.97,201.14,8.97;6,256.29,604.97,10.53,8.97;6,270.08,604.97,22.75,8.97;6,53.80,615.93,118.44,8.97;6,173.45,615.93,120.60,8.97;6,53.80,626.89,240.25,8.97;6,53.57,637.85,162.17,8.97">where 𝑾 ℎ is the shared parameter matrix for edge pooling, E 𝐼 ⊂ E contains all the intermolecular edges in the complex 𝐺 𝐼 , 𝑎 𝑖 and 𝑎 𝑗 are atom nodes connected by 𝑒 𝑖 𝑗 , the two 𝛿 (•, •) functions act as a divider to pick up the corresponding edges. Then we calculate each value of the approximate interaction matrix:</p><formula xml:id="formula_28">Z𝑘𝑙 = exp(𝒒 𝑇 𝒉 𝑘,𝑙 ) 𝑖,𝑗 exp(𝒒 𝑇 𝒉 𝑖,𝑗 ) , (<label>19</label></formula><formula xml:id="formula_29">)</formula><p coords="6,53.47,689.30,240.58,8.97;6,53.80,698.52,239.33,11.07;6,317.96,86.92,23.68,8.97">where 𝒒 is the trainable parameter. In the training stage, we use an additional proximity loss to draw the interaction matrix Z and 𝒁 closer:</p><formula xml:id="formula_30">L 𝑧 = ∑︁ G 𝐼 ∈D ∥𝐹 ( Z ) -𝐹 (𝒁 )∥,<label>(20)</label></formula><p coords="6,317.62,120.22,241.96,8.97">where 𝐹 (•) is the flatten operation for matrix, D is the training set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4" coords="6,317.96,141.27,139.32,9.37">Optimization Objective</head><p coords="6,317.64,155.10,240.56,8.97;6,317.96,166.06,240.25,8.97;6,317.96,177.02,155.04,8.97">At the last part, we add together node (atom) embeddings to get the complex representation and use MLP layers as the regressor to predict the protein-ligand binding affinity:</p><formula xml:id="formula_31">ŷ = 𝑀𝐿𝑃 ∑︁ 𝑎 𝑖 ∈V 𝒂 (𝐿) 𝑖 . (<label>21</label></formula><formula xml:id="formula_32">)</formula><p coords="6,327.92,218.34,229.83,9.02;6,317.96,229.35,241.23,8.97;6,317.62,240.31,192.25,8.97">Then the absolute error between the predicted binding affinity ŷ and the measured ground truth 𝑦 is used to calculate the loss. Thus, we adopt the L1 loss function to optimize the model:</p><formula xml:id="formula_33">L 𝑎 = ∑︁ G 𝐼 ∈D | ŷ -𝑦|,<label>(22)</label></formula><p coords="6,317.62,280.50,240.58,8.97;6,317.96,291.46,241.76,8.97;6,317.96,302.42,240.46,8.97;6,317.96,313.38,110.73,8.97;6,435.66,313.38,122.54,8.97;6,317.96,324.34,68.18,8.97">where D contains all the protein-ligand complexes with binding affinities. To integrate the interaction effectiveness for better complex representation learning, we further combine with the complex interaction constraint in Eq. ( <ref type="formula" target="#formula_30">20</ref>) and reach the following overall objective function:</p><formula xml:id="formula_34">L = L 𝑎 + 𝜆L 𝑧 ,<label>(23)</label></formula><p coords="6,317.62,348.21,240.58,8.97;6,317.96,359.16,240.25,8.97;6,317.96,370.12,121.12,8.97">where 𝜆 is the balancing hyper-parameter to control the strength of interaction loss. The detailed process for training the proposed SIGN is provided in Algorithm 2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5" coords="6,317.96,391.18,93.69,9.37">EXPERIMENTS</head><p coords="6,317.96,405.00,240.25,8.97;6,317.96,415.96,172.88,8.97">In this section, we conduct experiments on two standard datasets to investigate the following research questions:</p><p coords="6,317.96,429.91,240.25,8.97;6,326.40,440.87,135.54,8.97;6,317.96,451.83,240.24,8.97;6,326.07,462.78,196.18,8.97;6,317.96,473.74,240.64,8.97;6,317.96,484.70,240.25,8.97;6,326.40,495.66,205.64,8.97">• RQ1. How does the proposed SIGN model perform compared against the state-of-the-art methods? • RQ2. How does the generalizability of SIGN and competitors when trained on the larger but lower-quality dataset? • RQ3. Do the spatial and interactive factors benefit the prediction? • RQ4. How do the parameter settings (e.g., the cutoff distance and angle domain divisions) affect the prediction result?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1" coords="6,317.96,516.71,125.26,9.37">Experiment Settings</head><p coords="6,317.96,530.54,240.25,8.97;6,317.96,541.50,231.28,8.97">5.1.1 Datasets. We evaluate all models on the following public standard datasets for protein-ligand binding affinity prediction.</p><p coords="6,327.92,550.47,154.07,10.95;6,327.92,553.55,36.25,7.70;6,370.28,552.46,111.70,8.97;6,501.21,552.46,57.00,8.97;6,317.62,563.42,240.58,8.97;6,317.62,574.38,242.09,8.97;6,317.96,585.33,240.25,8.97;6,317.96,596.29,208.66,8.97;6,556.18,596.29,3.40,8.97;6,317.96,607.25,241.14,8.97;6,317.96,618.21,240.25,8.97;6,317.96,629.17,240.25,8.97;6,317.96,640.13,240.24,8.97;6,317.62,651.09,240.75,8.97;6,317.96,662.05,155.03,8.97;6,488.59,662.05,69.62,8.97;6,317.96,673.01,240.45,8.97;6,317.96,683.96,196.13,8.97;7,63.76,402.29,43.87,7.70;7,113.72,401.20,125.12,8.97;7,250.32,401.20,43.73,8.97;7,53.80,412.16,240.25,8.97;7,53.80,423.12,240.25,8.97;7,53.80,434.08,131.30,8.97">PDBbind<ref type="foot" target="#foot_0">foot_0</ref> is a well-known public dataset <ref type="bibr" target="#b40">[41]</ref> in development which provides 3D binding structures of protein-ligand complexes with experimentally determined binding affinities (refer to Appendix A.2). In our experiment, we mainly use the PDBbind v2016 dataset, which is most frequently used in recent works <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b45">46]</ref>. Specifically, it includes three overlapping subsets, i.e., general, refined and core set. The general set contains all 13,283 protein-ligand complexes, while the 4,057 complexes in refined set are selected out of the general set with better quality. Moreover, the core set with 290 complexes serves as the highest quality benchmark for testing through a careful selection process <ref type="bibr" target="#b35">[36]</ref>. Conveniently, we call the difference between the refined and core subsets, that is 3,767 complexes, as refined set of PDBbind in the following.  CSAR-HiQ<ref type="foot" target="#foot_1">foot_1</ref> is an additional benchmark dataset <ref type="bibr" target="#b7">[8]</ref>, containing two subsets with 176 and 167 protein-ligand complexes. We use this external dataset from an independent source to further evaluate the generalization ability of models.</p><p coords="7,53.80,452.57,87.16,8.97;7,152.62,452.57,141.42,8.97;7,53.80,463.53,240.25,8.97;7,53.80,474.49,240.48,8.97;7,53.80,485.45,240.46,8.97;7,53.80,496.40,240.25,8.97;7,53.80,507.36,241.63,8.97">5.1.2 Setup. Following <ref type="bibr" target="#b1">[2]</ref>, we choose the refined set of PDBbind as our primary training data because there is considerable overlap between the full general set and CSAR-HiQ dataset. We randomly split the protein-ligand complexes in refined set with a ratio of 9:1 for training and validation. For testing sets, we use the core set and CSAR-HiQ set with removing the complexes present in refined set.</p><p coords="7,63.76,518.32,230.29,8.97;7,53.80,529.28,84.68,8.97;7,154.09,529.28,141.46,8.97;7,53.80,540.24,240.25,8.97;7,53.80,551.20,240.25,8.97;7,53.80,562.16,240.24,8.97;7,53.80,573.12,155.55,8.97;7,238.53,573.12,55.75,8.97;7,53.80,584.08,240.25,8.97;7,53.80,595.04,232.35,8.97">Since the lower-quality data of general set can still improve the performance of models <ref type="bibr" target="#b19">[20]</ref>, we conduct the supplemental experiment on the full general set which is larger but of worse quality to analyze the generalizability of our model. As stated above, we can only evaluate the performance on the core set due to the overlapping problem of CSAR-HiQ dataset. Following <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b45">46]</ref>, we randomly select 1,000 complexes from refined set as the validating set. The remaining 11,993 complexes in general set are used for training.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.3" coords="7,53.80,614.34,92.54,8.04">Evaluation Metrics.</head><p coords="7,149.83,613.53,144.21,8.97;7,53.80,624.49,87.42,8.97;7,169.70,624.49,124.52,8.97;7,53.53,635.45,242.03,8.97;7,53.80,646.41,240.25,8.97;7,53.80,657.36,226.74,8.97">To comprehensively evaluate the model performance, following <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b45">46]</ref>, we use Root Mean Square Error (RMSE), Mean Absolute Error (MAE), Pearson's correlation coefficient (R) and the standard deviation (SD) in regression to measure the prediction error. The detail is introduced in Appendix A.3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.4" coords="7,53.80,673.83,60.17,8.04">Baselines.</head><p coords="7,117.46,673.02,178.10,8.97;7,53.80,683.98,241.23,8.97;7,317.96,401.20,51.06,8.97;7,379.62,401.20,118.88,8.97;7,516.33,401.20,43.48,8.97;7,317.96,413.25,14.23,7.70;7,348.20,412.16,122.03,8.97;7,490.98,412.16,67.22,8.97;7,317.96,423.12,241.76,8.97;7,317.96,434.08,75.71,8.97;7,404.57,434.08,43.45,8.97;7,462.88,434.08,38.36,8.97;7,516.10,434.08,24.92,8.97;7,555.88,434.08,3.31,8.97;7,317.96,446.13,36.20,7.70;7,369.72,445.03,54.42,8.97;7,440.26,445.03,117.94,8.97;7,317.96,455.99,240.24,8.97;7,317.96,466.95,241.76,8.97;7,317.96,477.91,205.38,8.97">We compare our proposed model with comparative methods including machine learning-based methods (LR, SVR, and RF-Score <ref type="bibr" target="#b1">[2]</ref>), CNN-based methods (Pafnucy <ref type="bibr" target="#b34">[35]</ref> and Onion-Net <ref type="bibr" target="#b45">[46]</ref>), and GNN models GraphDTA <ref type="bibr" target="#b29">[30]</ref> for protein-ligand binding affinity prediction. Moreover, various state-of-the-art GNNbased models (SGCN <ref type="bibr" target="#b5">[6]</ref>, GNN-DTI <ref type="bibr" target="#b22">[23]</ref>, DMPNN <ref type="bibr" target="#b43">[44]</ref>, MAT <ref type="bibr" target="#b25">[26]</ref>, DimeNet <ref type="bibr" target="#b16">[17]</ref>, and CMPNN <ref type="bibr" target="#b32">[33]</ref>) which also consider the spatial information for molecular modeling are compared to evaluate the performance of SIGN. The details of experiment settings and baseline descriptions are provided in Appendix A.3 and A.4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2" coords="7,317.96,500.50,145.25,9.37">Performance Evaluation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.1" coords="7,317.96,515.13,122.45,8.04">Overall Comparison (RQ1).</head><p coords="7,443.89,514.32,114.31,8.97;7,317.96,525.28,240.25,8.97;7,317.96,536.24,56.99,8.97;7,380.33,536.24,178.03,8.97;7,317.96,547.20,240.24,8.97;7,317.96,558.16,241.76,8.97;7,317.96,569.12,240.25,8.97;7,317.96,580.08,241.23,8.97;7,317.96,591.03,209.14,8.97;7,327.92,601.99,230.46,8.97;7,317.96,612.95,241.76,8.97;7,317.96,623.91,240.25,8.97;7,317.96,634.87,240.25,8.97;7,317.96,645.83,241.76,8.97;7,317.96,656.79,241.76,8.97;7,317.96,667.75,241.76,8.97;7,317.96,678.71,240.24,8.97;7,317.96,689.66,241.76,8.97;7,317.96,700.62,240.25,8.97;8,147.03,261.17,147.02,8.97;8,53.80,272.13,241.76,8.97;8,53.80,283.09,240.25,8.97;8,53.80,294.05,240.25,8.97;8,53.80,305.00,241.76,8.97;8,53.80,315.96,240.48,8.97;8,53.80,326.92,240.25,8.97;8,53.80,337.88,240.25,8.97;8,53.80,348.84,240.25,8.97;8,53.80,359.80,240.25,8.97;8,53.80,370.76,241.76,8.97;8,53.80,381.72,240.25,8.97;8,53.80,392.68,240.25,8.97;8,53.80,403.63,241.76,8.97;8,53.80,414.59,240.25,8.97;8,53.80,425.55,240.24,8.97;8,53.80,436.51,240.25,8.97;8,53.80,447.47,240.24,8.97;8,53.80,458.43,240.25,8.97;8,53.80,469.39,241.23,8.97;8,53.80,480.35,240.46,8.97;8,53.80,491.31,170.56,8.97">We first compare our proposed SIGN with baseline approaches on two benchmark datasets. As shown in Table <ref type="table" target="#tab_1">2</ref>, the average and the standard deviation of four indicators for testing performance are reported across five random runs. In general, we can observe that SIGN achieves the best performance on two datasets, with 6.5% and 3.9% improvement of RMSE over the best baseline models on PDBbind and CSAR-HiQ datasets, respectively. We further have the following observations. Among all baselines, GraphDTA methods show relatively poor performance due to the failure of considering the spatial structure and interactions between proteins and ligands. It indicates that simply modeling the molecular graph with protein sequence information is not capable of predicting structure-based proteinligand binding affinity. By contrast, from the perspective of interaction modeling, the machine learning-based methods and Onion-Net model take advantage of long-range interaction features and achieve better results. However, these data-driven approaches relying on feature engineering ignore the informative spatial structures From the perspective of spatial structural modeling, we find that SGCN and GNN-DTI which incorporate position and distance information exhibit considerable improvement over the vanilla GCN and GAT. Since SGCN takes atomic position coordinates as input directly, it will be easily affected by the rotation and translation of atoms, and the 3D CNN model Pafnucy suffers from a similar issue. Thus, the prediction results are not ideal. Despite leveraging a transformer-like attention mechanism to handle the spatial structure, MAT is not better than RF-Score and OnionNet, suggesting the importance of combining spatial and interactive information. The edge-oriented model CMPNN outperforms the above methods because it enhances DMPNN with communication while propagating the distance information, which shows the significance of node-edge message passing process. Although DimeNet can learn from angle information and perform slightly better, the performance is still not ideal due to its limited ability of modeling larger biomolecules. Our proposed SIGN can not only capture more comprehensive angle-enhanced structural information instead of just distance, but also handle interactions in the complex through multi-task learning framework. Therefore, SIGN is much effective for modeling the protein-ligand complex and can accurately predict the binding affinity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.2" coords="8,53.80,509.10,153.80,8.04">Generalizability Comparison (RQ2).</head><p coords="8,211.09,508.29,82.95,8.97;8,53.80,519.25,240.25,8.97;8,53.80,530.21,241.63,8.97;8,53.53,541.17,240.51,8.97;8,53.80,552.13,240.42,8.97;8,53.80,563.09,240.25,8.97;8,53.80,574.05,240.48,8.97;8,53.80,585.01,232.37,8.97;8,291.89,585.01,3.13,8.97;8,53.47,595.96,240.57,8.97;8,53.80,606.92,240.25,8.97;8,53.80,617.88,240.25,8.97;8,53.80,628.84,240.53,8.97;8,53.47,639.80,240.58,8.97;8,53.80,650.76,240.25,8.97;8,53.80,661.72,238.16,8.97">There is increasing 3D structure-based protein-ligand data with binding affinity, whereas the amount of high-quality data in refined set is relatively small. Thus, the ability of utilizing more lower-quality data to improve performance shows the generalizability of model, which is another necessary measurement of performance evaluation. As introduced in Section 5.1.2, we conduct the extra experiment of generalizability on the general set of PDBbind dataset. As illustrated in Figure <ref type="figure" target="#fig_9">5</ref>, we compare the proposed SIGN with major competitive baselines on two training sets. The results show that SIGN gets the lowest prediction error remarkably under both training settings. More importantly, our model improves the performance by around 8% when trained on the general set and it further expands the prediction advantage compared to baselines. Therefore, SIGN is proved to be more generalizable to more data in large quantity but poor quality.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.3" coords="8,53.80,679.51,190.50,8.04">Impact of Spatial and Interactive Factors (RQ3).</head><p coords="8,247.79,678.71,46.25,8.97;8,53.80,689.66,240.25,8.97;8,53.80,700.62,206.23,8.97;8,317.96,183.36,240.25,8.97;8,326.07,194.32,165.03,8.97;8,317.96,205.28,241.63,8.97">To verify the effectiveness of factors that influence the final performance, we compare SIGN with its variants on the two benchmarks. • SIGN-AD uses the vanilla GAT layers for node-edge interaction without either angle or distance information. • SIGN-D uses the vanilla GAT layer without distance information.</p><p coords="8,317.96,216.24,238.74,8.97">• SIGN-A uses the vanilla GAT layer without angle information.</p><p coords="8,317.96,227.20,150.15,8.97;8,468.04,232.10,3.40,3.24;8,472.32,227.20,1.97,8.97;8,317.96,239.15,23.13,8.97;8,349.71,239.15,208.49,8.97;8,317.96,250.11,240.24,8.97;8,317.96,261.07,241.76,8.97;8,317.96,272.03,240.48,8.97;8,317.96,282.99,240.25,8.97;8,317.96,293.95,240.25,8.97;8,317.96,304.91,241.76,8.97;8,317.96,315.87,240.24,8.97;8,317.96,326.83,241.76,8.97;8,317.96,337.78,240.25,8.97;8,317.96,348.74,240.25,8.97;8,317.96,359.70,240.25,8.97;8,317.96,370.66,231.54,8.97">• SIGN-I removes the interaction loss L 𝑧 . Figure <ref type="figure" target="#fig_10">6</ref> presents the comparison results on all metrics. As we can see, the proposed SIGN outperforms other variants, proving the necessity of handling the spatial and interactive information synergistically which is essential for protein-ligand binding affinity prediction. Specifically, SIGN-D and SIGN-A perform worse than SIGN since they can only capture the one-sided spatial structural information, i.e., distance or angle information in the complex. Furthermore, the prediction error of SIGN-AD is especially high among all variants. It indicates that modeling the complete spatial structure has a significant impact on performance improvement. The lack of long-range interactions in SIGN-I also leads to performance reduction, which confirms that only utilizing the spatial factors is insufficient and will lose the important interactive information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.4" coords="8,317.96,389.02,118.81,8.04">Parameters Analysis (RQ4).</head><p coords="8,440.25,388.21,75.48,8.97;8,520.66,388.21,39.05,8.97;8,317.96,399.17,240.48,8.97;8,317.96,410.13,240.25,8.97;8,317.96,421.09,206.79,8.97;8,528.33,421.09,3.59,8.97">As depicted in Figure <ref type="figure" target="#fig_11">7</ref>, we investigate the performance variation for SIGN w.r.t several necessary hyper-parameters by varying each parameter while keeping others fixed as default settings. More results are in Appendix A. <ref type="bibr" target="#b4">5</ref>.</p><p coords="8,327.92,433.14,71.94,7.70;8,400.94,432.05,157.43,8.97;8,317.96,443.01,162.36,8.97;8,483.48,443.01,74.72,8.97;8,317.96,453.97,48.65,8.97;8,367.69,453.97,190.51,8.97;8,317.96,464.93,240.25,8.97;8,317.96,475.88,240.24,8.97;8,317.60,489.65,8.09,5.96;8,329.57,486.84,230.14,8.97;8,317.96,497.80,183.70,8.97">Cutoff distance 𝜃 𝑑 . We analyze the effect of cutoff distance for complex graph construction when varying 𝜃 𝑑 from 3 to 6. With the increase of 𝜃 𝑑 , more spatial information in the complex is available to our model and beneficial for learning complex representation better, which leads to dramatic performance improvements when 𝜃 𝑑 ≤ 5 Å. After that, too long cutoff distance will introduce additional redundancies and degrade the performance.</p><p coords="8,327.92,508.76,230.29,8.97;8,317.96,519.72,240.25,8.97;8,317.73,530.68,240.47,8.97;8,317.96,541.64,241.76,8.97;8,317.96,552.60,241.77,8.97;8,317.96,563.56,240.25,8.97;8,317.96,574.51,240.24,8.97;8,317.96,585.47,240.25,8.97;8,317.62,596.43,224.17,8.97">Angle domain divisions 𝑁 . To look deeper into the impact of angle information in our model, we divide the angle domains varying from 1 to 8. We can see that the model performs best when the number of angle domains is 5 or 6. Too fine-grained or coarsegrained divisions will result in performance degradation. One possible explanation is that too fine-grained divisions cannot provide distinguishable information in space while the angle domain at a too big granularity contains quite sparse atomic neighbors, both of which have an adverse effect on learning spatial information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6" coords="8,317.96,610.09,87.77,9.37">CONCLUSION</head><p coords="8,317.96,623.91,240.25,8.97;8,317.96,634.87,241.76,8.97;8,317.96,645.83,240.25,8.97;8,317.96,656.79,240.48,8.97;8,317.96,667.75,240.25,8.97;8,317.96,678.71,240.25,8.97;8,317.96,689.66,241.76,8.97;8,317.96,700.62,240.25,8.97;9,53.80,86.92,240.25,8.97;9,53.80,97.88,240.25,8.97;9,53.80,108.84,240.25,8.97;9,53.80,119.80,235.29,8.97">In this paper, we investigated how to improve the prediction of binding affinity between proteins and ligands. Specifically, we proposed a GNN-based model, SIGN, to learn the representations of protein-ligand complexes for better binding affinity prediction by leveraging the fine-grained structure and interaction information among atoms. Along this line, we designed the polar-inspired graph attention layers (PGAL) to integrate both distance and angle information for 3D spatial structure modeling. Also, to further improve the prediction performance, we introduced a well-designed pooling process along with a reconstruction learning task for interaction matrix. Finally, the experimental results on two benchmarks showed the effectiveness and the generalizability of the proposed model.</p><formula xml:id="formula_35">| D | ∑︁ 𝑖=1 ( ŷ𝑖 -𝑦 𝑖 ) 2 , 𝑀𝐴𝐸 = 1 |D| | D | ∑︁ 𝑖=1 | ŷ𝑖 -𝑦 𝑖 | (24) 𝑅 = | D | 𝑖=1 ( ŷ𝑖 -ȳ)(𝑦 𝑖 -ȳ) √︃ | D | 𝑖=1 ( ŷ𝑖 -ȳ) 2 (𝑦 𝑖 -ȳ) 2<label>(25)</label></formula><p coords="10,319.15,502.03,31.61,9.02;10,354.57,502.09,203.63,8.97;10,317.96,513.05,240.24,8.97;10,331.31,524.00,184.01,8.97">ŷ𝑖 and 𝑦 𝑖 respectively represent the predicted and experimental binding affinity of the 𝑖-th complex in dataset D. As introduced in <ref type="bibr" target="#b34">[35]</ref>, the standard deviation (SD) is defined as follows:</p><formula xml:id="formula_36">𝑆𝐷 = 1 |D| -1 | D | ∑︁ 𝑖=1 [𝑦 𝑖 -(𝑎 + 𝑏 ŷ𝑖 )] 2<label>(26)</label></formula><p coords="10,317.62,574.40,241.56,8.97;10,317.96,585.36,45.48,8.97">where 𝑎 and 𝑏 are the intercept and the slope of the regression line, respectively.</p><p coords="10,317.96,601.99,240.24,8.97;10,317.96,612.95,240.41,8.97;10,317.96,623.91,241.23,8.97;10,317.62,634.87,240.58,8.97;10,317.96,645.83,240.25,8.97;10,317.96,656.79,240.25,8.97;10,317.96,667.75,191.73,8.97;10,530.87,667.75,27.34,8.97;10,317.96,678.71,241.76,8.97;10,317.96,689.66,240.25,8.97;10,317.96,700.62,240.25,8.97;11,53.80,189.71,240.25,8.97;11,53.80,200.67,241.76,8.97;11,53.80,211.63,240.24,8.97;11,53.80,222.59,240.25,8.97;11,53.80,233.55,241.23,8.97;11,53.47,244.51,240.58,8.97;11,53.80,255.47,240.25,8.97;11,53.80,266.43,241.76,8.97;11,53.80,277.39,240.24,8.97;11,53.80,288.35,240.25,8.97;11,53.80,299.30,240.24,8.97;11,53.80,310.26,240.25,8.97;11,53.80,321.22,85.39,8.97;11,163.27,321.22,130.77,8.97;11,53.80,332.18,241.54,8.97">A.3.2 Input Graph and Features. For all GNN-based methods, we use the same input complex graph as introduced in Appendix A.1 for protein-ligand binding affinity prediction. For GraphDTA models, we input the protein sequence as well as the ligand molecular graph or our constructed complex graph. In this paper, we report the best result when using the complex graph as input. For 3D-CNN and GNN models, the atom features used according to <ref type="bibr" target="#b34">[35]</ref> include atomic types, hybridization, the number of bonds with other heavyatoms and hetero-atoms, atom properties such as aromaticity, and the partial charge. In total, 18 features are used to describe an atom. Considering the heterogeneity in the complex graph, we further extend atom features to a 36-dimension vector with zeropadding, where the 1st to 18th elements represent the features of ligand atoms and the 19th to 36th elements represent the features of protein atoms. As to edge features for edge-based GNN models, we combine the two atom features and encoded distance features between atoms as the input vector. In brief, we provide the same input complex graph and atomic features for our SIGN and all GNNbased baselines to make fair comparisons. For ML-based methods and OnionNet, they cannot take the complex graph or grid-like data as input and only receive the specific molecule-level features. We extract the input feature vectors based on the distance as described in their original papers <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b45">46]</ref>. Note that these extracted features also reflect the structural information of complex in a global view.</p><p coords="11,53.80,349.94,240.24,8.97;11,53.80,360.90,240.24,8.97;11,53.80,371.86,240.25,8.97;11,53.80,382.81,240.25,8.97;11,53.80,393.77,224.79,8.97;11,282.16,393.77,11.88,8.97;11,53.80,404.73,23.00,8.97;11,80.35,404.73,71.22,8.97;11,166.52,404.73,127.52,8.97;11,53.80,415.69,240.25,8.97;11,53.80,426.65,240.48,8.97;11,53.80,437.61,240.25,8.97;11,53.59,448.57,240.45,8.97;11,53.80,459.53,240.24,8.97;11,53.80,470.49,85.74,8.97;11,143.00,470.49,23.81,8.97;11,169.81,470.49,84.12,8.97;11,265.57,470.49,3.13,8.97">A.3.3 Parameter Settings. For the proposed SIGN, we use Adam optimizer for model training with a learning rate of 0.001 and set the batch size as 32. The balancing hyper-parameter 𝜆 is set to 1.75 according to the performance on validation set. We construct the complex graph and interaction matrix with cutoff-threshold 𝜃 𝑑 = 5 and 𝜃 𝜌 = 12 as suggested in <ref type="bibr" target="#b28">[29]</ref>, respectively. The basic dimensions of node and edge embeddings are both set to 128. The number of buckets for spatial relation 𝑏 is set to 4 with the splitting granularity of 1Å. For PGAL layers, we set the number of attention heads 𝐶 to 4, the dropout rate to 0.2, and the number of angle domains 𝑁 to 6. For PiPool layer, there are 36 pooling blocks in total, where the two atomic type sets 𝑆 𝑃 and 𝑆 𝐿 are defined as stated in <ref type="bibr" target="#b1">[2]</ref>.</p><p coords="11,63.76,481.44,230.28,8.97;11,53.80,492.40,240.25,8.97;11,53.80,503.36,240.25,8.97;11,53.80,514.32,240.25,8.97;11,53.80,525.28,240.25,8.97;11,53.80,536.24,240.41,8.97;11,53.80,547.20,240.25,8.97;11,53.80,558.16,241.76,8.97;11,53.57,569.12,240.47,8.97;11,53.80,580.08,241.76,8.97;11,53.80,591.03,240.25,8.97;11,53.80,601.99,240.25,8.97;11,53.80,612.95,240.25,8.97;11,53.80,623.91,240.24,8.97;11,53.80,634.87,240.24,8.97;11,53.59,645.83,240.45,8.97;11,53.80,656.79,240.25,8.97;11,53.80,667.75,240.25,8.97;11,53.80,678.71,240.24,8.97;11,53.80,689.66,240.25,8.97;11,53.80,700.62,240.25,8.97;11,317.96,86.92,240.24,8.97;11,317.96,97.88,161.36,8.97">For baseline models, we tune the parameters based on the default settings to get optimal performance. Specifically, the number of decision trees in RF-score is set to 100, the max-depth of trees is set to 5, the maximum number of features is set to 3 and the minimum number of samples required to split is set to 10. For the CNN-based models, we set the channels of three-layer 3D convolutions for Pafnucy as 64,128 and 256. For OnionNet, the number of input features is 3840 and there are 32, 64, and 128 filters in the three convolutional layers with the kernel size as 4. The maximum length of protein sequences is set to 1000 in GraphDTA. For GNN-based models, the number of filters in SGCN is set to 32 with the dimension as 36. We also apply the data augmentation process to ensure optimal performance. For fair comparison, the embedding dimension of other baselines is set to 128 (same as SIGN). For GNN-DTI, the initial 𝜇 and 𝛿 for distance learning in GAT layers are set to 4.0 and 1.0, respectively. For DimeNet, the number of spherical harmonics and radial basis functions are set to 4 and 3, respectively. We use two-layer interaction blocks and three-layer bilinear layers to make DimeNet work in our experiment. For DMPNN and CMPNN, the layer of edge-oriented message passing layers is set to 3 and we use MLP as the communication module in CMPNN. The weighting coefficients for self-attention, distance, and adjacency matrices in MAT are set to 0.3, 0.3, and 0.4, respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="11,317.96,113.26,134.04,9.37">A.4 Baseline Descriptions</head><p coords="11,317.53,127.08,240.68,8.97;11,317.96,138.04,127.17,8.97">We compare our SIGN model with the following methods to predict the protein-ligand binding affinity:</p><p coords="11,317.96,151.99,241.76,8.97;11,326.40,162.95,231.80,8.97;11,326.40,173.91,231.81,8.97;11,339.19,184.87,201.72,8.97;11,317.96,196.21,41.97,8.41;11,379.88,195.83,178.32,8.97;11,326.40,206.78,215.88,8.97">• ML-based methods include linear regression (LR), support vector regression (SVR), and random forest (RF). These methods take the inter-molecular interaction features introduced in RF-Score <ref type="bibr" target="#b1">[2]</ref> as input and predict the protein-ligand binding affinity. • Pafnucy <ref type="bibr" target="#b34">[35]</ref> is a representative 3D CNN-based model which can learn the spatial structure of protein-ligand complexes.</p><p coords="11,317.96,218.13,48.09,8.41;11,385.23,217.74,172.97,8.97;11,326.40,228.70,231.80,8.97;11,326.40,239.66,188.61,8.97">• OnionNet <ref type="bibr" target="#b45">[46]</ref> generates two-dimensional interaction features based on rotation-free element-pair contacts in complexes and adopts CNN to learn representations for prediction.</p><p coords="11,317.96,251.00,52.72,8.41;11,390.02,250.62,168.39,8.97;11,326.40,261.58,231.97,8.97;11,326.17,272.54,154.77,8.97;11,496.51,272.54,24.05,8.97;11,536.14,272.54,22.06,8.97;11,343.36,283.50,205.89,8.97">• GraphDTA <ref type="bibr" target="#b29">[30]</ref> introduces GNN models to learn the complex graph and uses CNN to learn the protein sequence. It has four variants with different GNN models: GCN <ref type="bibr" target="#b14">[15]</ref>, GAT <ref type="bibr" target="#b38">[39]</ref>, GIN <ref type="bibr" target="#b42">[43]</ref> and GAT-GCN which combines the former two models.</p><p coords="11,317.96,294.84,32.49,8.41;11,364.35,294.46,193.85,8.97;11,326.40,305.41,189.89,8.97;11,317.96,316.76,47.16,8.41;11,383.29,316.37,174.92,8.97;11,326.40,327.33,231.98,8.97;11,326.40,338.29,153.55,8.97">• SGCN <ref type="bibr" target="#b5">[6]</ref> leverages node positions based on graph convolutional network, which directly utilizes atomic coordinates. • GNN-DTI <ref type="bibr" target="#b22">[23]</ref> is a distance-aware graph attention network with considering 3D structural information to learn the intermolecular interactions for protein-ligand complexes.</p><p coords="11,317.96,349.64,41.86,8.41;11,378.90,349.25,180.68,8.97">• DMPNN <ref type="bibr" target="#b43">[44]</ref> is an edge-based message passing neural network.</p><p coords="11,326.40,360.21,232.04,8.97;11,326.40,371.17,159.14,8.97;11,317.96,382.51,28.42,8.41;11,365.46,382.13,192.75,8.97;11,326.40,393.09,231.81,8.97;11,326.40,404.04,119.29,8.97;11,317.96,415.39,44.64,8.41;11,381.60,415.00,178.12,8.97;11,326.40,425.96,233.19,8.97;11,326.40,436.92,231.80,8.97;11,326.40,447.88,137.57,8.97;11,317.96,459.22,41.61,8.41;11,377.27,458.84,180.93,8.97;11,326.40,469.80,231.97,8.97;11,326.40,480.76,126.47,8.97">It can incorporate the spatial information between atoms by applying the aggregation process for edges. • MAT <ref type="bibr" target="#b25">[26]</ref> employs a molecule-augmented attention mechanism based on transformer for graph representation learning with using the inter-atomic distances. • DimeNet <ref type="bibr" target="#b16">[17]</ref> is a recent state-of-the-art model for small molecular graph learning using directional message passing scheme. Bessel functions are employed to encode the angle and distance information in graph neural network. • CMPNN <ref type="bibr" target="#b32">[33]</ref> further develops DMPNN to build a communicative message passing scheme between nodes and edges for better molecular representation learning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="11,317.96,499.12,184.57,9.37">A.5 Additional Parameters Analysis</head><p coords="11,317.96,512.95,175.24,8.97;11,498.11,512.95,60.09,8.97;11,317.96,523.90,241.76,8.97;11,317.96,534.86,240.41,8.97;11,317.96,545.82,240.24,8.97;11,317.62,556.78,242.09,8.97;11,317.96,567.74,240.24,8.97;11,317.96,578.70,241.63,8.97;11,317.69,589.66,240.52,8.97;11,317.96,600.62,137.53,8.97;11,327.92,611.58,229.97,8.97;11,317.96,622.53,240.25,8.97;11,317.96,633.49,240.25,8.97;11,317.96,644.45,240.42,8.97;11,317.96,655.41,240.25,8.97;11,317.96,666.37,240.24,8.97;11,317.96,677.33,201.05,8.97">Number of PGAL layers 𝐿. As shown in Figure <ref type="figure" target="#fig_12">8</ref>, we first present the influence of multi-hop propagation with stacking node-edge interaction layers from 1 to 4. We observe that increasing the number of layers would not always give rise to a better result. The model with one PGAL layer has limited ability to model high-order information in the complex. As a result of over-fitting, the performance of the model using more than 3 layers starts to degenerate gradually. Therefore, applying two interaction layers in SIGN is enough to capture sufficient spatial information. Balancing coefficient 𝜆. Moreover, we change the coefficient 𝜆 to control the trade-off between the prediction loss and interaction loss. From the results, we observe that the performance first tends to get better with incorporating more interactive information for long-range dependencies, and then begins to drop off slightly. In general, our model is stable with varying coefficients and always achieves better performance than all baseline methods.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0" coords="1,317.96,338.54,241.85,7.70;1,317.96,349.50,240.25,7.70;1,317.96,360.46,240.25,7.70;1,317.96,371.42,240.25,7.70;1,317.96,382.37,210.96,7.70;1,338.43,231.13,99.99,58.07"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: A brief summary for protein-ligand binding affinity prediction. (1) Top left: An example of protein-ligand complex (PDB: 5HMI). (2) Top right: Various representations of complex. (3) Bottom left: Traditional Methods. (4) Bottom right: Machine learning and deep learning methods.</figDesc><graphic coords="1,338.43,231.13,99.99,58.07" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1" coords="3,53.80,330.79,241.85,7.70;3,53.80,341.74,200.37,7.70;3,63.05,236.48,119.32,69.24"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: An illustrative example of converting the proteinligand complex into a complex interaction graph.</figDesc><graphic coords="3,63.05,236.48,119.32,69.24" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3" coords="3,317.96,172.35,240.25,7.70;3,317.96,183.31,231.55,7.70"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: The distribution of distance between atoms within 5 Å in the protein-ligand complex from PDBbind dataset.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4" coords="3,327.92,301.99,230.29,8.97;3,317.66,315.75,6.61,5.34;3,327.52,312.95,77.17,8.97;3,408.14,312.95,23.73,8.97;3,435.37,313.33,18.72,7.76;3,455.31,312.95,102.90,8.97;3,317.96,323.91,30.41,8.97;3,347.94,329.08,2.21,3.24;3,351.51,323.91,118.29,8.97;3,469.14,328.81,3.22,3.24;3,475.63,323.91,15.94,8.97;3,494.83,323.91,18.84,8.97;3,517.13,323.91,41.07,8.97;3,317.96,334.87,112.04,8.97;3,430.02,337.67,28.70,5.96;3,459.95,334.87,98.25,8.97;3,317.96,345.83,27.09,8.97;3,348.30,345.83,75.83,8.97;3,425.34,345.83,1.97,8.97;3,327.92,362.24,231.80,9.89;3,317.96,373.20,240.25,9.89;3,317.96,384.16,122.86,9.89;3,440.15,389.06,3.22,3.24;3,444.85,384.16,113.36,9.89;3,317.96,395.12,240.24,9.89;3,317.96,406.07,58.66,8.97;3,375.96,410.98,3.22,3.24;3,380.65,406.46,74.71,9.50"><head>Definition 3 . 2 .</head><label>32</label><figDesc>Edge-oriented Neighbors. Given an atom node 𝑎 𝑖 or a directed edge 𝑒 𝑖 𝑗 (i.e., 𝑎 𝑖 → 𝑎 𝑗 ) in the complex interaction graph G 𝐼 , the edge-oriented neighbors N 𝑒 of 𝑎 𝑖 or 𝑒 𝑖 𝑗 are defined as the sets of directed edges {𝑒 𝑘𝑖 , ..., 𝑒 𝑙𝑖 } which point to the target atom 𝑎 𝑖 or the target edge 𝑒 𝑖 𝑗 . Taking Figure 2(b) as an example, the edges 𝑒 21 and 𝑒 41 are connected to the edge 𝑒 13 via the common node 𝑎 1 , the edge-oriented neighbors of 𝑒 13 are denoted as N 𝑒 (𝑒 13 ) = {𝑒 21 , 𝑒 41 }. Similarly, the edges 𝑒 13 , 𝑒 53 and 𝑒 63 point to the atom node 𝑎 3 , resulting in the neighbors set N 𝑒 (𝑎 3 ) = {𝑒 13 , 𝑒 53 , 𝑒 63 }.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6" coords="4,53.80,315.98,504.41,8.04;4,53.80,327.25,488.51,7.73;4,443.13,180.68,74.65,68.45"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Illustration of the proposed SIGN framework. (a), (b): The two key components PGAL and PiPool. (c), (d): The two inner structures of component PGAL. (e), (f): The aggregation processes in node→edge and edge→node interaction layers.</figDesc><graphic coords="4,443.13,180.68,74.65,68.45" type="bitmap" /></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7" coords="5,554.78,172.82,3.42,8.97;5,317.96,192.38,241.76,8.97;5,317.96,205.24,193.46,8.97;5,512.41,202.23,7.69,6.25"><head>) 4 . 2 . 3</head><label>423</label><figDesc>Distance-aware Edge→Node Interaction Layer. After injecting the angle information into the edge embedding 𝒆 (𝑙)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8" coords="5,351.67,375.76,7.69,6.25;5,349.60,384.34,3.22,3.24;5,362.69,378.77,23.24,8.97;5,387.44,375.76,7.69,6.25;5,385.38,384.34,3.89,3.24;5,398.45,378.77,133.81,8.97;5,533.26,375.76,15.70,6.25;5,533.16,385.63,2.09,3.24;5,552.28,378.77,5.92,8.97;5,317.96,390.84,94.03,8.97;5,415.45,390.84,76.47,8.97"><head></head><label></label><figDesc>𝑎 are linear transformation matrices, 𝒂 (𝑙-1) 𝑗 is the embedding of atom 𝑎 𝑗 from (𝑙 -1)-th layer.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9" coords="7,120.89,388.27,370.22,7.73"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Performance improvements on PDBbind benchmark when training on general set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10" coords="8,60.68,237.92,226.48,7.70;8,53.80,250.21,241.76,8.97;8,53.80,261.17,240.25,8.97;8,53.80,272.13,241.76,8.97;8,53.80,283.09,240.25,8.97;8,53.80,294.05,240.25,8.97;8,53.80,305.00,241.76,8.97;8,53.80,315.96,240.48,8.97;8,53.80,326.92,240.25,8.97;8,53.80,337.88,240.25,8.97;8,53.80,348.84,240.25,8.97;8,53.80,359.80,240.25,8.97;8,53.80,370.76,241.76,8.97;8,53.80,381.72,240.25,8.97;8,53.80,392.68,240.25,8.97;8,53.80,403.63,241.76,8.97;8,53.80,414.59,240.25,8.97;8,53.80,425.55,240.24,8.97;8,53.80,436.51,240.25,8.97;8,53.80,447.47,240.24,8.97;8,53.80,458.43,240.25,8.97;8,53.80,469.39,241.23,8.97;8,53.80,480.35,240.46,8.97;8,53.80,491.31,170.56,8.97"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Contribution of spatial and interactive factors.of complexes and have limited generalization capability on the additional CSAR-HiQ dataset. From the perspective of spatial structural modeling, we find that SGCN and GNN-DTI which incorporate position and distance information exhibit considerable improvement over the vanilla GCN and GAT. Since SGCN takes atomic position coordinates as input directly, it will be easily affected by the rotation and translation of atoms, and the 3D CNN model Pafnucy suffers from a similar issue. Thus, the prediction results are not ideal. Despite leveraging a transformer-like attention mechanism to handle the spatial structure, MAT is not better than RF-Score and OnionNet, suggesting the importance of combining spatial and interactive information. The edge-oriented model CMPNN outperforms the above methods because it enhances DMPNN with communication while propagating the distance information, which shows the significance of node-edge message passing process. Although DimeNet can learn from angle information and perform slightly better, the performance is still not ideal due to its limited ability of modeling larger biomolecules. Our proposed SIGN can not only capture more comprehensive angle-enhanced structural information instead of just distance, but also handle interactions in the complex through multi-task learning framework. Therefore, SIGN is much effective for modeling the protein-ligand complex and can accurately predict the binding affinity.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11" coords="8,338.50,168.82,199.16,7.73"><head>Figure 7 :</head><label>7</label><figDesc>Figure 7: Parameter analysis on PDBbind core set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12" coords="11,74.34,168.68,199.16,7.73"><head>Figure 8 :</head><label>8</label><figDesc>Figure 8: Parameter analysis on PDBbind core set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" coords="3,62.96,84.63,218.46,240.54"><head>Table 1 :</head><label>1</label><figDesc>Mathematical notations. 𝑃 ,V 𝐿 The atom node sets of protein and ligand 𝑀 𝑃 ,𝑀 𝐿 The 3D position matrices of protein and ligand G 𝐼 The complex interaction graph 𝑎 𝑖 The 𝑖-th atom node in G 𝐼 𝑒 𝑖 𝑗 The directed edge from atom 𝑎 𝑖 to atom 𝑎 𝑗 N 𝑒 (𝑎 𝑖 ) The neighboring edges of atom 𝑎 𝑖 N 𝑒 (𝑒 𝑖 𝑗 ) The neighboring edges of edge 𝑒 𝑖 𝑗 𝒂 𝑖 , 𝒆 𝑖 𝑗 The embedding vectors of atom 𝑎 𝑖 and edge 𝑒 𝑖 𝑗 𝒅 𝑖 𝑗The spatial embedding vector between 𝑎 𝑖 and 𝑎 𝑗</figDesc><table coords="3,62.96,99.25,208.81,225.92"><row><cell>Notation Description</cell><cell></cell></row><row><cell>V (a) 3D Protein-Ligand Complex</cell><cell>(b) Complex Interaction Graph Ligand Atom Node Protein Atom Node</cell></row></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" coords="7,71.57,85.73,467.86,300.76"><head>Table 2 :</head><label>2</label><figDesc>Performance comparison on PDBbind core set and CSAR-HiQ set.</figDesc><table coords="7,71.57,98.54,467.86,287.95"><row><cell></cell><cell></cell><cell cols="2">Method</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="4">PDBbind core set</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>CSAR-HiQ set</cell></row><row><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell cols="3">RMSE ↓</cell><cell></cell><cell>MAE ↓</cell><cell></cell><cell></cell><cell cols="2">SD ↓</cell><cell></cell><cell>R ↑</cell><cell></cell><cell></cell><cell cols="2">RMSE ↓</cell><cell>MAE ↓</cell><cell>SD ↓</cell><cell>R ↑</cell></row><row><cell cols="3">ML-based Methods</cell><cell cols="2">LR SVR RF-Score</cell><cell cols="4">1.675 (0.000) 1.555 (0.000) 1.446 (0.008)</cell><cell cols="2">1.358 (0.000) 1.264 (0.000) 1.161 (0.007)</cell><cell cols="3">1.612 (0.000) 1.493 (0.000) 1.335 (0.010)</cell><cell cols="3">0.671 (0.000) 0.727 (0.000) 0.789(0.003)</cell><cell cols="3">2.071 (0.000) 1.995 (0.000) 1.947 (0.012)</cell><cell>1.622 (0.000) 1.553 (0.000) 1.466 (0.009)</cell><cell>1.973 (0.000) 1.911 (0.000) 1.796 (0.020)</cell><cell>0.652 (0.000) 0.679 (0.000) 0.723 (0.007)</cell></row><row><cell cols="3">CNN-based</cell><cell cols="2">Pafnucy</cell><cell cols="4">1.585 (0.013)</cell><cell cols="2">1.284 (0.021)</cell><cell cols="3">1.563 (0.022)</cell><cell cols="3">0.695 (0.011)</cell><cell cols="3">1.939 (0.103)</cell><cell>1.562 (0.094)</cell><cell>1.885 (0.071)</cell><cell>0.686 (0.027)</cell></row><row><cell cols="3">Methods</cell><cell cols="2">OnionNet</cell><cell cols="4">1.407 (0.034)</cell><cell cols="2">1.078 (0.028)</cell><cell cols="3">1.391 (0.038)</cell><cell cols="3">0.768 (0.014)</cell><cell cols="3">1.927 (0.071)</cell><cell>1.471 (0.031)</cell><cell>1.877 (0.097)</cell><cell>0.690 (0.040)</cell></row><row><cell></cell><cell></cell><cell></cell><cell>GCN</cell><cell></cell><cell cols="4">1.735 (0.034)</cell><cell cols="2">1.343 (0.037)</cell><cell cols="3">1.719 (0.027)</cell><cell cols="3">0.613 (0.016)</cell><cell cols="3">2.324 (0.079)</cell><cell>1.732 (0.065)</cell><cell>2.302 (0.061)</cell><cell>0.464 (0.047)</cell></row><row><cell cols="3">GraphDTA</cell><cell>GAT</cell><cell></cell><cell cols="4">1.765 (0.026)</cell><cell cols="2">1.354 (0.033)</cell><cell cols="3">1.740 (0.027)</cell><cell cols="3">0.601 (0.016)</cell><cell cols="3">2.213 (0.053)</cell><cell>1.651 (0.061)</cell><cell>2.215 (0.050)</cell><cell>0.524 (0.032)</cell></row><row><cell cols="3">Methods</cell><cell>GIN</cell><cell></cell><cell cols="4">1.640 (0.044)</cell><cell cols="2">1.261 (0.044)</cell><cell cols="3">1.621 (0.036)</cell><cell cols="3">0.667 (0.018)</cell><cell cols="3">2.158 (0.074)</cell><cell>1.624 (0.058)</cell><cell>2.156 (0.088)</cell><cell>0.558 (0.047)</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="6">GAT-GCN 1.562 (0.022)</cell><cell cols="2">1.191 (0.016)</cell><cell cols="3">1.558 (0.018)</cell><cell cols="3">0.697 (0.008)</cell><cell cols="3">1.980 (0.055)</cell><cell>1.493 (0.046)</cell><cell>1.969 (0.057)</cell><cell>0.653 (0.026)</cell></row><row><cell></cell><cell></cell><cell></cell><cell>SGCN</cell><cell></cell><cell cols="4">1.583 (0.033)</cell><cell cols="2">1.250 (0.036)</cell><cell cols="3">1.582 (0.320)</cell><cell cols="3">0.686 (0.015)</cell><cell cols="3">1.902 (0.063)</cell><cell>1.472 (0.067)</cell><cell>1.891 (0.077)</cell><cell>0.686 (0.030)</cell></row><row><cell cols="3">GNN-based Methods</cell><cell cols="2">GNN-DTI DMPNN MAT</cell><cell cols="4">1.492 (0.025) 1.493 (0.016) 1.457 (0.037)</cell><cell cols="2">1.192 (0.032) 1.188 (0.009) 1.154 (0.037)</cell><cell cols="3">1.471 (0.051) 1.489 (0.014) 1.445 (0.033)</cell><cell cols="3">0.736 (0.021) 0.729 (0.006) 0.747 (0.013)</cell><cell cols="3">1.972 (0.061) 1.886 (0.026) 1.879 (0.065)</cell><cell>1.547 (0.058) 1.488 (0.054) 1.435 (0.058)</cell><cell>1.834 (0.090) 1.865 (0.035) 1.816 (0.083)</cell><cell>0.709 (0.035) 0.697 (0.013) 0.715 (0.030)</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">DimeNet</cell><cell cols="4">1.453 (0.027)</cell><cell cols="2">1.138 (0.026)</cell><cell cols="3">1.434 (0.023)</cell><cell cols="3">0.752 (0.010)</cell><cell cols="3">1.805 (0.036)</cell><cell>1.338 (0.026)</cell><cell>1.798 (0.027)</cell><cell>0.723 (0.010)</cell></row><row><cell></cell><cell></cell><cell></cell><cell cols="2">CMPNN</cell><cell cols="4">1.408 (0.028)</cell><cell cols="2">1.117 (0.031)</cell><cell cols="3">1.399 (0.025)</cell><cell cols="3">0.765 (0.009)</cell><cell cols="3">1.839 (0.096)</cell><cell>1.411 (0.064)</cell><cell>1.767 (0.103)</cell><cell>0.730 (0.052)</cell></row><row><cell></cell><cell>Ours</cell><cell></cell><cell>SIGN</cell><cell></cell><cell cols="15">1.316 (0.031) 1.027 (0.025) 1.312 (0.035) 0.797 (0.012) 1.735 (0.031) 1.327 (0.040) 1.709 (0.044) 0.754 (0.014)</cell></row><row><cell></cell><cell>1.7</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.4</cell><cell></cell><cell></cell><cell></cell></row><row><cell>RMSE</cell><cell>1.3 1.4 1.5 1.6</cell><cell>-0.83%</cell><cell>-9.59%</cell><cell>-7.32%</cell><cell>-6.47%</cell><cell cols="2">-2.53%</cell><cell cols="4">-6.77% -7.03% -3.98% -5.02% refined set</cell><cell>-5.33%</cell><cell>-7.67% general set</cell><cell>MAE</cell><cell>1.1 1.2 1.3</cell><cell cols="2">-2.07%</cell><cell>-11.14%</cell><cell>-5.94%</cell><cell>-5.21%</cell><cell>-0.32%</cell><cell>-7.05% -5.81% -6.5% -4.39% -4.39% refined set</cell><cell>-8.28% general set</cell></row><row><cell></cell><cell>1.2</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>1.0</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.1</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.9</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell>1.0</cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell></cell><cell>0.8</cell><cell></cell><cell></cell><cell></cell></row><row><cell></cell><cell cols="6">R F -S co re P af nu cy O ni on N et G ra ph D T A S G C N</cell><cell cols="3">G N N -D T I D M P N N M A T</cell><cell cols="4">D im eN et C M P N N S IG N</cell><cell></cell><cell></cell><cell cols="4">R F -S co re P af nu cy O ni on N et G ra ph D T A S G C N</cell><cell>G N N -D T I D M P N N M A T</cell><cell>D im eN et C M P N N S IG N</cell></row></table></figure>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="1" xml:id="foot_0" coords="6,320.88,702.12,78.41,6.97"><p>http://www.pdbbind-cn.org</p></note>
+			<note xmlns="http://www.tei-c.org/ns/1.0" place="foot" n="2" xml:id="foot_1" coords="7,56.84,702.12,71.10,6.97"><p>http://www.csardock.org</p></note>
+		</body>
+		<back>
+
+			
+			<div type="funding">
+<div xmlns="http://www.tei-c.org/ns/1.0"><p coords="1,56.53,587.98,237.65,6.97;1,53.80,595.95,105.48,6.97;1,53.80,602.64,0.86,4.71">†This work was done when the first author was an intern in Baidu Research under the supervision of the second author.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="9,317.96,675.84,75.01,9.37">A APPENDIX</head><p coords="9,317.96,689.66,241.76,8.97;9,317.96,700.62,240.25,8.97;10,53.80,86.92,240.25,8.97;10,53.80,97.88,240.24,8.97;10,53.80,108.84,241.77,8.97;10,53.80,119.80,141.11,8.97;10,198.79,119.80,95.46,8.97;10,53.80,130.76,240.25,8.97;10,53.80,141.72,51.96,8.97;10,193.27,152.68,3.77,8.97">In the appendix, we first introduce the construction process of complex interaction graph. Then the details of experimental settings and baseline descriptions are given. Finally, we show the additional results of parameter analysis on another dataset. The pseudocode of SIGN training procedure is described in Algorithm 2. The implement our model based on PaddlePaddle 3 . We train all models on 24 Intel CPUs and a Tesla V100 GPU with 32 GB memory. The code is available at: <ref type="url" target="https://github.com/PaddlePaddle/PaddleHelix/tree/dev/apps/drug_target_interaction/sign">https://github.com/PaddlePaddle/PaddleHelix/tree/ dev/apps/drug_target_interaction/sign</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="10,53.80,173.79,232.13,9.37">A.1 Complex Interaction Graph Construction</head><p coords="10,53.48,187.61,68.39,8.97;10,126.62,187.61,168.94,8.97;10,53.80,198.57,241.63,8.97;10,53.37,209.53,240.84,8.97;10,53.80,220.49,240.25,8.97;10,53.80,231.45,240.24,8.97;10,53.80,242.41,240.41,8.97;10,53.80,253.37,241.76,8.97;10,53.80,264.33,240.25,8.97;10,53.80,275.28,240.24,8.97;10,53.80,286.24,241.63,8.97;10,53.53,297.20,241.89,8.97;10,53.37,308.34,234.80,8.97;10,288.67,308.65,4.02,3.24;10,293.45,308.34,1.97,8.97;10,53.53,319.49,223.72,8.97;10,277.75,319.79,3.93,3.24;10,282.90,319.49,11.14,8.97;10,53.80,330.44,240.25,8.97;10,53.80,341.40,240.24,8.97;10,53.80,352.36,178.16,8.97;10,233.25,352.36,1.97,8.97">As shown in Figure <ref type="figure">2</ref>(a), there is no available intermolecular connection information between the ligand and its protein in the dataset. What's more, the local covalent bonds in the original molecular graph cannot provide adequate 3D structure information. To include non-local correlations, here we aim to construct the spatial-based complex interaction graph. Since the size of a protein is much larger than that of a ligand, it's unnecessary to build the complete protein structure in the complex graph, which might be noisy and time-consuming. Therefore, we apply a sampling-based process to construct the graph, which preserves the key structure of complex. The detail of the construction process is provided in algorithm 1. We first initialize the atom node set V with ligand's atom set V 𝐿 . Then the protein's atoms which are close to the ligand from V 𝑃 are selected to add into the atom node set V. Finally, we update the complex edge set E by adding into the edges of atom pairs whose distances are smaller than the cutoff threshold 𝑟 𝜃 .</p><p coords="10,58.45,372.02,207.01,8.97">Algorithm 1: Complex Interaction Graph Construction.</p><p coords="10,63.76,386.97,117.71,8.97;10,184.71,386.97,55.03,8.97;10,240.24,387.27,3.93,3.24;10,245.39,386.97,35.20,8.97">Input :The position matrix 𝑀 𝑃 and node set V 𝑃 of protein</p><p coords="10,96.93,398.11,85.48,8.97;10,185.40,398.11,55.83,8.97;10,241.74,398.41,4.02,3.24;10,248.76,398.11,31.80,8.97;10,96.93,409.07,78.80,8.97;10,63.76,420.03,146.58,8.97">The position matrix 𝑀 𝐿 and node set V 𝐿 of ligand The cutoff distance 𝑟 𝜃 Output : The complex interaction graph </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="10,53.80,626.32,198.07,9.37">A.2 Instruction of the Binding Affinity</head><p coords="10,53.80,640.15,240.24,8.97;10,53.80,651.11,151.99,8.97;10,209.10,651.11,85.92,8.97;10,53.62,664.87,7.70,5.34;10,64.57,662.06,229.47,9.89;10,53.80,673.02,240.41,8.97;10,53.80,683.98,240.25,8.97;10,369.46,180.47,96.54,8.97;10,467.00,178.80,7.69,6.25;10,478.01,180.47,39.14,8.97;10,520.30,180.47,6.30,8.97;10,539.19,180.47,3.15,8.97">In biology experiments, the binding affinity between protein and ligand can be determined as the value 𝐾 𝑑 (dissociation constant), 𝐾 𝑖 (inhibition constant), or 𝐼𝐶 50 (half inhibition concentration). In practice, the experimental binding affinity (i.e., the ground truth for the binding affinity prediction task) is expressed with the negative Obtain edge embeddings 𝒆 (𝑙) using Eq. ( <ref type="formula">4</ref>)- <ref type="bibr" target="#b9">(10)</ref>;</p><p coords="10,369.46,193.16,96.14,8.97;10,466.60,191.48,7.69,6.25;10,477.58,193.16,38.49,8.97;10,522.45,193.16,9.56,8.97;10,538.38,193.16,6.37,8.97;10,355.61,217.07,151.97,8.97;10,514.09,217.07,9.75,8.97;10,530.34,217.07,6.50,8.97;10,318.09,232.53,6.15,5.13;10,355.61,227.46,160.46,11.07;10,522.44,229.56,9.56,8.97;10,538.38,229.56,6.37,8.97;10,318.09,244.48,6.15,5.13;10,355.61,241.51,115.61,8.97;10,471.15,246.42,3.40,3.24;10,477.68,241.51,39.15,8.97;10,523.15,241.51,6.32,8.97;10,318.09,256.44,6.15,5.13;10,355.61,253.41,135.88,9.02;10,497.81,253.47,6.32,8.97;10,318.09,268.39,6.15,5.13;10,355.61,265.42,113.00,8.97;10,468.56,270.33,3.89,3.24;10,475.44,265.42,39.15,8.97;10,520.91,265.42,6.32,8.97">Obtain node embeddings 𝒂 (𝑙) using Eq. ( <ref type="formula">11</ref>)-( <ref type="formula">15</ref>); Build the interaction matrix 𝒁 using Eq. ( <ref type="formula">16</ref>)-( <ref type="formula">17</ref>); 10 Estimate the interaction matrix Z using Eq. ( <ref type="formula">18</ref>)-( <ref type="formula">19</ref>); 11 Calculate the interaction loss L 𝑧 using Eq. ( <ref type="formula">20</ref>); 12 Calculate the prediction ŷ using Eq. ( <ref type="formula">21</ref>); 13 Calculate the prediction loss L 𝑎 using Eq. ( <ref type="formula">22</ref>);  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head coords="10,317.96,379.12,122.99,9.37">A.3 Experiment Details</head></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">DOCK 6: Impact of new features and current docking performance</title>
+		<author>
+			<persName><forename type="first">Trent</forename><forename type="middle">E</forename><surname>William J Allen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sudipto</forename><surname>Balius</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Mukherjee</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Demetri</forename><forename type="middle">T</forename><surname>Scott R Brozell</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Therese</forename><surname>Moustakas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><forename type="middle">A</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Irwin</forename><forename type="middle">D</forename><surname>Case</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Robert</forename><forename type="middle">C</forename><surname>Kuntz</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Rizzo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of computational chemistry</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="1132" to="1156" />
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A machine learning approach to predicting protein-ligand binding affinity with applications to molecular docking</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Pedro</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John Bo</forename><surname>Ballester</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Mitchell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="page" from="1169" to="1175" />
+			<date type="published" when="2010">2010. 2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A structure-based drug discovery paradigm</title>
+		<author>
+			<persName><forename type="first">Maria</forename><surname>Batool</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Bilal</forename><surname>Ahmad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sangdun</forename><surname>Choi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International journal of molecular sciences</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page">2783</biblScope>
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">It will change everything&apos;: DeepMind&apos;s AI makes gigantic leap in solving protein structures</title>
+		<author>
+			<persName><forename type="first">Ewen</forename><surname>Callaway</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Statistical and machine learning approaches to predicting protein-ligand interactions</title>
+		<author>
+			<persName><forename type="first">Lucy</forename><forename type="middle">J</forename><surname>Colwell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Current opinion in structural biology</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="123" to="128" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Spatial graph convolutional networks</title>
+		<author>
+			<persName><forename type="first">Tomasz</forename><surname>Danel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Przemysław</forename><surname>Spurek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacek</forename><surname>Tabor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Marek</forename><surname>Śmieja</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Łukasz</forename><surname>Struski</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Agnieszka</forename><surname>Słowik</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Łukasz</forename><surname>Maziarka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Neural Information Processing</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="668" to="675" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Graph transformation policy network for chemical reaction prediction</title>
+		<author>
+			<persName><forename type="first">Kien</forename><surname>Do</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Truyen</forename><surname>Tran</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Svetha</forename><surname>Venkatesh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+			<biblScope unit="page" from="750" to="760" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">CSAR benchmark exercise of 2010: selection of the protein-ligand complexes</title>
+		<author>
+			<persName><forename type="first">James B Dunbar</forename><surname>Jr</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">D</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chao-Yie</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Man-Un</forename><surname>Ung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Katrina</forename><forename type="middle">W</forename><surname>Lexa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Nickolay</forename><forename type="middle">A</forename><surname>Khazanov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jeanne</forename><forename type="middle">A</forename><surname>Stuckey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shaomeng</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Carlson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="2036" to="2046" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Knowledge-based scoring function to predict protein-ligand interactions</title>
+		<author>
+			<persName><forename type="first">Manfred</forename><surname>Holger Gohlke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gerhard</forename><surname>Hendlich</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Klebe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of molecular biology</title>
+		<imprint>
+			<biblScope unit="volume">295</biblScope>
+			<biblScope unit="page" from="337" to="356" />
+			<date type="published" when="2000">2000. 2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">ASGN: An active semi-supervised graph neural network for molecular property prediction</title>
+		<author>
+			<persName><forename type="first">Zhongkai</forename><surname>Hao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chengqiang</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhenya</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zheyuan</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qi</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Enhong</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Cheekong</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="731" to="752" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Protein-ligand interaction prediction: an improved chemogenomics approach</title>
+		<author>
+			<persName><forename type="first">Laurent</forename><surname>Jacob</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jean-Philippe</forename><surname>Vert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="2149" to="2156" />
+			<date type="published" when="2008">2008. 2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Surflex: fully automatic flexible molecular docking using a molecular similarity-based search engine</title>
+		<author>
+			<persName><forename type="first">Ajay</forename><forename type="middle">N</forename><surname>Jain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of medicinal chemistry</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="499" to="511" />
+			<date type="published" when="2003">2003. 2003</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<author>
+			<persName><forename type="first">Harren</forename><surname>Jhoti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Andrew</forename><forename type="middle">R</forename><surname>Leach</surname></persName>
+		</author>
+		<title level="m">Structure-based drug discovery</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007">2007</date>
+			<biblScope unit="volume">1</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A machine learning-based method to improve docking scoring functions and its application to drug repurposing</title>
+		<author>
+			<persName><forename type="first">Nina</forename><surname>Sarah L Kinnings</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Peter</forename><forename type="middle">J</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Richard</forename><forename type="middle">M</forename><surname>Tonge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lei</forename><surname>Jackson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Philip</forename><forename type="middle">E</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bourne</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="408" to="419" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Semi-Supervised Classification with Graph Convolutional Networks</title>
+		<author>
+			<persName><forename type="first">Thomas</forename><forename type="middle">N</forename><surname>Kipf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Max</forename><surname>Welling</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+	<note>In ICLR</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Docking and scoring in virtual screening for drug discovery: methods and applications</title>
+		<author>
+			<persName><forename type="first">Hélène</forename><surname>Douglas B Kitchen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">John</forename><forename type="middle">R</forename><surname>Decornez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jürgen</forename><surname>Furr</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Bajorath</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature reviews Drug discovery</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="935" to="949" />
+			<date type="published" when="2004">2004. 2004</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Directional Message Passing for Molecular Graphs</title>
+		<author>
+			<persName><forename type="first">Johannes</forename><surname>Klicpera</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Janek</forename><surname>Groß</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stephan</forename><surname>Günnemann</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+	<note>In ICLR</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Prediction of protein-ligand interactions. Docking and scoring: successes and gaps</title>
+		<author>
+			<persName><forename type="first">Brian</forename><forename type="middle">K</forename><surname>Andrew R Leach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Catherine</forename><forename type="middle">E</forename><surname>Shoichet</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Peishoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of medicinal chemistry</title>
+		<imprint>
+			<biblScope unit="volume">49</biblScope>
+			<biblScope unit="page" from="5851" to="5855" />
+			<date type="published" when="2006">2006. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Long-range attraction and molecular rearrangements in receptor-ligand interactions</title>
+		<author>
+			<persName><surname>De Leckband</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Israelachvili</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Schmitt</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Knoll</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">255</biblScope>
+			<biblScope unit="page" from="1419" to="1421" />
+			<date type="published" when="1992">1992. 1992</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Low-quality structural and interaction data improves binding affinity prediction via random forest</title>
+		<author>
+			<persName><forename type="first">Hongjian</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kwong-Sak</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Man-Hon</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pedro</forename><forename type="middle">J</forename><surname>Ballester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Molecules</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="10947" to="10962" />
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Structure-Based Virtual Screening</title>
+		<author>
+			<persName><forename type="first">Qingliang</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Salim</forename><surname>Shah</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Methods in molecular biology</title>
+		<imprint>
+			<biblScope unit="page" from="111" to="124" />
+			<date type="published" when="2017">2017. 2017</date>
+			<pubPlace>Clifton, N.J.</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Competitive Analysis for Points of Interest</title>
+		<author>
+			<persName><forename type="first">Shuangli</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jingbo</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tong</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xinjiang</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hui</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining</title>
+		<meeting>the 26th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="1265" to="1274" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Predicting drug-target interaction using a novel graph neural network with 3D structure-embedded graph representation</title>
+		<author>
+			<persName><forename type="first">Jaechang</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Seongok</forename><surname>Ryu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kyubyong</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joong</forename><surname>Yo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiyeon</forename><surname>Choe</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Ham</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Woo Youn</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="3981" to="3988" />
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Multi-Modal Transportation Recommendation with Unified Route Representation Learning</title>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jindong</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yanjie</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jingbo</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xinjiang</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hui</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the VLDB Endowment</title>
+		<meeting>the VLDB Endowment</meeting>
+		<imprint>
+			<date type="published" when="2021">2021. 2021</date>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="342" to="350" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Deep learning of high-order interactions for protein interface prediction</title>
+		<author>
+			<persName><forename type="first">Yi</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hao</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Lei</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shuiwang</forename><surname>Ji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="679" to="687" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<author>
+			<persName><forename type="first">Łukasz</forename><surname>Maziarka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tomasz</forename><surname>Danel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sławomir</forename><surname>Mucha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Krzysztof</forename><surname>Rataj</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jacek</forename><surname>Tabor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stanisław</forename><surname>Jastrzębski</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2002.08264</idno>
+		<title level="m">Molecule Attention Transformer</title>
+		<imprint>
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Molecular docking: a powerful approach for structure-based drug discovery</title>
+		<author>
+			<persName><forename type="first">Xuan-Yu</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hong-Xing</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mihaly</forename><surname>Mezei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Meng</forename><surname>Cui</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Current computer-aided drug design</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="146" to="157" />
+			<date type="published" when="2011">2011. 2011</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Towards the development of universal, fast and highly accurate docking/scoring methods: a long way to go</title>
+		<author>
+			<persName><surname>Moitessier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Englebienne</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Lawandi</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Corbeil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">British journal of pharmacology</title>
+		<imprint>
+			<biblScope unit="volume">153</biblScope>
+			<biblScope unit="page" from="7" to="S26" />
+			<date type="published" when="2008">2008. 2008</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A general and fast scoring function for protein-ligand interactions: a simplified potential approach</title>
+		<author>
+			<persName><forename type="first">Ingo</forename><surname>Muegge</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yvonne</forename><forename type="middle">C</forename><surname>Martin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of medicinal chemistry</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="791" to="804" />
+			<date type="published" when="1999">1999. 1999</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">GraphDTA: Predicting drug-target binding affinity with graph neural networks</title>
+		<author>
+			<persName><forename type="first">Thin</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hang</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tri</forename><surname>Thomas P Quinn</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Nguyen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<date type="published" when="2020-10">2020. 10 2020</date>
+		</imprint>
+	</monogr>
+	<note>Thuc Duy Le, and Svetha Venkatesh. btaa921</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">DeepDTA: deep drugtarget binding affinity prediction</title>
+		<author>
+			<persName><forename type="first">Hakime</forename><surname>Öztürk</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arzucan</forename><surname>Özgür</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elif</forename><surname>Ozkirimli</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="821" to="829" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Protein-ligand scoring with convolutional neural networks</title>
+		<author>
+			<persName><forename type="first">Matthew</forename><surname>Ragoza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Joshua</forename><surname>Hochuli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Elisa</forename><surname>Idrobo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jocelyn</forename><surname>Sunseri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">David</forename><surname>Ryan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Koes</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="942" to="957" />
+			<date type="published" when="2017">2017. 2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Communicative representation learning on attributed molecular graphs</title>
+		<author>
+			<persName><forename type="first">Ying</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shuangjia</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhangming</forename><surname>Niu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhang-Hua</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yutong</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuedong</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="2831" to="2838" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Protein-ligand docking: current status and future challenges</title>
+		<author>
+			<persName><forename type="first">Filipe</forename><surname>Sergio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pedro</forename><forename type="middle">Alexandrino</forename><surname>Sousa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maria</forename><forename type="middle">Joao</forename><surname>Fernandes</surname></persName>
+		</author>
+		<author>
+			<persName><surname>Ramos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proteins: Structure, Function, and Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">65</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="15" to="26" />
+			<date type="published" when="2006">2006. 2006</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Development and evaluation of a deep learning model for protein-ligand binding affinity prediction</title>
+		<author>
+			<persName><forename type="first">Marta</forename><forename type="middle">M</forename><surname>Stepniewska-Dziubinska</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Piotr</forename><surname>Zielenkiewicz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pawel</forename><surname>Siedlecki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="3666" to="3674" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Comparative assessment of scoring functions: the CASF-2016 update</title>
+		<author>
+			<persName><forename type="first">Minyi</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Qifan</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yu</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guoqin</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Zhihai</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yan</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Renxiao</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="895" to="913" />
+			<date type="published" when="2018">2018. 2018</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Graph convolutional networks for computational drug development and discovery</title>
+		<author>
+			<persName><forename type="first">Mengying</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sendong</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Coryandar</forename><surname>Gilvary</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Olivier</forename><surname>Elemento</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jiayu</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fei</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Briefings in bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="919" to="935" />
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, efficient optimization, and multithreading</title>
+		<author>
+			<persName><forename type="first">Oleg</forename><surname>Trott</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arthur</forename><forename type="middle">J</forename><surname>Olson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of computational chemistry</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="455" to="461" />
+			<date type="published" when="2010">2010. 2010</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<title level="m" type="main">Graph Attention Networks</title>
+		<author>
+			<persName><forename type="first">Petar</forename><surname>Veličković</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Guillem</forename><surname>Cucurull</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Arantxa</forename><surname>Casanova</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Adriana</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Pietro</forename><surname>Liò</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yoshua</forename><surname>Bengio</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018">2018</date>
+		</imprint>
+	</monogr>
+	<note>In ICLR</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">AtomNet: a deep convolutional neural network for bioactivity prediction in structure-based drug discovery</title>
+		<author>
+			<persName><forename type="first">Izhar</forename><surname>Wallach</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Michael</forename><surname>Dzamba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Abraham</forename><surname>Heifets</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1510.02855</idno>
+		<imprint>
+			<date type="published" when="2015">2015. 2015</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">The PDBbind database: methodologies and updates</title>
+		<author>
+			<persName><forename type="first">Renxiao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Xueliang</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yipin</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chao-Yie</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shaomeng</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of medicinal chemistry</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="page" from="4111" to="4119" />
+			<date type="published" when="2005">2005. 2005</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Further development and validation of empirical scoring functions for structure-based binding affinity prediction</title>
+		<author>
+			<persName><forename type="first">Renxiao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Luhua</forename><surname>Lai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shaomeng</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of computer-aided molecular design</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="11" to="26" />
+			<date type="published" when="2002">2002. 2002</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<monogr>
+		<title level="m" type="main">How Powerful are Graph Neural Networks?</title>
+		<author>
+			<persName><forename type="first">Keyulu</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Weihua</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Stefanie</forename><surname>Jegelka</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+	<note>In ICLR</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Analyzing learned molecular representations for property prediction</title>
+		<author>
+			<persName><forename type="first">Kevin</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Kyle</forename><surname>Swanson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wengong</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Connor</forename><surname>Coley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Philipp</forename><surname>Eiden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hua</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Angel</forename><surname>Guzman-Perez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Timothy</forename><surname>Hopper</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Brian</forename><surname>Kelley</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Miriam</forename><surname>Mathea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of chemical information and modeling</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="3370" to="3388" />
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">MoFlow: an invertible flow model for generating molecular graphs</title>
+		<author>
+			<persName><forename type="first">Chengxi</forename><surname>Zang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fei</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2020">2020</date>
+			<biblScope unit="page" from="617" to="626" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">OnionNet: a Multiple-Layer Intermolecular-Contact-Based Convolutional Neural Network for Protein-Ligand Binding Affinity Prediction</title>
+		<author>
+			<persName><forename type="first">Liangzhen</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jingrong</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yuguang</forename><surname>Mu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACS omega</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="15956" to="15965" />
+			<date type="published" when="2019">2019. 2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<author>
+			<persName><forename type="first">Zhi</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Chao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tong</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dazhong</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Penggang</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Baoxing</forename><surname>Huai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tongzhu</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Enhong</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2102.03577</idno>
+		<title level="m">Drug Package Recommendation via Interaction-aware Graph Induction</title>
+		<imprint>
+			<date type="published" when="2021">2021. 2021</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<author>
+			<persName><forename type="first">Jingbo</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Shuangli</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Liang</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Haoyi</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fan</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tong</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Hui</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Dejing</forename><surname>Dou</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:2012.09624</idno>
+		<title level="m">Distance-aware Molecule Graph Attention Network for Drug-Target Binding Affinity Prediction</title>
+		<imprint>
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+	<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

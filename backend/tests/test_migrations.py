@@ -14,6 +14,7 @@ EXPECTED_TABLES = {
     "files", "papers", "paper_profiles", "paper_chunks", "comparisons", "contradictions", "research_gaps",
     "references", "figures", "tables", "agent_runs", "feedback", "jobs",
     "search_queries",  # Step 4.1: literature search queries (L1)
+    "paper_documents",  # Step 4.3: parsed full text
 }  # fmt: skip
 
 

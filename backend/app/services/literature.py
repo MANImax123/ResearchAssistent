@@ -11,12 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents import registry
 from app.agents.idea.agent import plan_from_state
 from app.agents.idea.schemas import IdeaPlan
-from app.agents.literature import ranking
+from app.agents.literature import parsing, ranking
 from app.agents.literature.discovery import DiscoveryResult, Filters, Progress, discover
 from app.agents.literature.planning import PlannedQuery, plan_queries
 from app.core.logging import get_logger
 from app.db.models import Paper, Project, SearchQuery
-from app.db.models.enums import PaperOrigin, QueryOrigin, StageName, StageStatus
+from app.db.models.enums import PaperOrigin, ParseStatus, QueryOrigin, StageName, StageStatus
 from app.services.academic.models import Author, PaperMetadata, SearchSourceName
 from app.services.academic.sources import SearchClient
 from app.services.embeddings import EmbeddingService
@@ -333,3 +333,37 @@ async def select_top(session: AsyncSession, project_id: uuid.UUID, k: int, min_s
         paper.selected = paper.must_include or paper.id in keep
     await session.flush()
     return sum(p.selected for p in papers)
+
+
+# ─── Full text (Step 4.3) ────────────────────────────────────────────────
+
+
+async def papers_to_parse(
+    session: AsyncSession, project_id: uuid.UUID, paper_ids: list[uuid.UUID] | None, force: bool
+) -> list[uuid.UUID]:
+    """The given papers, or every selected paper not parsed yet (all selected ones with `force`)."""
+    stmt = select(Paper.id).where(Paper.project_id == project_id)
+    if paper_ids:
+        stmt = stmt.where(Paper.id.in_(paper_ids))
+    else:
+        stmt = stmt.where(Paper.selected.is_(True))
+        if not force:
+            stmt = stmt.where(Paper.parse_status != ParseStatus.PARSED)
+    return list(
+        await session.scalars(stmt.order_by(Paper.must_include.desc(), Paper.relevance_score.desc().nulls_last()))
+    )
+
+
+async def run_parsing(
+    project_id: uuid.UUID,
+    session_factory: SessionFactory,
+    paper_ids: list[uuid.UUID],
+    *,
+    progress: Progress | None = None,
+) -> dict[str, Any]:
+    outcomes = await parsing.parse_papers(paper_ids, session_factory, registry.parsing_factory(), progress)
+    counts: dict[str, int] = {}
+    for outcome in outcomes:
+        counts[outcome.status.value] = counts.get(outcome.status.value, 0) + 1
+    log.info("papers_parsed", project_id=str(project_id), **counts)
+    return {"papers": len(outcomes), **counts}

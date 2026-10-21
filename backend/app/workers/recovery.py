@@ -11,8 +11,8 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select, update
 
 from app.core.logging import get_logger
-from app.db.models import AgentRun, Job, Stage
-from app.db.models.enums import JobStatus, RunStatus, StageName, StageStatus
+from app.db.models import AgentRun, Job, Paper, Stage
+from app.db.models.enums import JobStatus, ParseStatus, RunStatus, StageName, StageStatus
 from app.services.jobs import SessionFactory
 
 log = get_logger(__name__)
@@ -44,6 +44,8 @@ async def recover_interrupted_jobs(session_factory: SessionFactory, active_task_
     for job in jobs:
         if job.type == "stage_run" and job.project_id is not None:
             await _repair_stage(session_factory, job.project_id, job)
+        if job.type == "literature_parse" and job.project_id is not None:
+            await _repair_parsing(session_factory, job.project_id)
     if jobs:
         log.warning("jobs_recovered_after_restart", count=len(jobs), job_ids=[str(j.id) for j in jobs])
     return [j.id for j in jobs]
@@ -73,3 +75,14 @@ async def _repair_stage(session_factory: SessionFactory, project_id: uuid.UUID, 
         log.info(
             "stages_repaired", project_id=str(project_id), job_id=str(job.id), stages=[s.name.value for s in stages]
         )
+
+
+async def _repair_parsing(session_factory: SessionFactory, project_id: uuid.UUID) -> None:
+    """Papers left queued/parsing by the interrupted job → failed, so "Get full text" picks them up again."""
+    async with session_factory() as session:
+        await session.execute(
+            update(Paper)
+            .where(Paper.project_id == project_id, Paper.parse_status.in_((ParseStatus.PENDING, ParseStatus.PARSING)))
+            .values(parse_status=ParseStatus.FAILED, parse_error=INTERRUPTED)
+        )
+        await session.commit()

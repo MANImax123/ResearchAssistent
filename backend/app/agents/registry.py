@@ -5,6 +5,7 @@ from collections.abc import Callable
 
 from app.agents.idea.agent import make_idea_agent
 from app.agents.idea.critique import CRITICS, CriticFn, make_llm_critic
+from app.agents.literature.parsing import Tools
 from app.core.config import get_settings
 from app.db.models.enums import StageName
 from app.orchestrator.graph import StageAgent
@@ -12,7 +13,9 @@ from app.services.academic.models import SearchSourceName
 from app.services.academic.sources import SearchClient, default_clients
 from app.services.context import format_context, load_context
 from app.services.embeddings import EmbeddingService, get_embeddings
+from app.services.grobid import GrobidClient
 from app.services.llm import LLMService, SessionFactory, get_provider
+from app.services.pdf_fetch import PdfFetcher
 from app.services.storage import get_storage
 
 
@@ -45,3 +48,15 @@ llm_factory: Callable[[SessionFactory], Callable[[], LLMService]] = default_llm
 critic_factory: Callable[[SessionFactory], dict[str, CriticFn]] = default_critics
 academic_factory: Callable[[], dict[SearchSourceName, SearchClient]] = default_clients
 embeddings_factory: Callable[[], EmbeddingService] = get_embeddings
+
+
+def default_parsing_tools() -> Tools:
+    settings = get_settings()
+    return Tools(
+        storage=get_storage(),
+        fetcher=PdfFetcher(unpaywall_email=settings.unpaywall_email, max_bytes=settings.max_upload_mb * 1024 * 1024),
+        grobid=GrobidClient(settings.grobid_url),
+    )
+
+
+parsing_factory: Callable[[], Tools] = default_parsing_tools

@@ -53,6 +53,7 @@ class LiteratureWorkspaceRead(BaseModel):
     must_include_count: int
     judged_count: int  # papers the LLM judged for the current research questions
     unranked_count: int  # papers without a similarity score yet (added since the last ranking)
+    parse_counts: dict[str, int]  # selected papers by parse status
     sources: list[SourceStatus]
     research_questions: list[dict[str, Any]]  # id + text, to show what each query targets
     subtopics: list[str]
@@ -102,6 +103,7 @@ class PaperRead(BaseModel):
     relevance_reason: str | None
     relevance_rqs: list[str]
     parse_status: ParseStatus
+    parse_error: str | None
     created_at: datetime
 
     @computed_field  # type: ignore[prop-decorator]
@@ -142,3 +144,44 @@ class SelectionRequest(BaseModel):
 
 class SelectionResult(BaseModel):
     selected: int
+
+
+class ParseRequest(BaseModel):
+    paper_ids: list[uuid.UUID] | None = Field(default=None, max_length=200)  # None: the selected papers
+    force: bool = False  # also re-parse papers that are already parsed
+
+
+class DocumentSection(BaseModel):
+    heading: str
+    title: str
+    number: str | None
+    kind: str
+    page: int | None
+    text: str
+
+
+class DocumentCaption(BaseModel):
+    kind: str
+    label: str
+    text: str
+    page: int | None
+
+
+class LimitationMention(BaseModel):
+    section: str
+    text: str
+    page: int | None
+
+
+class PaperDocumentRead(BaseModel):
+    paper: PaperRead
+    parser: str
+    pdf_source: str
+    pdf_url: str | None
+    page_count: int | None
+    abstract: str | None
+    sections: list[DocumentSection]
+    captions: list[DocumentCaption]
+    limitations: list[LimitationMention]
+    reference_count: int
+    chunk_count: int

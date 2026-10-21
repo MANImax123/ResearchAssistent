@@ -41,6 +41,7 @@ export type LiteratureWorkspace = {
   must_include_count: number;
   judged_count: number; // papers the AI judged against the current research questions
   unranked_count: number; // papers added since the last ranking
+  parse_counts: Partial<Record<ParseStatus, number>>; // selected papers by parse status
   sources: SourceStatus[];
   research_questions: { id: string; text: string }[];
   subtopics: string[];
@@ -71,12 +72,79 @@ export type Paper = {
   relevance_score: number | null; // AI judgement 0–1 (only for papers it reviewed)
   relevance_reason: string | null;
   relevance_rqs: string[];
-  parse_status: string;
+  parse_status: ParseStatus;
+  parse_error: string | null;
   created_at: string;
   has_identifier: boolean;
 };
 
 export type PaperPage = { total: number; items: Paper[] };
+
+export type ParseStatus = "not_started" | "upload_needed" | "pending" | "parsing" | "parsed" | "failed";
+
+export const PARSE_STATUS: Record<ParseStatus, { label: string; className: string }> = {
+  not_started: { label: "Not parsed", className: "bg-slate-100 text-slate-600" },
+  pending: { label: "Queued", className: "bg-slate-100 text-slate-600" },
+  parsing: { label: "Parsing…", className: "bg-blue-100 text-blue-700" },
+  parsed: { label: "Parsed", className: "bg-emerald-100 text-emerald-700" },
+  upload_needed: { label: "Upload needed", className: "bg-amber-100 text-amber-800" },
+  failed: { label: "Failed", className: "bg-red-100 text-red-700" },
+};
+
+export const PDF_SOURCE_LABEL: Record<PaperDocument["pdf_source"], string> = {
+  arxiv: "PDF from arXiv",
+  open_access: "Open-access PDF",
+  unpaywall: "Open-access PDF found via Unpaywall",
+  upload: "PDF you uploaded",
+};
+
+export const SECTION_KIND_LABEL: Record<SectionKind, string> = {
+  introduction: "Introduction",
+  related_work: "Related work",
+  methodology: "Methodology",
+  dataset: "Data & setup",
+  results: "Results",
+  discussion: "Discussion",
+  limitations: "Limitations",
+  conclusion: "Conclusion",
+  appendix: "Appendix",
+  other: "Other",
+};
+
+export type SectionKind =
+  | "introduction"
+  | "related_work"
+  | "methodology"
+  | "dataset"
+  | "results"
+  | "discussion"
+  | "limitations"
+  | "conclusion"
+  | "appendix"
+  | "other";
+
+export type DocumentSection = {
+  heading: string;
+  title: string;
+  number: string | null;
+  kind: SectionKind;
+  page: number | null;
+  text: string;
+};
+
+export type PaperDocument = {
+  paper: Paper;
+  parser: "grobid" | "pymupdf";
+  pdf_source: "upload" | "arxiv" | "open_access" | "unpaywall";
+  pdf_url: string | null;
+  page_count: number | null;
+  abstract: string | null;
+  sections: DocumentSection[];
+  captions: { kind: "figure" | "table"; label: string; text: string; page: number | null }[];
+  limitations: { section: string; text: string; page: number | null }[];
+  reference_count: number;
+  chunk_count: number;
+};
 export type PaperSort = "relevance" | "added" | "year" | "citations" | "title";
 export type PaperFilters = {
   q?: string;
@@ -141,6 +209,18 @@ export const literatureApi = {
     }),
   clearSelection: (projectId: string) =>
     apiFetch<{ selected: number }>(`${base(projectId)}/selection`, { method: "POST", json: { mode: "none" } }),
+  parse: (projectId: string, options: { paperIds?: string[]; force?: boolean } = {}) =>
+    apiFetch<Job>(`${base(projectId)}/parse`, {
+      method: "POST",
+      json: { paper_ids: options.paperIds ?? null, force: options.force ?? false },
+    }),
+  uploadPaperPdf: (projectId: string, paperId: string, file: File, onProgress?: (fraction: number) => void) => {
+    const data = new FormData();
+    data.append("file", file);
+    return apiUpload<Paper>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/pdf`, data, onProgress);
+  },
+  document: (projectId: string, paperId: string) =>
+    apiFetch<PaperDocument>(`${base(projectId)}/papers/${encodeURIComponent(paperId)}/document`),
   addByIdentifier: (projectId: string, identifier: string) =>
     apiFetch<AddResult>(`${base(projectId)}/papers/lookup`, { method: "POST", json: { identifier } }),
   uploadPdf: (

@@ -1,5 +1,6 @@
 """Literature workspace: search queries, discovery runs, the paper library, adding papers by DOI /
-arXiv id or PDF (Step 4.1); relevance ranking and the paper selection (Step 4.2)."""
+arXiv id or PDF (Step 4.1); relevance ranking and the paper selection (Step 4.2); full text: PDF
+acquisition, parsing and the parsed document (Step 4.3)."""
 
 import uuid
 from typing import Annotated, Any, Literal
@@ -13,8 +14,8 @@ from app.api.v1.files import StorageDep, save_upload
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
-from app.db.models import Job, Paper, Project
-from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, StageName
+from app.db.models import Job, Paper, PaperChunk, PaperDocument, Project
+from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, StageName
 from app.orchestrator.service import selected_paper_ids
 from app.schemas.job import JobRead
 from app.schemas.literature import (
@@ -22,9 +23,11 @@ from app.schemas.literature import (
     LiteratureWorkspaceRead,
     LookupRequest,
     LookupResult,
+    PaperDocumentRead,
     PaperFlags,
     PaperPage,
     PaperRead,
+    ParseRequest,
     QueriesWrite,
     QueryRead,
     RankRequest,
@@ -42,7 +45,7 @@ from app.services.projects import get_project_for_user
 router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature"])
 log = get_logger(__name__)
 
-LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank")
+LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse")
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -106,6 +109,11 @@ async def get_workspace(
             ).where(Paper.project_id == project_id)
         )
     ).one()
+    parse_rows = await db.execute(
+        select(Paper.parse_status, func.count())
+        .where(Paper.project_id == project_id, Paper.selected.is_(True))
+        .group_by(Paper.parse_status)
+    )
     return LiteratureWorkspaceRead(
         status=next(row.status for row in project.stages if row.name == StageName.LITERATURE),
         editable=reason is None,
@@ -116,6 +124,7 @@ async def get_workspace(
         must_include_count=counts[2],
         judged_count=counts[3],
         unranked_count=counts[4],
+        parse_counts={status.value: n for status, n in parse_rows.all()},
         sources=_source_statuses(settings),
         research_questions=[{"id": q.id, "text": q.text} for q in plan.research_questions] if plan else [],
         subtopics=list(plan.subtopics) if plan else [],
@@ -396,3 +405,75 @@ async def upload_paper(
     await db.commit()
     log.info("paper_uploaded", project_id=str(project_id), paper_id=str(paper.id), has_id=meta.has_identifier)
     return LookupResult(paper=PaperRead.model_validate(paper), created=True)
+
+
+# ─── Full text: PDFs, parsing, parsed documents (Step 4.3) ───────────────
+
+
+async def _paper(db: DbSession, project_id: uuid.UUID, paper_id: uuid.UUID) -> Paper:
+    paper = await db.scalar(select(Paper).where(Paper.id == paper_id, Paper.project_id == project_id))
+    if paper is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Paper not found")
+    return paper
+
+
+@router.post("/parse", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def parse(
+    project_id: uuid.UUID, body: ParseRequest, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """L4: get the full text of the given papers (default: every selected paper not parsed yet)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    ids = await literature.papers_to_parse(db, project_id, body.paper_ids, body.force)
+    if not ids:
+        detail = "Those papers aren't in this project" if body.paper_ids else "Select papers first (or all are parsed)"
+        raise HTTPException(status.HTTP_409_CONFLICT, detail)
+    params = {"project_id": str(project_id), "paper_ids": [str(i) for i in ids]}
+    return await start_job(db, dispatcher, user, "literature_parse", params, project_id)
+
+
+@router.post("/papers/{paper_id}/pdf", response_model=PaperRead)
+async def upload_paper_pdf(
+    project_id: uuid.UUID,
+    paper_id: uuid.UUID,
+    file: UploadFile,
+    user: CurrentUser,
+    db: DbSession,
+    storage: StorageDep,
+    settings: SettingsDep,
+) -> PaperRead:
+    """Attach the PDF for a paper (e.g. one marked "upload needed"); it can then be parsed."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    paper = await _paper(db, project_id, paper_id)
+    record = await save_upload(db, storage, settings, project_id, user, file, FileKind.PAPER_PDF)
+    paper.pdf_file_id = record.id
+    paper.parse_status = ParseStatus.NOT_STARTED
+    paper.parse_error = None
+    await db.commit()
+    log.info("paper_pdf_attached", project_id=str(project_id), paper_id=str(paper_id))
+    return PaperRead.model_validate(paper)
+
+
+@router.get("/papers/{paper_id}/document", response_model=PaperDocumentRead)
+async def get_document(project_id: uuid.UUID, paper_id: uuid.UUID, user: CurrentUser, db: DbSession) -> Any:
+    """The parsed paper: sections (with kinds and pages), figure/table captions, limitations."""
+    await get_project_for_user(db, project_id, user)
+    paper = await _paper(db, project_id, paper_id)
+    document = await db.get(PaperDocument, paper_id)
+    if document is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "This paper hasn't been parsed yet")
+    chunks = await db.scalar(select(func.count()).select_from(PaperChunk).where(PaperChunk.paper_id == paper_id))
+    return PaperDocumentRead(
+        paper=PaperRead.model_validate(paper),
+        parser=document.parser,
+        pdf_source=document.pdf_source,
+        pdf_url=document.pdf_url,
+        page_count=document.page_count,
+        abstract=document.abstract,
+        sections=document.sections,
+        captions=document.captions,
+        limitations=document.limitations,
+        reference_count=document.reference_count,
+        chunk_count=chunks or 0,
+    )

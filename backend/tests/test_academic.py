@@ -269,6 +269,18 @@ def test_arxiv_record_merges_with_doi_record_by_title() -> None:
     assert dedup.papers[0].arxiv_id == "2107.10670" and dedup.papers[0].sources == ["openalex", "arxiv"]
 
 
+def test_preprint_published_years_later_still_merges() -> None:
+    """Live case: bioRxiv 2022 preprint, Pharmaceuticals 2024 article; Crossref returned both."""
+    title = "Do molecular fingerprints identify diverse active drugs in large-scale virtual screening? (no)"
+    dedup = Deduplicator()
+    dedup.add(paper(title, doi="10.1101/2022.09.20.508800", year=2022))
+    dedup.add(paper(title.title(), doi="10.3390/ph17080992", year=2024, venue="Pharmaceuticals"))
+    assert len(dedup.papers) == 1 and dedup.papers[0].doi == "10.3390/ph17080992" and dedup.papers[0].year == 2024
+    # Two published versions years apart are different papers
+    dedup.add(paper(title, doi="10.9999/later", year=2027))
+    assert len(dedup.papers) == 2
+
+
 def test_different_published_dois_stay_separate() -> None:
     conf = paper("Graph networks for affinity", doi="10.1145/1", year=2021)
     journal = paper("Graph Networks for Affinity", doi="10.1093/2", year=2022)

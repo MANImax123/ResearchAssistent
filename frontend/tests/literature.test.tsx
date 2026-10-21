@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { AddPaper } from "@/components/literature/AddPaper";
 import { DiscoverPanel, DiscoveryReport } from "@/components/literature/DiscoverPanel";
+import { FullTextPanel } from "@/components/literature/FullTextPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
 import { QueryEditor } from "@/components/literature/QueryEditor";
 import { RankPanel } from "@/components/literature/RankPanel";
@@ -43,7 +44,7 @@ function paper(over: Partial<Paper>): Paper {
     openalex_id: "W1", url: null, pdf_url: null, pdf_file_id: null, citation_count: 1232, origin: "search",
     sources: ["openalex", "crossref"], found_by: ["Q1"], selected: false, parse_status: "not_started",
     created_at: new Date().toISOString(), has_identifier: true, must_include: false, similarity: null,
-    rq_similarity: {}, relevance_score: null, relevance_reason: null, relevance_rqs: [], ...over,
+    rq_similarity: {}, relevance_score: null, relevance_reason: null, relevance_rqs: [], parse_error: null, ...over,
   }; // prettier-ignore
 }
 
@@ -219,7 +220,7 @@ describe("helpers", () => {
 
 const WS: LiteratureWorkspace = {
   status: "not_started", editable: true, blocked_reason: null, queries: QUERIES, paper_count: 100,
-  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, sources: SOURCES,
+  selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, sources: SOURCES,
   research_questions: [{ id: "RQ1", text: "Q?" }, { id: "RQ2", text: "H." }], subtopics: [],
 }; // prettier-ignore
 
@@ -280,5 +281,43 @@ describe("PaperTable relevance & selection", () => {
 
     await userEvent.selectOptions(screen.getByLabelText("Filter by research question"), "RQ2");
     await waitFor(() => expect(String(fetchMock.mock.calls.at(-1)?.[0])).toContain("rq=RQ2"));
+  });
+});
+
+describe("FullTextPanel", () => {
+  it("shows each selected paper's parse status and offers uploads where needed", async () => {
+    const parsed = paper({ id: "a", title: "Parsed paper", selected: true, parse_status: "parsed" });
+    const needs = paper({ id: "b", title: "Paywalled paper", selected: true, parse_status: "upload_needed",
+                          parse_error: "No open-access PDF could be downloaded (open_access: HTTP 403)." }); // prettier-ignore
+    const fetchMock = vi.fn().mockResolvedValue(json(200, { total: 2, items: [parsed, needs] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const onParse = vi.fn();
+    render(
+      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={onParse} onChanged={vi.fn()}
+                     ws={{ ...WS, selected_count: 3, parse_counts: { parsed: 1, upload_needed: 1, not_started: 1 } }} />,
+    ); // prettier-ignore
+
+    expect(await screen.findByText("Parsed paper")).toBeInTheDocument();
+    expect(String(fetchMock.mock.calls[0][0])).toContain("selected=true");
+    expect(screen.getByText("Parsed: 1")).toBeInTheDocument();
+    expect(screen.getByText("Upload needed: 1")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open" })).toHaveAttribute("href", "/projects/p/literature/papers/a");
+    const row = screen.getByText("Paywalled paper").closest("li")!;
+    expect(within(row).getByText(/HTTP 403/)).toBeInTheDocument();
+    expect(within(row).getByRole("button", { name: "Upload PDF" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "Get full text for 2 papers" }));
+    expect(onParse).toHaveBeenCalledWith({});
+    await userEvent.click(screen.getByRole("button", { name: "Parse all again" }));
+    expect(onParse).toHaveBeenLastCalledWith({ force: true });
+  });
+
+  it("says a new run only retries the open-access sources when only uploads are missing", () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(200, { total: 0, items: [] })));
+    render(
+      <FullTextPanel projectId="p" canEdit busy={false} refreshKey={0} onParse={vi.fn()} onChanged={vi.fn()}
+                     ws={{ ...WS, selected_count: 3, parse_counts: { parsed: 1, upload_needed: 2 } }} />,
+    ); // prettier-ignore
+    expect(screen.getByRole("button", { name: "Try open-access sources again" })).toBeEnabled();
   });
 });

@@ -29,8 +29,19 @@ def is_preprint_doi(doi: str | None) -> bool:
     return bool(doi) and doi.startswith(PREPRINT_DOI_PREFIXES)  # type: ignore[union-attr]
 
 
-def _years_compatible(a: int | None, b: int | None) -> bool:
-    return a is None or b is None or abs(a - b) <= 1
+PREPRINT_LAG_YEARS = 3  # a preprint can appear in a journal years later
+
+
+def _is_preprint(paper: PaperMetadata) -> bool:
+    return is_preprint_doi(paper.doi) or (paper.arxiv_id is not None and (not paper.doi or paper.venue == "arXiv"))
+
+
+def _years_compatible(a: PaperMetadata, b: PaperMetadata) -> bool:
+    """Same year ±1; a preprint may precede its published version by up to PREPRINT_LAG_YEARS."""
+    if a.year is None or b.year is None or abs(a.year - b.year) <= 1:
+        return True
+    earlier, later = (a, b) if a.year < b.year else (b, a)
+    return _is_preprint(earlier) and not _is_preprint(later) and later.year - earlier.year <= PREPRINT_LAG_YEARS  # type: ignore[operator]
 
 
 def _dois_conflict(a: PaperMetadata, b: PaperMetadata) -> bool:
@@ -94,11 +105,7 @@ class Deduplicator:
         title = normalize_title(paper.title)
         for index, other_title in enumerate(self._titles):
             other = self.papers[index]
-            if (
-                same_title(title, other_title)
-                and _years_compatible(paper.year, other.year)
-                and not _dois_conflict(paper, other)
-            ):
+            if same_title(title, other_title) and _years_compatible(paper, other) and not _dois_conflict(paper, other):
                 return index
         return None
 
