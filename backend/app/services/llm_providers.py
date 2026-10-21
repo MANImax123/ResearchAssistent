@@ -3,10 +3,12 @@
 Only this module imports provider SDKs (A3: no agent calls an SDK directly).
 """
 
+import asyncio
 import json
+import weakref
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Protocol
+from typing import Any, Generic, Protocol, TypeVar
 
 import httpx
 
@@ -36,6 +38,28 @@ class LLMProvider(Protocol):
     def is_retryable(self, exc: BaseException) -> bool: ...
 
 
+T = TypeVar("T")
+
+
+class PerLoop(Generic[T]):
+    """One async SDK client per event loop.
+
+    Async HTTP clients bind to the loop they first run on, and workers run each job in a fresh
+    `asyncio.run()` loop, so a single shared client fails every later job with "Event loop is closed".
+    """
+
+    def __init__(self, make: Callable[[], T]) -> None:
+        self._make = make
+        self._clients: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, T] = weakref.WeakKeyDictionary()
+
+    def get(self) -> T:
+        loop = asyncio.get_running_loop()
+        client = self._clients.get(loop)
+        if client is None:
+            client = self._clients[loop] = self._make()
+        return client
+
+
 def is_network_error(exc: BaseException) -> bool:
     return isinstance(exc, TimeoutError | ConnectionError | httpx.TimeoutException | httpx.TransportError)
 
@@ -51,7 +75,8 @@ class GeminiProvider:
         from google.genai import types
 
         self._types = types
-        self._client = genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)))
+        http = types.HttpOptions(timeout=int(timeout_s * 1000))
+        self._clients = PerLoop(lambda: genai.Client(api_key=api_key, http_options=http).aio)
 
     async def complete(
         self,
@@ -70,7 +95,7 @@ class GeminiProvider:
             response_mime_type="application/json" if json_schema else None,
             response_json_schema=json_schema,
         )
-        resp = await self._client.aio.models.generate_content(model=model, contents=prompt, config=config)
+        resp = await self._clients.get().models.generate_content(model=model, contents=prompt, config=config)
         usage = resp.usage_metadata
         tokens_in = (usage.prompt_token_count or 0) if usage else 0
         # "Thinking" tokens are billed as output
@@ -99,7 +124,7 @@ class OpenAIProvider:
         import openai
 
         self._openai = openai
-        self._client = openai.AsyncOpenAI(api_key=api_key, timeout=timeout_s, max_retries=0)
+        self._clients = PerLoop(lambda: openai.AsyncOpenAI(api_key=api_key, timeout=timeout_s, max_retries=0))
 
     async def complete(
         self,
@@ -129,7 +154,7 @@ class OpenAIProvider:
                     "strict": False,
                 },
             }
-        resp = await self._client.chat.completions.create(**kwargs)
+        resp = await self._clients.get().chat.completions.create(**kwargs)
         usage = resp.usage
         return Completion(
             text=resp.choices[0].message.content or "",

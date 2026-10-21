@@ -15,7 +15,7 @@ from typing import Literal, Protocol
 from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
 from app.services.llm import LLMNotConfiguredError
-from app.services.llm_providers import is_network_error
+from app.services.llm_providers import PerLoop, is_network_error
 
 log = get_logger(__name__)
 
@@ -39,7 +39,8 @@ class GeminiEmbeddings:
 
         self._types = types
         self._model = model
-        self._client = genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=int(timeout_s * 1000)))
+        http = types.HttpOptions(timeout=int(timeout_s * 1000))
+        self._clients = PerLoop(lambda: genai.Client(api_key=api_key, http_options=http).aio)
         # gemini-embedding-001 takes a task_type; newer models take the task as a text prefix instead
         self._legacy = model.startswith("gemini-embedding-001")
 
@@ -54,7 +55,7 @@ class GeminiEmbeddings:
             config = types.EmbedContentConfig(output_dimensionality=dim)
         # One Content per text: a plain list of strings would be merged into a single embedding
         contents = [types.Content(parts=[types.Part.from_text(text=t)]) for t in inputs]
-        resp = await self._client.aio.models.embed_content(model=self._model, contents=contents, config=config)
+        resp = await self._clients.get().models.embed_content(model=self._model, contents=contents, config=config)
         return [list(e.values or []) for e in (resp.embeddings or [])]
 
     def is_retryable(self, exc: BaseException) -> bool:
@@ -81,10 +82,10 @@ class OpenAIEmbeddings:
 
         self._openai = openai
         self._model = model
-        self._client = openai.AsyncOpenAI(api_key=api_key, timeout=timeout_s, max_retries=0)
+        self._clients = PerLoop(lambda: openai.AsyncOpenAI(api_key=api_key, timeout=timeout_s, max_retries=0))
 
     async def embed(self, texts: list[str], *, kind: Kind, dim: int, titles: list[str | None]) -> list[list[float]]:
-        resp = await self._client.embeddings.create(model=self._model, input=texts, dimensions=dim)
+        resp = await self._clients.get().embeddings.create(model=self._model, input=texts, dimensions=dim)
         return [list(d.embedding) for d in sorted(resp.data, key=lambda d: d.index)]
 
     def is_retryable(self, exc: BaseException) -> bool:

@@ -78,7 +78,7 @@ STUB_AGENTS: dict[StageName, StageAgent] = {stage: make_stub_agent(stage) for st
 REVIEW_ACTIONS = ("approve", "reject", "edit", "update", "regenerate")
 
 # ResearchState fields the researcher may change while a stage is under review
-UPDATABLE_FIELDS = frozenset({"idea", "problem", "objectives", "research_questions", "title"})
+UPDATABLE_FIELDS = frozenset({"idea", "problem", "objectives", "research_questions", "title", "critiques"})
 
 
 def _status_update(state: ResearchState, changes: dict[str, str]) -> dict[str, Any]:

@@ -107,6 +107,7 @@ class ResearchState(TypedDict, total=False):
     reopen: NotRequired[bool]  # "go back": route straight to review without re-running the agent
     stage_status: Annotated[dict[str, str], merge_dicts]  # stage -> StageStatus value
     stage_outputs: Annotated[dict[str, StageOutput], merge_dicts]  # drafts until sections exist (Step 2.3)
+    critiques: NotRequired[dict[str, Any] | None]  # latest critic round on the research plan (Step 3.2)
 
 
 def initial_state(

@@ -23,7 +23,14 @@ from app.schemas.debug import IdeaSnapshot
 from app.services import llm as llm_module
 from app.services.embeddings import EmbeddingService, FakeEmbeddings
 from app.services.llm import LLMError, LLMNotConfiguredError, LLMService, inline_refs
-from app.services.llm_providers import FakeLLM, GeminiProvider, OpenAIProvider, TransientFakeError, example_from_schema
+from app.services.llm_providers import (
+    FakeLLM,
+    GeminiProvider,
+    OpenAIProvider,
+    PerLoop,
+    TransientFakeError,
+    example_from_schema,
+)
 
 SNAPSHOT = {
     "working_title": "Grounded multi-agent paper writing",
@@ -315,7 +322,7 @@ async def test_gemini_provider_builds_request_and_counts_thinking_tokens() -> No
         usage = SimpleNamespace(prompt_token_count=120, candidates_token_count=40, thoughts_token_count=25)
         return SimpleNamespace(text='{"a": 1}', usage_metadata=usage, model_version="gemini-3.8-flash-001")
 
-    provider._client = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=generate_content)))
+    provider._clients = PerLoop(lambda: SimpleNamespace(models=SimpleNamespace(generate_content=generate_content)))
     schema = {"type": "object", "properties": {"a": {"type": "integer"}}}
 
     completion = await provider.complete(
@@ -349,7 +356,8 @@ async def test_openai_provider_builds_request() -> None:
         usage = SimpleNamespace(prompt_tokens=10, completion_tokens=3)
         return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage, model="gpt-5.4")
 
-    provider._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    chat = SimpleNamespace(completions=SimpleNamespace(create=create))
+    provider._clients = PerLoop(lambda: SimpleNamespace(chat=chat))
 
     completion = await provider.complete(
         model="gpt-5.4", prompt="P", system="S", temperature=None, max_output_tokens=None, json_schema={"title": "X"}
@@ -359,6 +367,25 @@ async def test_openai_provider_builds_request() -> None:
     assert "temperature" not in captured  # some reasoning models reject it; only sent when set
     assert captured["response_format"]["json_schema"]["name"] == "X"
     assert (completion.text, completion.tokens_in, completion.tokens_out) == ("hello", 10, 3)
+
+
+def test_provider_clients_survive_a_new_event_loop() -> None:
+    """Workers run each job in its own asyncio.run(): a client bound to the last job's loop must not be reused."""
+    made: list[object] = []
+
+    def make() -> object:
+        client = SimpleNamespace(loop=asyncio.get_running_loop())
+        made.append(client)
+        return client
+
+    clients = PerLoop(make)
+
+    async def job() -> bool:
+        first = clients.get()
+        return first is clients.get() and first.loop is asyncio.get_running_loop()  # type: ignore[attr-defined]
+
+    assert asyncio.run(job()) and asyncio.run(job())
+    assert len(made) == 2
 
 
 # ─── Prompt templates ──────────────────────────────────────────────────

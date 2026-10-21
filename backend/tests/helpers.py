@@ -1,5 +1,6 @@
 """Shared test helpers (fixtures that use them live in conftest.py)."""
 
+import asyncio
 import uuid
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -25,11 +26,17 @@ async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
 
 
 def factory_for(session: AsyncSession) -> Any:
-    """A session factory that hands out the (rolled-back) test session."""
+    """A session factory that hands out the (rolled-back) test session.
+
+    Production code opens a session per use; here everything shares one connection, which asyncpg
+    can't use concurrently (e.g. parallel critics logging agent runs), so uses are serialised.
+    """
+    lock = asyncio.Lock()
 
     @asynccontextmanager
     async def factory() -> AsyncIterator[AsyncSession]:
-        yield session
+        async with lock:
+            yield session
 
     return factory
 

@@ -182,3 +182,17 @@ def stub_agents(monkeypatch: pytest.MonkeyPatch) -> None:
     from app.agents import registry
 
     monkeypatch.setattr(registry, "agent_factory", lambda session_factory: {})
+
+
+@pytest.fixture(autouse=True)
+def no_live_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Anything reaching for the real LLM in a test fails loudly instead of spending quota."""
+    from app.agents import registry
+
+    def refuse(session_factory: Any) -> Any:
+        def llm() -> Any:
+            raise AssertionError("A test tried to use the live LLM; install a FakeLLM")
+
+        return llm
+
+    monkeypatch.setattr(registry, "llm_factory", refuse)

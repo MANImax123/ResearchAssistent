@@ -144,6 +144,7 @@ def make_idea_agent(llm_factory: Callable[[], LLMService], load_context: Context
             plan = plan.model_copy(update={"title": plan.title_options[0]})
         return {
             **plan_to_state(plan, raw_idea),
+            "critiques": None,  # critiques name O#/RQ# ids of the previous plan
             "stage_outputs": {
                 StageName.IDEA.value: {
                     "draft": render_markdown(plan),

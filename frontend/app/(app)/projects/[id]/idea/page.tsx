@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { FilesPanel } from "@/components/FilesPanel";
+import { CritiquePanel } from "@/components/idea/CritiquePanel";
 import { PlanCards } from "@/components/idea/PlanCards";
 import { JobProgress } from "@/components/JobProgress";
 import { Badge, Button, ErrorAlert, Spinner, TextArea } from "@/components/ui";
@@ -23,8 +24,8 @@ export default function IdeaWorkspacePage() {
   const [rawIdea, setRawIdea] = useState("");
   const [ideaSaved, setIdeaSaved] = useState(true);
   const [instructions, setInstructions] = useState("");
-  const [job, setJobStart] = useState<Job | null>(null);
-  const { job: polled, error: pollError } = useJob(job?.id ?? null, job);
+  const [job, setJobState] = useState<{ job: Job; label: string } | null>(null);
+  const { job: polled, error: pollError } = useJob(job?.job.id ?? null, job?.job ?? null);
   const [rejecting, setRejecting] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
   const [busy, setBusy] = useState(false);
@@ -48,8 +49,8 @@ export default function IdeaWorkspacePage() {
 
   useEffect(() => {
     if (!polled || !TERMINAL.has(polled.status)) return;
-    if (polled.status === "failed") setError(`The Idea agent failed: ${polled.error ?? "unknown error"}`);
-    setJobStart(null);
+    if (polled.status === "failed") setError(`${job?.label ?? "The job"} failed: ${polled.error ?? "unknown error"}`);
+    setJobState(null);
     setInstructions("");
     void load();
   }, [polled, load]);
@@ -90,7 +91,7 @@ export default function IdeaWorkspacePage() {
         ws!.status === "not_started" || ws!.status === "rejected" || ws!.status === "stale"
           ? await workflowApi.run(id, "idea", instructions)
           : await workflowApi.regenerate(id, "idea", instructions);
-      setJobStart(started.job);
+      setJobState({ job: started.job, label: "The Idea agent" });
       setWs({ ...ws!, status: "running" });
     });
   }
@@ -169,7 +170,9 @@ export default function IdeaWorkspacePage() {
             )}
             {!rawIdea.trim() && <span className="text-xs text-slate-500">Write your idea first.</span>}
           </div>
-          {job && polled && <JobProgress key={job.id} job={polled} label="Idea agent" pollError={pollError} />}
+          {job && polled && job.label === "The Idea agent" && (
+            <JobProgress key={job.job.id} job={polled} label="Idea agent" pollError={pollError} />
+          )}
         </section>
       )}
 
@@ -184,6 +187,25 @@ export default function IdeaWorkspacePage() {
           </div>
           <PlanCards plan={ws.plan!} editable={ws.editable && !running} onSave={savePlan} />
         </section>
+      )}
+
+      {hasPlan && (reviewing || ws.critiques) && (
+        <>
+          <CritiquePanel
+            critiques={ws.critiques}
+            canAct={canEdit && reviewing && !running}
+            busy={busy || job !== null}
+            onRequest={() =>
+              run(async () => setJobState({ job: await ideaApi.critique(id), label: "The critics" }))
+            }
+            onApply={(ids) =>
+              run(async () => setJobState({ job: await ideaApi.revise(id, ids), label: "The revision" }))
+            }
+          />
+          {job && polled && job.label !== "The Idea agent" && (
+            <JobProgress key={job.job.id} job={polled} label={job.label} pollError={pollError} />
+          )}
+        </>
       )}
 
       {hasPlan && reviewing && canEdit && !running && (

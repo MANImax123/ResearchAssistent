@@ -8,6 +8,7 @@ import pytest
 
 from app.core.config import get_settings
 from app.services.embeddings import EmbeddingService, FakeEmbeddings, GeminiEmbeddings, Kind
+from app.services.llm_providers import PerLoop
 
 DIM = get_settings().embedding_dim
 
@@ -98,7 +99,7 @@ async def test_gemini_embeds_each_text_separately_with_task_prefixes() -> None:
         captured.update(kwargs)
         return SimpleNamespace(embeddings=[SimpleNamespace(values=[0.5] * DIM) for _ in kwargs["contents"]])
 
-    provider._client = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(embed_content=embed_content)))
+    provider._clients = PerLoop(lambda: SimpleNamespace(models=SimpleNamespace(embed_content=embed_content)))
     svc = service(provider)
 
     await svc.embed_documents(["Attention is all you need.", "BERT."], titles=["Transformers", None])
@@ -119,7 +120,7 @@ async def test_legacy_gemini_model_uses_task_type() -> None:
         captured.update(kwargs)
         return SimpleNamespace(embeddings=[SimpleNamespace(values=[0.1] * DIM)])
 
-    provider._client = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(embed_content=embed_content)))
+    provider._clients = PerLoop(lambda: SimpleNamespace(models=SimpleNamespace(embed_content=embed_content)))
     await service(provider).embed_query("q")
 
     assert captured["config"].task_type == "RETRIEVAL_QUERY"

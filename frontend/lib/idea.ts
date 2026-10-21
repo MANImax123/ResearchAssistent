@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import type { Job } from "@/lib/jobs";
 import type { StageStatus } from "@/lib/stages";
 
 export type Objective = { id: string; text: string };
@@ -25,6 +26,48 @@ export type IdeaPlan = {
   title: string | null;
 };
 
+export type CriticName = "novelty" | "feasibility" | "methodology";
+
+export type Suggestion = { id: string; title: string; detail: string; affects: string[] };
+
+export type Critique = {
+  score: number;
+  summary: string;
+  strengths: string[];
+  risks: string[];
+  suggestions: Suggestion[];
+};
+
+export type CritiqueSet = {
+  round: number;
+  generated_at: string;
+  critiques: Partial<Record<CriticName, Critique>>;
+  agent_run_ids: Record<string, string>;
+  applied: string[];
+};
+
+export const CRITIC_LABEL: Record<CriticName, { title: string; question: string }> = {
+  novelty: { title: "Novelty", question: "Is the contribution distinct and clearly positioned?" },
+  feasibility: { title: "Feasibility", question: "Can this be done in one paper?" },
+  methodology: { title: "Methodology", question: "Are the objectives measurable and the questions answerable?" },
+};
+
+/** Readable names for the plan fields a suggestion would change. */
+export const FIELD_LABEL: Record<string, string> = {
+  refined_idea: "Refined idea",
+  domain: "Domain",
+  keywords: "Keywords",
+  subtopics: "Subtopics",
+  problem_statement: "Problem statement",
+  motivation: "Motivation",
+  scope: "Scope",
+  expected_contributions: "Contributions",
+  objectives: "Objectives",
+  research_questions: "Research questions",
+  research_directions: "Directions",
+  title_options: "Title options",
+};
+
 export type IdeaWorkspace = {
   status: StageStatus;
   raw_idea: string | null;
@@ -34,6 +77,7 @@ export type IdeaWorkspace = {
   generated_at: string | null;
   agent_run_id: string | null;
   pending_feedback: string | null;
+  critiques: CritiqueSet | null;
 };
 
 const base = (projectId: string) => `/projects/${encodeURIComponent(projectId)}/idea`;
@@ -42,6 +86,9 @@ export const ideaApi = {
   get: (projectId: string) => apiFetch<IdeaWorkspace>(base(projectId)),
   savePlan: (projectId: string, plan: IdeaPlan) =>
     apiFetch<IdeaWorkspace>(`${base(projectId)}/plan`, { method: "PUT", json: plan }),
+  critique: (projectId: string) => apiFetch<Job>(`${base(projectId)}/critiques`, { method: "POST" }),
+  revise: (projectId: string, suggestionIds: string[]) =>
+    apiFetch<Job>(`${base(projectId)}/revise`, { method: "POST", json: { suggestion_ids: suggestionIds } }),
 };
 
 /** Next free id with the given prefix ("O" → "O4" when O1–O3 exist). */

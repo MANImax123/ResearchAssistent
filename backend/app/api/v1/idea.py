@@ -5,16 +5,28 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select
 
 from app.agents.idea.agent import plan_from_state, plan_to_state, render_markdown
+from app.agents.idea.critique import CritiqueSet
 from app.agents.idea.schemas import IdeaPlan
+from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession
 from app.core.logging import get_logger
-from app.db.models import Feedback, Project, User
-from app.db.models.enums import FeedbackAction, MemberRole, SectionType, StageName, StageStatus, VersionSource
+from app.db.models import Feedback, Job, Project, User
+from app.db.models.enums import (
+    FeedbackAction,
+    JobStatus,
+    MemberRole,
+    SectionType,
+    StageName,
+    StageStatus,
+    VersionSource,
+)
 from app.db.session import request_session_factory
 from app.orchestrator import service as orchestrator
-from app.schemas.idea import IdeaWorkspaceRead
+from app.schemas.idea import IdeaWorkspaceRead, ReviseRequest
+from app.schemas.job import JobRead
 from app.services import sections
 from app.services.projects import get_project_for_user
 
@@ -55,6 +67,7 @@ async def _read(db: DbSession, project_id: uuid.UUID, user: User) -> IdeaWorkspa
         generated_at=datetime.fromisoformat(output["generated_at"]) if output.get("generated_at") else None,
         agent_run_id=uuid.UUID(run_id) if run_id else None,
         pending_feedback=snapshot.get("pending_feedback"),
+        critiques=CritiqueSet.model_validate(snapshot["critiques"]) if snapshot.get("critiques") else None,
     )
 
 
@@ -114,3 +127,52 @@ async def _record_title(db: DbSession, project_id: uuid.UUID, plan: IdeaPlan, us
         return
     source = VersionSource.AI if plan.title in plan.title_options else sections.edited_source(current)
     await sections.add_version(db, section, plan.title, source, created_by=user.id, change_note="Title chosen in plan")
+
+
+# ─── Critics (Step 3.2) ─────────────────────────────────────────────────
+
+PLAN_JOBS = ("idea_critique", "idea_revise")
+
+
+async def _ensure_plan_idle(db: DbSession, project: Project, plan_exists: bool) -> None:
+    blocker = _blocker(_idea_status(project), plan_exists)
+    if blocker:
+        raise HTTPException(status.HTTP_409_CONFLICT, blocker)
+    busy = await db.scalar(
+        select(Job.id).where(
+            Job.project_id == project.id,
+            Job.type.in_(PLAN_JOBS),
+            Job.status.in_((JobStatus.PENDING, JobStatus.RUNNING)),
+        )
+    )
+    if busy:
+        raise HTTPException(status.HTTP_409_CONFLICT, "The critics are already working on this plan")
+
+
+@router.post("/critiques", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def request_critiques(project_id: uuid.UUID, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep) -> Job:
+    """Novelty, Feasibility and Methodology critics review the plan (in parallel, as a background job)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    snapshot: dict[str, Any] = project.research_state.snapshot if project.research_state else {}
+    await _ensure_plan_idle(db, project, plan_from_state(snapshot) is not None)
+    return await start_job(db, dispatcher, user, "idea_critique", {"project_id": str(project_id)}, project_id)
+
+
+@router.post("/revise", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def revise_with_suggestions(
+    project_id: uuid.UUID, body: ReviseRequest, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """Revise the plan applying ONLY the selected suggestions (fields they don't name stay unchanged)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    snapshot: dict[str, Any] = project.research_state.snapshot if project.research_state else {}
+    await _ensure_plan_idle(db, project, plan_from_state(snapshot) is not None)
+    if not snapshot.get("critiques"):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ask the critics first")
+    available = CritiqueSet.model_validate(snapshot["critiques"]).suggestions()
+    unknown = [s for s in body.suggestion_ids if s not in available]
+    if unknown:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"Unknown suggestions: {', '.join(unknown)}")
+    db.add(Feedback(project_id=project_id, stage=StageName.IDEA, user_id=user.id, action=FeedbackAction.EDIT,
+                    comment=f"Applied critic suggestions {', '.join(body.suggestion_ids)}"))  # fmt: skip
+    params = {"project_id": str(project_id), "suggestion_ids": body.suggestion_ids, "by": str(user.id)}
+    return await start_job(db, dispatcher, user, "idea_revise", params, project_id)

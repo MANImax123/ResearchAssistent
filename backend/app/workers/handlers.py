@@ -64,7 +64,29 @@ async def stage_run(
     }
 
 
+async def idea_critique(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """Novelty, Feasibility and Methodology critics review the research plan in parallel."""
+    from app.services import idea_review
+
+    await reporter.progress(10, "Critics are reviewing the plan")
+    critiques = await idea_review.critique_plan(uuid.UUID(project_id), reporter.session_factory)
+    return {"round": critiques.round, "scores": {name: c.score for name, c in critiques.critiques.items()}}
+
+
+async def idea_revise(
+    reporter: JobReporter, project_id: str, suggestion_ids: list[str], by: str | None = None
+) -> dict[str, Any]:
+    """Revise the research plan applying only the selected critic suggestions."""
+    from app.services import idea_review
+
+    await reporter.progress(10, f"Applying {len(suggestion_ids)} suggestion(s)")
+    await idea_review.revise_plan(uuid.UUID(project_id), suggestion_ids, reporter.session_factory, by=by)
+    return {"applied": suggestion_ids}
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
+    "idea_critique": idea_critique,
+    "idea_revise": idea_revise,
 }
