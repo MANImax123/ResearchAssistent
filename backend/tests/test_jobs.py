@@ -20,27 +20,9 @@ from app.workers.celery_app import celery_app
 from app.workers.dispatch import get_dispatcher
 from app.workers.handlers import HANDLERS
 from tests.conftest import TEST_DATABASE_URL
+from tests.helpers import RecordingDispatcher
 
 PASSWORD = "s3cret-passw0rd"
-
-
-class RecordingDispatcher:
-    def __init__(self, fail: bool = False) -> None:
-        self.fail = fail
-        self.queued: list[tuple[uuid.UUID, str, dict[str, Any]]] = []
-
-    async def enqueue(self, job: Job, params: dict[str, Any]) -> None:
-        if self.fail:
-            raise ConnectionError("redis down")
-        self.queued.append((job.id, job.type, params))
-
-
-@pytest.fixture
-def dispatcher() -> AsyncIterator[RecordingDispatcher]:
-    d = RecordingDispatcher()
-    app.dependency_overrides[get_dispatcher] = lambda: d
-    yield d  # type: ignore[misc]
-    app.dependency_overrides.pop(get_dispatcher, None)
 
 
 async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:

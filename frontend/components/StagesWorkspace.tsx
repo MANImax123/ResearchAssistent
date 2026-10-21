@@ -103,6 +103,7 @@ export function StagesWorkspace({ projectId, canEdit }: { projectId: string; can
       {pending && !active && (
         <ReviewPanel
           key={`${pending.stage}-${state.checkpoint?.checkpoint_id}`}
+          projectId={projectId}
           stage={pending.stage}
           draft={pending.draft}
           canAct={canEdit}

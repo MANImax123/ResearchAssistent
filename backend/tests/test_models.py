@@ -85,8 +85,8 @@ async def test_section_current_version_cycle(db_session: AsyncSession) -> None:
     db_session.add(section)
     await db_session.flush()
 
-    v1 = SectionVersion(section_id=section.id, content="Draft", source=VersionSource.AI)
-    v2 = SectionVersion(section_id=section.id, content="Edited", source=VersionSource.USER)
+    v1 = SectionVersion(section_id=section.id, number=1, content="Draft", source=VersionSource.AI)
+    v2 = SectionVersion(section_id=section.id, number=2, content="Edited", source=VersionSource.USER)
     db_session.add_all([v1, v2])
     await db_session.flush()
     section.current_version_id = v2.id

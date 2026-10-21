@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FilesPanel } from "@/components/FilesPanel";
+import { ManuscriptSections } from "@/components/ManuscriptSections";
 import { ProjectForm } from "@/components/ProjectForm";
 import { StagesWorkspace } from "@/components/StagesWorkspace";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
@@ -129,6 +130,11 @@ export default function ProjectOverviewPage() {
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Stages</h2>
         <StagesWorkspace projectId={project.id} canEdit={canEdit} />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold">Manuscript</h2>
+        <ManuscriptSections projectId={project.id} />
       </section>
 
       {confirmDelete && (

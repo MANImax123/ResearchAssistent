@@ -8,3 +8,54 @@ body {
   @apply bg-slate-50 text-slate-900 antialiased;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+/* ─── Section editor (TipTap) ─────────────────────────────────────────── */
+.prose-section {
+  @apply text-[15px] leading-7 text-slate-800 outline-none;
+}
+.prose-section > * + * {
+  @apply mt-3;
+}
+.prose-section h2 {
+  @apply mt-5 text-xl font-semibold text-slate-900;
+}
+.prose-section h3 {
+  @apply mt-4 text-lg font-semibold text-slate-900;
+}
+.prose-section h4 {
+  @apply mt-3 font-semibold text-slate-900;
+}
+.prose-section ul {
+  @apply list-disc pl-6;
+}
+.prose-section ol {
+  @apply list-decimal pl-6;
+}
+.prose-section blockquote {
+  @apply border-l-4 border-slate-300 pl-4 text-slate-600;
+}
+.prose-section code {
+  @apply rounded bg-slate-100 px-1 py-0.5 text-[13px];
+}
+.prose-section table {
+  @apply w-full border-collapse text-sm;
+}
+.prose-section th,
+.prose-section td {
+  @apply border border-slate-300 px-2 py-1 align-top;
+}
+.prose-section th {
+  @apply bg-slate-50 font-semibold;
+}
+.prose-section .selectedCell {
+  @apply bg-indigo-50;
+}
+.prose-section .citation-chip {
+  @apply mx-0.5 inline-flex items-center rounded bg-indigo-100 px-1.5 text-[13px] font-medium text-indigo-800 whitespace-nowrap;
+}
+.prose-section .figure-placeholder {
+  @apply rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500;
+}
+.prose-section .ProseMirror-selectednode {
+  @apply ring-2 ring-indigo-400;
+}

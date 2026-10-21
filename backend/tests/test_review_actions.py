@@ -1,92 +1,19 @@
 """Step 2.2: prerequisite gating, review actions (approve/reject/edit/regenerate/go back), staleness, feedback rows."""
 
-import uuid
-from collections.abc import AsyncIterator
-from typing import Any
-
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import Feedback, ProjectMember, User
-from app.db.models.enums import FeedbackAction, JobStatus, MemberRole, StageName
+from app.db.models.enums import FeedbackAction, MemberRole, StageName
 from app.db.models.enums import StageName as S
 from app.db.models.enums import StageStatus as St
-from app.main import app
 from app.orchestrator import service as orchestrator
 from app.orchestrator import workflow
-from app.services.jobs import execute_job
-from app.workers.dispatch import get_dispatcher
-from app.workers.handlers import HANDLERS
-from tests.test_jobs import RecordingDispatcher
-from tests.test_orchestrator import IDEA, auth_headers, factory_for
+from tests.helpers import IDEA, Flow, auth_headers, factory_for
 
 pytestmark = pytest.mark.usefixtures("checkpointer")
-
-from tests.test_orchestrator import alice, checkpointer, project_id  # noqa: E402,F401  (shared fixtures)
-
-
-@pytest.fixture
-def dispatcher() -> AsyncIterator[RecordingDispatcher]:
-    d = RecordingDispatcher()
-    app.dependency_overrides[get_dispatcher] = lambda: d
-    yield d  # type: ignore[misc]
-    app.dependency_overrides.pop(get_dispatcher, None)
-
-
-class Flow:
-    """Drives a project through the API, running queued jobs in-process like the worker would."""
-
-    def __init__(
-        self, client: AsyncClient, headers: dict[str, str], pid: uuid.UUID, db: AsyncSession, d: RecordingDispatcher
-    ):
-        self.client, self.headers, self.pid, self.db, self.dispatcher = client, headers, pid, db, d
-
-    def url(self, path: str) -> str:
-        return f"/api/v1/projects/{self.pid}{path}"
-
-    async def post(self, path: str, json: dict[str, Any] | None = None) -> Any:
-        return await self.client.post(self.url(path), json=json or {}, headers=self.headers)
-
-    async def finish_jobs(self) -> None:
-        while self.dispatcher.queued:
-            job_id, job_type, params = self.dispatcher.queued.pop(0)
-            assert await execute_job(job_id, HANDLERS[job_type], params, factory_for(self.db)) == JobStatus.SUCCESS
-
-    async def run(self, stage: str) -> None:
-        resp = await self.post(f"/stages/{stage}/run")
-        assert resp.status_code == 202, resp.text
-        await self.finish_jobs()
-
-    async def act(self, stage: str, action: str, body: dict[str, Any] | None = None, expect: int = 200) -> Any:
-        resp = await self.post(f"/stages/{stage}/{action}", body)
-        assert resp.status_code == expect, resp.text
-        await self.finish_jobs()
-        return resp.json()
-
-    async def state(self) -> dict[str, Any]:
-        return (await self.client.get(self.url("/state"), headers=self.headers)).json()  # type: ignore[no-any-return]
-
-    async def statuses(self) -> dict[str, str]:
-        return {s["name"]: s["status"] for s in (await self.state())["stages"]}
-
-    async def feedback(self) -> list[tuple[str, str, str | None]]:
-        rows = await self.db.scalars(
-            select(Feedback).where(Feedback.project_id == self.pid).order_by(Feedback.created_at)
-        )
-        return [(f.stage.value, f.action.value, f.comment) for f in rows]
-
-
-@pytest.fixture
-async def flow(
-    api_client: AsyncClient,
-    alice: dict[str, str],  # noqa: F811
-    project_id: uuid.UUID,  # noqa: F811
-    db_session: AsyncSession,
-    dispatcher: RecordingDispatcher,
-) -> Flow:
-    return Flow(api_client, alice, project_id, db_session, dispatcher)
 
 
 # ─── Workflow rules (pure) ───────────────────────────────────────────

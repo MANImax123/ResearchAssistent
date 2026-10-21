@@ -17,12 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.logging import get_logger
-from app.db.models import Project, ResearchStateSnapshot, Stage
-from app.db.models.enums import StageName, StageStatus
+from app.db.models import Project, ResearchStateSnapshot, Section, Stage
+from app.db.models.enums import StageName, StageStatus, VersionSource
 from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
 from app.orchestrator.graph import StageAgent, build_graph
 from app.orchestrator.state import ResearchState, initial_state
+from app.services import sections
 
 log = get_logger(__name__)
 
@@ -131,7 +132,7 @@ async def run_stage(
         await graph.ainvoke(inputs, thread_config(project_id))
         snapshot = await _snapshot(graph, project_id)
 
-    await sync_to_db(project_id, snapshot, session_factory)
+    await sync_to_db(project_id, snapshot, session_factory, drafted=stage)
     log.info("stage_run_paused", project_id=str(project_id), stage=stage.value, stale=[d.value for d in stale])
     return snapshot
 
@@ -195,15 +196,30 @@ async def review(
         await graph.ainvoke(Command(resume=decision), thread_config(project_id))
         snapshot = await _snapshot(graph, project_id)
 
-    await sync_to_db(project_id, snapshot, session_factory)
+    action = decision.get("action")
+    drafted = StageName(current.pending.stage) if action in ("edit", "regenerate") else None
+    by = decision.get("by")
+    author = uuid.UUID(by) if action == "edit" and by else None
+    await sync_to_db(project_id, snapshot, session_factory, drafted=drafted, author=author)
     log.info(
         "stage_review_resumed", project_id=str(project_id), stage=current.pending.stage, action=decision.get("action")
     )
     return snapshot
 
 
-async def sync_to_db(project_id: uuid.UUID, snapshot: GraphSnapshot, session_factory: SessionFactory) -> None:
-    """Mirror graph state into research_state / stages / projects."""
+async def sync_to_db(
+    project_id: uuid.UUID,
+    snapshot: GraphSnapshot,
+    session_factory: SessionFactory,
+    *,
+    drafted: StageName | None = None,
+    author: uuid.UUID | None = None,
+) -> None:
+    """Mirror graph state into research_state / stages / sections / projects.
+
+    `drafted`: the stage whose draft just changed; its text becomes a new version of the stage's
+    section (an AI version, or the researcher's edit when `author` is set).
+    """
     values = snapshot.values
     statuses: dict[str, str] = values.get("stage_status", {})
     approvals: dict[str, dict[str, Any]] = values.get("approvals", {})
@@ -224,7 +240,46 @@ async def sync_to_db(project_id: uuid.UUID, snapshot: GraphSnapshot, session_fac
                 row.approved_at = row.approved_by = None
         if values.get("current_stage"):
             project.current_stage = StageName(values["current_stage"])
+        if drafted is not None:
+            await _record_draft(session, project_id, drafted, values, author)
+        await _sync_section_statuses(session, project_id, project.stages)
         await session.commit()
+
+
+async def _record_draft(
+    session: AsyncSession, project_id: uuid.UUID, stage: StageName, values: dict[str, Any], author: uuid.UUID | None
+) -> None:
+    section_type = sections.STAGE_SECTIONS.get(stage)
+    output = values.get("stage_outputs", {}).get(stage.value)
+    if section_type is None or not output:
+        return
+    section = await sections.get_or_create_section(session, project_id, section_type)
+    current = await sections.current_version(session, section)
+    if current is not None and current.content == output["draft"]:
+        return
+    if author is not None:
+        await sections.add_version(
+            session,
+            section,
+            output["draft"],
+            sections.edited_source(current),
+            created_by=author,
+            change_note="Edited in review",
+        )
+    else:
+        await sections.add_version(
+            session, section, output["draft"], VersionSource.AI, change_note=f"Drafted by {output['agent']} agent"
+        )
+
+
+async def _sync_section_statuses(session: AsyncSession, project_id: uuid.UUID, stages: list[Stage]) -> None:
+    by_stage = {row.name: row.status for row in stages}
+    rows = await session.scalars(select(Section).where(Section.project_id == project_id))
+    for section in rows:
+        stage = sections.SECTION_STAGE.get(section.type)
+        if stage is None or section.current_version_id is None:
+            continue
+        section.status = sections.SECTION_STATUS_FOR_STAGE[by_stage[stage]]
 
 
 async def set_stage_status(

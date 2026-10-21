@@ -1,5 +1,5 @@
 # Progress
-Current step: 2.3
+Current step: 3.1
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -14,8 +14,8 @@ Current step: 2.3
 | 1.4  | LLM & embeddings service | ✅ | 2026-10-20 | Gemini default (approved), OpenAI optional |
 | 2.1  | ResearchState + LangGraph orchestrator skeleton | ✅ | 2026-10-21 | |
 | 2.2  | Approval checkpoints & feedback actions | ✅ | 2026-10-21 | |
-| 2.3  | Section editor with versioning | 🔄 in progress | | |
-| 3.1  | Research Planning + idea refinement | ⬜ not started | | |
+| 2.3  | Section editor with versioning | ✅ | 2026-10-21 | |
+| 3.1  | Research Planning + idea refinement | 🔄 in progress | | |
 | 3.2  | Critic agents (Novelty, Feasibility, Methodology) | ⬜ not started | | |
 | 3.3  | Draft abstract | ⬜ not started | | |
 | 4.1  | Academic API clients + Paper Discovery agent | ⬜ not started | | |

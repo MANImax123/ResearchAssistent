@@ -25,9 +25,9 @@ function handlers(): MockHandlers {
 describe("ReviewPanel", () => {
   it("approves", async () => {
     const h = handlers();
-    render(<ReviewPanel stage="idea" draft="Draft text" canAct handlers={h} />);
+    render(<ReviewPanel projectId="p1" stage="review" draft="Draft text" canAct handlers={h} />);
 
-    expect(screen.getByRole("heading", { name: "Awaiting your review: Idea & Problem" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Awaiting your review: Review" })).toBeInTheDocument();
     expect(screen.getByText("Draft text")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Approve" }));
     expect(h.approve).toHaveBeenCalledOnce();
@@ -35,7 +35,7 @@ describe("ReviewPanel", () => {
 
   it("rejects only with a comment", async () => {
     const h = handlers();
-    render(<ReviewPanel stage="idea" draft="Draft" canAct handlers={h} />);
+    render(<ReviewPanel projectId="p1" stage="review" draft="Draft" canAct handlers={h} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Reject" }));
     const confirm = screen.getByRole("button", { name: "Reject draft" });
@@ -47,7 +47,7 @@ describe("ReviewPanel", () => {
 
   it("edits starting from the current draft", async () => {
     const h = handlers();
-    render(<ReviewPanel stage="idea" draft="Old draft" canAct handlers={h} />);
+    render(<ReviewPanel projectId="p1" stage="review" draft="Old draft" canAct handlers={h} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Edit" }));
     const box = screen.getByLabelText("Your version of the draft");
@@ -61,7 +61,7 @@ describe("ReviewPanel", () => {
   it("regenerates with optional feedback and shows errors", async () => {
     const h = handlers();
     h.regenerate.mockRejectedValueOnce(new Error("A stage is running; wait for it to finish"));
-    render(<ReviewPanel stage="literature" draft="D" canAct handlers={h} />);
+    render(<ReviewPanel projectId="p1" stage="formatting" draft="D" canAct handlers={h} />);
 
     await userEvent.click(screen.getByRole("button", { name: "Regenerate" }));
     await userEvent.type(screen.getByLabelText("Feedback for the new draft (optional)"), "More 2024 papers");
@@ -72,7 +72,7 @@ describe("ReviewPanel", () => {
   });
 
   it("is read-only for viewers", () => {
-    render(<ReviewPanel stage="idea" draft="D" canAct={false} handlers={handlers()} />);
+    render(<ReviewPanel projectId="p1" stage="review" draft="D" canAct={false} handlers={handlers()} />);
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

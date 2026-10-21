@@ -1,8 +1,6 @@
 """Orchestrator: stage run → pause at human review → state persisted (survives a new connection) → resume."""
 
 import uuid
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from typing import Any
 
 import pytest
@@ -15,68 +13,14 @@ from app.db.models import Project, ProjectMember, ResearchStateSnapshot, Stage, 
 from app.db.models.enums import JobStatus, MemberRole, StageName, StageStatus
 from app.main import app
 from app.orchestrator import service as orchestrator
-from app.orchestrator.checkpoints import open_checkpointer, thread_config
+from app.orchestrator.checkpoints import thread_config
 from app.orchestrator.graph import REVIEW_NODE, build_graph
 from app.services.jobs import execute_job
 from app.workers.dispatch import get_dispatcher
 from app.workers.handlers import HANDLERS
-from tests.conftest import TEST_SETTINGS
-from tests.test_jobs import RecordingDispatcher
+from tests.helpers import IDEA, RecordingDispatcher, auth_headers, factory_for
 
-PASSWORD = "s3cret-passw0rd"
-IDEA = "Use graph neural networks to rank drug candidates"
-
-
-def checkpointer_on_test_db() -> Any:
-    return open_checkpointer(TEST_SETTINGS.psycopg_url)
-
-
-@pytest.fixture(autouse=True)
-async def checkpointer(test_database: str, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[list[uuid.UUID]]:
-    """Point the orchestrator at the test database; delete the graph threads created by each test."""
-    monkeypatch.setattr(orchestrator, "checkpointer_factory", checkpointer_on_test_db)
-    threads: list[uuid.UUID] = []
-    yield threads
-    async with checkpointer_on_test_db() as saver:
-        for pid in threads:
-            await saver.adelete_thread(str(pid))
-
-
-@pytest.fixture
-def dispatcher() -> AsyncIterator[RecordingDispatcher]:
-    d = RecordingDispatcher()
-    app.dependency_overrides[get_dispatcher] = lambda: d
-    yield d  # type: ignore[misc]
-    app.dependency_overrides.pop(get_dispatcher, None)
-
-
-def factory_for(session: AsyncSession) -> Any:
-    @asynccontextmanager
-    async def factory() -> AsyncIterator[AsyncSession]:
-        yield session
-
-    return factory
-
-
-async def auth_headers(client: AsyncClient, email: str) -> dict[str, str]:
-    await client.post("/api/v1/auth/register", json={"email": email, "password": PASSWORD, "name": email})
-    resp = await client.post("/api/v1/auth/login", data={"username": email, "password": PASSWORD})
-    return {"Authorization": f"Bearer {resp.json()['access_token']}"}
-
-
-@pytest.fixture
-async def alice(api_client: AsyncClient) -> dict[str, str]:
-    return await auth_headers(api_client, "alice@example.com")
-
-
-@pytest.fixture
-async def project_id(api_client: AsyncClient, alice: dict[str, str], checkpointer: list[uuid.UUID]) -> uuid.UUID:
-    resp = await api_client.post(
-        "/api/v1/projects", json={"title": "GNN drug discovery", "raw_idea": IDEA}, headers=alice
-    )
-    pid = uuid.UUID(resp.json()["id"])
-    checkpointer.append(pid)
-    return pid
+pytestmark = pytest.mark.usefixtures("checkpointer")
 
 
 async def stage_row(db: AsyncSession, pid: uuid.UUID, stage: StageName) -> Stage:

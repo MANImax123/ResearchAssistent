@@ -1,6 +1,8 @@
 import asyncio
-from collections.abc import AsyncIterator
+import uuid
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
+from typing import Any
 
 import asyncpg
 import pytest
@@ -13,7 +15,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from app.core.config import get_settings
 from app.db.session import get_db
 from app.main import app
+from app.orchestrator import service as orchestrator
+from app.orchestrator.checkpoints import open_checkpointer
 from app.services.storage import Storage, get_storage
+from app.workers.dispatch import get_dispatcher
+from tests.helpers import IDEA, Flow, RecordingDispatcher, auth_headers
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -115,3 +121,56 @@ async def storage() -> Storage:
     except Exception as exc:
         pytest.skip(f"MinIO not reachable: {exc}")
     return TEST_STORAGE
+
+
+# ─── Workflow fixtures (jobs, orchestrator, review actions, sections) ─────────
+
+
+@pytest.fixture
+def dispatcher() -> Iterator[RecordingDispatcher]:
+    """Record queued jobs instead of sending them to Celery."""
+    d = RecordingDispatcher()
+    app.dependency_overrides[get_dispatcher] = lambda: d
+    yield d
+    app.dependency_overrides.pop(get_dispatcher, None)
+
+
+def checkpointer_on_test_db() -> Any:
+    return open_checkpointer(TEST_SETTINGS.psycopg_url)
+
+
+@pytest.fixture
+async def checkpointer(test_database: str, monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[list[uuid.UUID]]:
+    """Point the orchestrator at the test database; delete the graph threads created by each test."""
+    monkeypatch.setattr(orchestrator, "checkpointer_factory", checkpointer_on_test_db)
+    threads: list[uuid.UUID] = []
+    yield threads
+    async with checkpointer_on_test_db() as saver:
+        for pid in threads:
+            await saver.adelete_thread(str(pid))
+
+
+@pytest.fixture
+async def alice(api_client: AsyncClient) -> dict[str, str]:
+    return await auth_headers(api_client, "alice@example.com")
+
+
+@pytest.fixture
+async def project_id(api_client: AsyncClient, alice: dict[str, str], checkpointer: list[uuid.UUID]) -> uuid.UUID:
+    resp = await api_client.post(
+        "/api/v1/projects", json={"title": "GNN drug discovery", "raw_idea": IDEA}, headers=alice
+    )
+    pid = uuid.UUID(resp.json()["id"])
+    checkpointer.append(pid)
+    return pid
+
+
+@pytest.fixture
+async def flow(
+    api_client: AsyncClient,
+    alice: dict[str, str],
+    project_id: uuid.UUID,
+    db_session: AsyncSession,
+    dispatcher: RecordingDispatcher,
+) -> Flow:
+    return Flow(api_client, alice, project_id, db_session, dispatcher)

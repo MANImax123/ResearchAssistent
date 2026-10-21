@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,8 +31,10 @@ class Section(UUIDPkMixin, TimestampMixin, Base):
 
 class SectionVersion(UUIDPkMixin, CreatedAtMixin, Base):
     __tablename__ = "section_versions"
+    __table_args__ = (UniqueConstraint("section_id", "number"),)
 
     section_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sections.id", ondelete="CASCADE"), index=True)
+    number: Mapped[int] = mapped_column(Integer)  # 1, 2, 3… per section
     content: Mapped[str] = mapped_column(Text, default="")  # markdown with [@key] citations
     source: Mapped[VersionSource] = mapped_column(str_enum(VersionSource))
     agent_run_id: Mapped[uuid.UUID | None] = mapped_column(

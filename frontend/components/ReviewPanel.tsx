@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 
+import { SectionEditor } from "@/components/editor/SectionEditor";
 import { Button, ErrorAlert, TextArea } from "@/components/ui";
+import { SECTION_LABEL, STAGE_SECTION } from "@/lib/sections";
 import { STAGE_LABEL, type StageName } from "@/lib/stages";
 
 type Mode = "view" | "edit" | "reject" | "regenerate";
@@ -16,16 +18,20 @@ export type ReviewHandlers = {
 
 /** The draft awaiting the researcher's decision, with every review action (A4.4). */
 export function ReviewPanel({
+  projectId,
   stage,
   draft,
   canAct,
   handlers,
 }: {
+  projectId: string;
   stage: StageName;
   draft: string | null;
   canAct: boolean;
   handlers: ReviewHandlers;
 }) {
+  // Stages that write a paper section are reviewed in the section editor (versioned, autosaved)
+  const section = STAGE_SECTION[stage];
   const [mode, setMode] = useState<Mode>("view");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -66,7 +72,15 @@ export function ReviewPanel({
         </p>
       </div>
 
-      {mode === "edit" ? (
+      {section ? (
+        <div className="space-y-1">
+          <p className="text-xs text-slate-500">
+            Draft for the <strong className="font-medium text-slate-700">{SECTION_LABEL[section]}</strong> section. Edit
+            it directly: changes autosave as new versions.
+          </p>
+          <SectionEditor projectId={projectId} type={section} compact />
+        </div>
+      ) : mode === "edit" ? (
         <TextArea
           label="Your version of the draft"
           id="edit-draft"
@@ -109,9 +123,11 @@ export function ReviewPanel({
               <Button onClick={() => submit(() => handlers.approve())} loading={busy}>
                 Approve
               </Button>
-              <Button variant="secondary" onClick={() => open("edit")} disabled={busy}>
-                Edit
-              </Button>
+              {!section && (
+                <Button variant="secondary" onClick={() => open("edit")} disabled={busy}>
+                  Edit
+                </Button>
+              )}
               <Button variant="secondary" onClick={() => open("regenerate")} disabled={busy}>
                 Regenerate
               </Button>
