@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { JobProgress } from "@/components/JobProgress";
 import { AddPaper } from "@/components/literature/AddPaper";
 import { AskPanel } from "@/components/literature/AskPanel";
+import { ComparePanel } from "@/components/literature/ComparePanel";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
@@ -31,12 +32,14 @@ const JOB_LABEL: Record<string, string> = {
   literature_parse: "Full text",
   literature_index: "Indexing passages",
   literature_analyze: "Paper analysis",
+  literature_compare: "Comparison",
 };
 
-type Tab = "discover" | "fulltext" | "ask";
+type Tab = "discover" | "fulltext" | "compare" | "ask";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
+  { id: "compare", label: "Compare" },
   { id: "ask", label: "Ask" },
 ];
 
@@ -264,7 +267,16 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "ask" ? (
+      {tab === "compare" ? (
+        <ComparePanel
+          projectId={id}
+          canEdit={canEdit}
+          busy={busy}
+          refreshKey={libraryVersion}
+          onBuild={(force) => void start(() => literatureApi.buildComparison(id, force))}
+          onFill={(key) => void start(() => literatureApi.fillColumn(id, key))}
+        />
+      ) : tab === "ask" ? (
         <AskPanel
           projectId={id}
           ws={ws}

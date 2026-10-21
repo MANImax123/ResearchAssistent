@@ -1,4 +1,4 @@
-import { apiFetch, apiUpload } from "@/lib/api";
+import { API_URL, apiFetch, apiUpload, tokenStore } from "@/lib/api";
 import type { Job } from "@/lib/jobs";
 import type { StageStatus } from "@/lib/stages";
 
@@ -237,6 +237,43 @@ export const literatureApi = {
       method: "PUT",
       json: profile,
     }),
+  comparison: (projectId: string) => apiFetch<Comparison>(`${base(projectId)}/comparison`),
+  buildComparison: (projectId: string, force = false) =>
+    apiFetch<Job>(`${base(projectId)}/comparison/build`, { method: "POST", json: { force } }),
+  addColumn: (projectId: string, label: string) =>
+    apiFetch<Comparison>(`${base(projectId)}/comparison/columns`, { method: "POST", json: { label } }),
+  updateColumn: (projectId: string, key: string, change: { label?: string; remove?: boolean }) =>
+    apiFetch<Comparison>(`${base(projectId)}/comparison/columns/${encodeURIComponent(key)}`, {
+      method: "PATCH",
+      json: change,
+    }),
+  fillColumn: (projectId: string, key: string) =>
+    apiFetch<Job>(`${base(projectId)}/comparison/columns/${encodeURIComponent(key)}/fill`, { method: "POST" }),
+  setCell: (projectId: string, paperId: string, key: string, value: string) =>
+    apiFetch<Comparison>(`${base(projectId)}/comparison/cells`, {
+      method: "PUT",
+      json: { paper_id: paperId, key, value },
+    }),
+  insertComparison: (projectId: string, caption: string, columns: string[] | null) =>
+    apiFetch<{ table_number: number; section_version: number }>(`${base(projectId)}/comparison/insert`, {
+      method: "POST",
+      json: { caption, columns },
+    }),
+  /** Downloads the matrix as CSV (needs the auth header, so it can't be a plain link). */
+  downloadComparisonCsv: async (projectId: string) => {
+    const token = tokenStore.get();
+    const resp = await fetch(`${API_URL}${base(projectId)}/comparison.csv`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!resp.ok) throw new Error(`Export failed (${resp.status})`);
+    const name = /filename="([^"]+)"/.exec(resp.headers.get("content-disposition") ?? "")?.[1] ?? "comparison.csv";
+    const url = URL.createObjectURL(await resp.blob());
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(url);
+  },
   indexPassages: (projectId: string) => apiFetch<Job>(`${base(projectId)}/index`, { method: "POST" }),
   ask: (projectId: string, question: string, sectionKinds: AskSectionKind[] | null) =>
     apiFetch<Answer>(`${base(projectId)}/ask`, {
@@ -353,4 +390,18 @@ export const PROFILE_LABEL: Record<ProfileTextField | ProfileListField, string> 
   metrics: "Metrics",
   limitations: "Limitations",
   tech_stack: "Tech stack",
+};
+
+export type ComparisonColumn = { key: string; label: string; builtin: boolean };
+export type ComparisonCell = { value: string; source: "profile" | "abstract" | "ai" | "user"; evidence: Evidence[] };
+export type ComparisonRow = {
+  paper: { id: string; title: string; year: number | null; venue: string | null; parse_status: ParseStatus; has_profile: boolean };
+  cells: Record<string, ComparisonCell>;
+};
+export type Comparison = {
+  columns: ComparisonColumn[];
+  rows: ComparisonRow[];
+  version: number;
+  generated_at: string | null;
+  uncompared: number;
 };

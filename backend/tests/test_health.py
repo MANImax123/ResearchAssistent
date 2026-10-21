@@ -1,6 +1,7 @@
 """/api/v1/health with every dependency probe mocked (no real services needed)."""
 
 import asyncio
+from typing import Any
 
 import pytest
 from httpx import AsyncClient
@@ -78,4 +79,21 @@ async def test_cors_allows_frontend_origin(client: AsyncClient, probes: dict[str
         headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
     )
 
+    assert resp.headers["access-control-allow-origin"] == "http://localhost:3000"
+
+
+async def test_unexpected_errors_are_json_500s_with_cors_headers(api_client: Any) -> None:
+    """A crash must reach the browser as a readable 500, not as an opaque CORS failure."""
+    from app.main import app
+
+    async def boom() -> None:
+        raise RuntimeError("bug")
+
+    app.add_api_route("/api/v1/__boom", boom)
+    try:
+        resp = await api_client.get("/api/v1/__boom", headers={"Origin": "http://localhost:3000"})
+    finally:
+        app.router.routes.pop()
+    assert resp.status_code == 500
+    assert resp.json()["detail"].startswith("Something went wrong") and resp.json()["request_id"]
     assert resp.headers["access-control-allow-origin"] == "http://localhost:3000"

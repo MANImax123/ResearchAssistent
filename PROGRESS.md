@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.6
+Current step: 4.7
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -23,8 +23,8 @@ Current step: 4.6
 | 4.3  | PDF acquisition + Document Parsing agent | ✅ | 2026-10-21 | Legal OA PDFs; GROBID + PyMuPDF fallback; section chunks; upload-needed flow |
 | 4.4  | Embeddings + RAG Retrieval agent | ✅ | 2026-10-21 | HNSW + MMR retrieval; Ask the literature with verified chunk citations |
 | 4.5  | Paper Analysis agent | ✅ | 2026-10-21 | Evidence-backed profiles (every value cites passages); editable |
-| 4.6  | Comparative Analysis agent | 🔄 in progress | | |
-| 4.7  | Contradiction Detection agent | ⬜ not started | | |
+| 4.6  | Comparative Analysis agent | ✅ | 2026-10-21 | Grounded matrix of selected papers; custom AI columns; CSV; insert as table |
+| 4.7  | Contradiction Detection agent | 🔄 in progress | | |
 | 4.8  | Knowledge Graph agent + visualization | ⬜ not started | | |
 | 4.9  | Research Gap Detection agent | ⬜ not started | | |
 | 4.10 | Objective/RQ refinement + Literature Survey section | ⬜ not started | | |

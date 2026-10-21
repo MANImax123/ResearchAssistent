@@ -172,6 +172,23 @@ async def literature_analyze(reporter: JobReporter, project_id: str, paper_ids: 
     )
 
 
+async def literature_compare(
+    reporter: JobReporter, project_id: str, force: bool = False, column: str | None = None
+) -> dict[str, Any]:
+    """L7: build the comparison matrix (built-in columns), or fill one custom column."""
+    from app.agents import registry
+    from app.services import comparison
+
+    pid = uuid.UUID(project_id)
+    llm = registry.llm_factory(reporter.session_factory)()
+    await reporter.progress(5, "Comparing papers")
+    if column:
+        return await comparison.fill_column(
+            pid, column, reporter.session_factory, llm, registry.embeddings_factory(), progress=reporter.progress
+        )
+    return await comparison.build(pid, reporter.session_factory, llm, force=force, progress=reporter.progress)
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -184,4 +201,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_parse": literature_parse,
     "literature_index": literature_index,
     "literature_analyze": literature_analyze,
+    "literature_compare": literature_compare,
 }

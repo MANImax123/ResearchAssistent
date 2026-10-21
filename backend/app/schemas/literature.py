@@ -273,3 +273,74 @@ class ProfileWrite(BaseModel):
     metrics: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
     limitations: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
     tech_stack: list[ProfileItemWrite] = Field(default_factory=list, max_length=50)
+
+
+# ─── Comparison matrix (Step 4.6) ────────────────────────────────────────
+
+
+class ComparisonColumn(BaseModel):
+    key: str
+    label: str
+    builtin: bool
+
+
+class ComparisonCell(BaseModel):
+    value: str
+    source: Literal["profile", "abstract", "ai", "user"]
+    evidence: list[EvidenceRead]
+
+
+class ComparisonPaper(BaseModel):
+    id: uuid.UUID
+    title: str
+    year: int | None
+    venue: str | None
+    parse_status: ParseStatus
+    has_profile: bool
+
+
+class ComparisonRow(BaseModel):
+    paper: ComparisonPaper
+    cells: dict[str, ComparisonCell]
+
+
+class ComparisonRead(BaseModel):
+    columns: list[ComparisonColumn]
+    rows: list[ComparisonRow]  # one per selected paper
+    version: int
+    generated_at: datetime | None
+    uncompared: int  # selected papers with no built-in cells yet
+
+
+class CompareRequest(BaseModel):
+    force: bool = False  # rebuild every row's AI cells (the researcher's cells are always kept)
+
+
+ColumnLabel = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=60)]
+
+
+class ColumnCreate(BaseModel):
+    label: ColumnLabel
+
+
+class ColumnUpdate(BaseModel):
+    label: ColumnLabel | None = None
+    remove: bool = False
+
+
+class CellWrite(BaseModel):
+    paper_id: uuid.UUID
+    key: Annotated[str, StringConstraints(max_length=40)]
+    value: Annotated[str, StringConstraints(max_length=1000)]
+
+
+class InsertTableRequest(BaseModel):
+    caption: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=300)] = (
+        "Comparison of the selected studies."
+    )
+    columns: list[str] | None = None  # column keys to include (default: all)
+
+
+class InsertTableResult(BaseModel):
+    table_number: int
+    section_version: int

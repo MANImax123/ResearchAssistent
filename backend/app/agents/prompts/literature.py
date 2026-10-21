@@ -78,3 +78,32 @@ ANALYZE = PromptTemplate(
     ),
     template="Paper: $title\n\nPassages:\n$passages\n\nProfile this paper.",
 )
+
+COMPARE = PromptTemplate(
+    name="literature.compare",
+    version="1",
+    description="L7 Comparative Analysis: concise comparison-table cells per paper.",
+    system=(
+        "You fill a literature comparison table. For each paper (P1…), write short table cells from the "
+        "facts given ONLY:\n"
+        "- method: the approach in at most 12 words. dataset: dataset/benchmark names, comma-separated. "
+        "metric: evaluation metric names, comma-separated. result: the headline result in at most 20 words, "
+        "keeping the exact numbers given. limitation: the main stated limitation in at most 15 words.\n"
+        "- Never add facts, numbers, datasets or metrics that are not in the given text. Leave a cell empty "
+        "if the paper's facts don't state it.\n"
+        "- Return one row per paper with its id."
+    ),
+    template="Papers:\n$papers\n\nFill the table.",
+)
+
+COMPARE_COLUMN = PromptTemplate(
+    name="literature.compare_column",
+    version="1",
+    description="L7: answer a researcher-defined comparison column per paper from its passages.",
+    system=(
+        "You fill one column of a literature comparison table. For each paper (P1…), answer the column's "
+        "question in at most 15 words using ONLY that paper's passages, and list the passage ids you used "
+        "(e.g. P2-C1). If its passages don't say, return an empty value."
+    ),
+    template="Column: $column\n\nPapers and their passages:\n$papers\n\nFill the column.",
+)

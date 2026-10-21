@@ -2,7 +2,9 @@
 arXiv id or PDF (Step 4.1); relevance ranking and the paper selection (Step 4.2); full text: PDF
 acquisition, parsing and the parsed document (Step 4.3)."""
 
+import re
 import uuid
+from datetime import datetime
 from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, Form, HTTPException, Query, Response, UploadFile, status
@@ -15,8 +17,8 @@ from app.api.v1.files import StorageDep, save_upload
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
-from app.db.models import Job, Paper, PaperChunk, PaperDocument, PaperProfile, Project
-from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, StageName
+from app.db.models import Job, ManuscriptTable, Paper, PaperChunk, PaperDocument, PaperProfile, Project
+from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, SectionType, StageName
 from app.db.session import request_session_factory
 from app.orchestrator.service import selected_paper_ids
 from app.schemas.job import JobRead
@@ -24,8 +26,19 @@ from app.schemas.literature import (
     AnalyzeRequest,
     AnswerRead,
     AskRequest,
+    CellWrite,
+    ColumnCreate,
+    ColumnUpdate,
+    CompareRequest,
+    ComparisonCell,
+    ComparisonColumn,
+    ComparisonPaper,
+    ComparisonRead,
+    ComparisonRow,
     DiscoverRequest,
     EvidenceRead,
+    InsertTableRequest,
+    InsertTableResult,
     LiteratureWorkspaceRead,
     LookupRequest,
     LookupResult,
@@ -45,7 +58,7 @@ from app.schemas.literature import (
     SourceRead,
     SourceStatus,
 )
-from app.services import literature, retrieval
+from app.services import comparison, literature, retrieval, sections
 from app.services.academic import sources as academic
 from app.services.academic.dedup import Deduplicator
 from app.services.academic.http import SourceError
@@ -57,7 +70,7 @@ router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature
 log = get_logger(__name__)
 
 LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index",
-                   "literature_analyze")  # fmt: skip
+                   "literature_analyze", "literature_compare")  # fmt: skip
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -669,3 +682,184 @@ async def update_profile(
     await db.refresh(profile)
     log.info("paper_profile_edited", paper_id=str(paper_id), fields=sorted(edited))
     return await _profile_read(db, profile)
+
+
+# ─── Comparison matrix (Step 4.6) ────────────────────────────────────────
+
+
+async def _comparison_read(db: DbSession, project_id: uuid.UUID) -> ComparisonRead:
+    row = await comparison.load(db, project_id)
+    matrix = row.matrix
+    papers = await comparison.selected_papers(db, project_id)
+    profiled = set(
+        await db.scalars(select(PaperProfile.paper_id).where(PaperProfile.paper_id.in_([p.id for p in papers])))
+    )
+    stored = matrix.get("rows", {})
+    ids = {uuid.UUID(i) for p in papers for c in stored.get(str(p.id), {}).values() for i in c.get("evidence", [])}
+    chunks = await comparison.chunk_lookup(db, ids)
+    rows = []
+    for paper in papers:
+        cells = {}
+        for key, cell in stored.get(str(paper.id), {}).items():
+            evidence = [chunks[uuid.UUID(i)] for i in cell.get("evidence", []) if uuid.UUID(i) in chunks]
+            cells[key] = ComparisonCell(
+                value=cell["value"],
+                source=cell["source"],
+                evidence=[
+                    EvidenceRead(chunk_id=c.id, section=c.section_name, kind=c.section_kind, page=c.page, text=c.text)
+                    for c in evidence
+                ],  # fmt: skip
+            )
+        rows.append(
+            ComparisonRow(
+                paper=ComparisonPaper(
+                    id=paper.id,
+                    title=paper.title,
+                    year=paper.year,
+                    venue=paper.venue,
+                    parse_status=paper.parse_status,
+                    has_profile=paper.id in profiled,
+                ),  # fmt: skip
+                cells=cells,
+            )
+        )
+    builtin = {c["key"] for c in comparison.DEFAULT_COLUMNS}
+    uncompared = sum(1 for r in rows if not builtin & set(r.cells))
+    generated = matrix.get("generated_at")
+    await db.commit()  # load() may have created the row
+    return ComparisonRead(
+        columns=[ComparisonColumn(**c) for c in matrix["columns"]],
+        rows=rows,
+        version=row.version,
+        generated_at=datetime.fromisoformat(generated) if generated else None,
+        uncompared=uncompared,
+    )
+
+
+@router.get("/comparison", response_model=ComparisonRead)
+async def get_comparison(project_id: uuid.UUID, user: CurrentUser, db: DbSession) -> ComparisonRead:
+    """The comparison matrix: one row per selected paper."""
+    await get_project_for_user(db, project_id, user)
+    return await _comparison_read(db, project_id)
+
+
+@router.post("/comparison/build", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def build_comparison(
+    project_id: uuid.UUID, body: CompareRequest, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """L7: fill Method/Dataset/Metric/Result/Limitation from the papers' profiles (or abstracts)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    if not await comparison.selected_papers(db, project_id):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Select papers first")
+    params = {"project_id": str(project_id), "force": body.force}
+    return await start_job(db, dispatcher, user, "literature_compare", params, project_id)
+
+
+@router.post("/comparison/columns", response_model=ComparisonRead, status_code=status.HTTP_201_CREATED)
+async def add_comparison_column(
+    project_id: uuid.UUID, body: ColumnCreate, user: CurrentUser, db: DbSession
+) -> ComparisonRead:
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    try:
+        await comparison.add_column(db, project_id, body.label)
+    except comparison.ComparisonError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    await db.commit()
+    return await _comparison_read(db, project_id)
+
+
+@router.patch("/comparison/columns/{key}", response_model=ComparisonRead)
+async def update_comparison_column(
+    project_id: uuid.UUID, key: str, body: ColumnUpdate, user: CurrentUser, db: DbSession
+) -> ComparisonRead:
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    try:
+        await comparison.update_column(db, project_id, key, body.label, body.remove)
+    except comparison.ComparisonError as exc:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
+    await db.commit()
+    return await _comparison_read(db, project_id)
+
+
+@router.post("/comparison/columns/{key}/fill", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def fill_comparison_column(
+    project_id: uuid.UUID, key: str, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """Answer a custom column for each selected paper from its own passages."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    matrix = (await comparison.load(db, project_id)).matrix
+    if not any(c["key"] == key and not c.get("builtin") for c in matrix["columns"]):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No such custom column")
+    if not (await retrieval.chunk_counts(db, project_id))[0]:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Get the full text of some papers first")
+    params = {"project_id": str(project_id), "force": False, "column": key}
+    return await start_job(db, dispatcher, user, "literature_compare", params, project_id)
+
+
+@router.put("/comparison/cells", response_model=ComparisonRead)
+async def set_comparison_cell(
+    project_id: uuid.UUID, body: CellWrite, user: CurrentUser, db: DbSession
+) -> ComparisonRead:
+    """The researcher's value for a cell; rebuilds never overwrite it. An empty value clears the cell."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    await _paper(db, project_id, body.paper_id)
+    try:
+        await comparison.set_cell(db, project_id, body.paper_id, body.key, body.value)
+    except comparison.ComparisonError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    await db.commit()
+    return await _comparison_read(db, project_id)
+
+
+@router.get("/comparison.csv")
+async def export_comparison_csv(project_id: uuid.UUID, user: CurrentUser, db: DbSession) -> Response:
+    project, _ = await get_project_for_user(db, project_id, user)
+    matrix = (await comparison.load(db, project_id)).matrix
+    header, body = comparison.table(matrix, await comparison.selected_papers(db, project_id))
+    await db.commit()
+    name = re.sub(r"[^A-Za-z0-9]+", "-", project.title).strip("-")[:60] or "project"
+    return Response(
+        content=comparison.to_csv(header, body).encode("utf-8"),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{name}-comparison.csv"'},
+    )
+
+
+@router.post("/comparison/insert", response_model=InsertTableResult)
+async def insert_comparison(
+    project_id: uuid.UUID, body: InsertTableRequest, user: CurrentUser, db: DbSession
+) -> InsertTableResult:
+    """Append the matrix to the Literature Survey section as a numbered table (a new section version)."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    statuses = {row.name: row.status for row in project.stages}
+    if reason := sections.edit_blocker(SectionType.LITERATURE_SURVEY, statuses):
+        detail = f"The Literature Survey section can't be edited now: {reason.lower()}"
+        raise HTTPException(status.HTTP_409_CONFLICT, detail)
+    papers = await comparison.selected_papers(db, project_id)
+    if not papers:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Select papers first")
+    matrix = (await comparison.load(db, project_id)).matrix
+    header, rows = comparison.table(matrix, papers, body.columns)
+    number = (
+        await db.scalar(select(func.max(ManuscriptTable.number)).where(ManuscriptTable.project_id == project_id)) or 0
+    ) + 1
+    db.add(
+        ManuscriptTable(project_id=project_id, section_type=SectionType.LITERATURE_SURVEY, caption=body.caption,
+                        number=number, data={"columns": header, "rows": rows, "paper_ids": [str(p.id) for p in papers]})
+    )  # fmt: skip
+    section = await sections.get_or_create_section(db, project_id, SectionType.LITERATURE_SURVEY)
+    current = await sections.current_version(db, section)
+    block = f"**Table {number}.** {body.caption}\n\n{comparison.to_markdown(header, rows, papers)}"
+    content = f"{current.content.rstrip()}\n\n{block}\n" if current and current.content.strip() else f"{block}\n"
+    version, _ = await sections.save_edit(
+        db, section, content, user.id, base_version_id=None, autosave=False,
+        change_note=f"Inserted comparison table (Table {number})",
+    )  # fmt: skip
+    await db.commit()
+    log.info("comparison_inserted", project_id=str(project_id), table=number, papers=len(papers))
+    return InsertTableResult(table_number=number, section_version=version.number)

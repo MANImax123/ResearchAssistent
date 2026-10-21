@@ -348,7 +348,8 @@ def _researcher_inputs(project: Project) -> dict[str, Any]:
     )
     return {
         "initial": initial,
-        "idea": {"raw_idea": raw_idea, "domain": project.domain},
+        # An empty project domain must not wipe the domain the Idea agent wrote into the plan
+        "idea": {"raw_idea": raw_idea, **({"domain": project.domain} if project.domain else {})},
         "venue": {
             "name": project.target_venue,
             "template": project.target_venue,

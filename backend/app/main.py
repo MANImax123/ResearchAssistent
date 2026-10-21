@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import structlog
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
@@ -38,14 +39,6 @@ def create_app() -> FastAPI:
         openapi_url=f"{API_PREFIX}/openapi.json",
         lifespan=lifespan,
     )
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origin_list,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-        expose_headers=["X-Request-ID"],
-    )
 
     @app.middleware("http")
     async def request_logging(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -56,7 +49,11 @@ def create_app() -> FastAPI:
             response = await call_next(request)
         except Exception:
             log.exception("request_failed", method=request.method, path=request.url.path)
-            raise
+            # A JSON 500 the browser can read: re-raising would bypass CORS and show up as a CORS error
+            response = JSONResponse(
+                {"detail": "Something went wrong on the server. Please try again.", "request_id": request_id},
+                status_code=500,
+            )
         finally:
             structlog.contextvars.unbind_contextvars("request_id")
         response.headers["X-Request-ID"] = request_id
@@ -70,6 +67,15 @@ def create_app() -> FastAPI:
         )
         return response
 
+    # Added last, so it is the outermost layer: every response, errors included, carries CORS headers
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-ID"],
+    )
     app.include_router(api_router, prefix=API_PREFIX)
     return app
 
