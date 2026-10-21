@@ -26,6 +26,8 @@ dependencies = [
     "langchain>=0.2.0",
     "langgraph>=0.2.0",
     "langgraph-checkpoint-postgres>=2.0.0",
+    # LangGraph's Postgres checkpointer uses psycopg; [binary] bundles libpq (absent from python:slim)
+    "psycopg[binary]==3.3.6",
     "python-jose[cryptography]>=3.3.0",
     "bcrypt>=4.2.0",
     "python-multipart>=0.0.9",

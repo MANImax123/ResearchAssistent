@@ -1,0 +1,197 @@
+"""Runs stages through the graph and keeps the database in step with it.
+
+The checkpointed graph state is the source of truth for the review flow; after every run or
+resume it is mirrored to `research_state` (snapshot + version) and the `stages` / `projects` rows.
+"""
+
+import uuid
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+from langgraph.types import Command
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.core.logging import get_logger
+from app.db.models import Project, ResearchStateSnapshot, Stage
+from app.db.models.enums import StageName, StageStatus
+from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
+from app.orchestrator.graph import StageAgent, build_graph
+from app.orchestrator.state import ResearchState, initial_state
+
+log = get_logger(__name__)
+
+SessionFactory = Callable[[], AbstractAsyncContextManager[AsyncSession]]
+
+# Tests point this at the test database
+checkpointer_factory: CheckpointerFactory = open_checkpointer
+
+
+class ReviewPendingError(Exception):
+    def __init__(self, stage: str) -> None:
+        super().__init__(f"Stage '{stage}' is awaiting review")
+        self.stage = stage
+
+
+class NoPendingReviewError(Exception):
+    pass
+
+
+@dataclass(frozen=True)
+class PendingReview:
+    stage: str
+    draft: str | None
+
+
+@dataclass(frozen=True)
+class GraphSnapshot:
+    values: dict[str, Any]
+    pending: PendingReview | None
+    checkpoint_id: str | None
+    next: tuple[str, ...]
+
+
+async def _snapshot(graph: Any, project_id: uuid.UUID) -> GraphSnapshot:
+    state = await graph.aget_state(thread_config(project_id))
+    pending = None
+    for task in state.tasks:
+        for intr in task.interrupts:
+            value = intr.value or {}
+            pending = PendingReview(stage=str(value.get("stage", "")), draft=value.get("draft"))
+    checkpoint_id = (state.config or {}).get("configurable", {}).get("checkpoint_id")
+    return GraphSnapshot(values=dict(state.values or {}), pending=pending, checkpoint_id=checkpoint_id, next=state.next)
+
+
+async def read_state(project_id: uuid.UUID, factory: CheckpointerFactory | None = None) -> GraphSnapshot:
+    async with (factory or checkpointer_factory)() as saver:
+        return await _snapshot(build_graph(saver), project_id)
+
+
+async def delete_thread(project_id: uuid.UUID, factory: CheckpointerFactory | None = None) -> None:
+    """Remove the project's checkpointed graph state (on project deletion)."""
+    async with (factory or checkpointer_factory)() as saver:
+        await saver.adelete_thread(str(project_id))
+
+
+async def run_stage(
+    project_id: uuid.UUID,
+    stage: StageName,
+    *,
+    session_factory: SessionFactory,
+    factory: CheckpointerFactory | None = None,
+    agents: dict[StageName, StageAgent] | None = None,
+) -> GraphSnapshot:
+    """Run one stage's agent; the graph then pauses at human review."""
+    async with session_factory() as session:
+        project = await _load_project(session, project_id)
+        fresh = _researcher_inputs(project)
+
+    async with (factory or checkpointer_factory)() as saver:
+        graph = build_graph(saver, agents)
+        current = await _snapshot(graph, project_id)
+        if current.pending is not None:
+            # New input would silently discard the pending review, so refuse
+            raise ReviewPendingError(current.pending.stage)
+        if current.values:
+            idea = {**current.values.get("idea", {}), **fresh["idea"]}
+            venue = {**current.values.get("venue", {}), **fresh["venue"]}
+            inputs: dict[str, Any] = {"requested_stage": stage.value, "idea": idea, "venue": venue}
+        else:
+            inputs = {**fresh["initial"], "requested_stage": stage.value}
+        await graph.ainvoke(inputs, thread_config(project_id))
+        snapshot = await _snapshot(graph, project_id)
+
+    await sync_to_db(project_id, snapshot, session_factory)
+    log.info("stage_run_paused", project_id=str(project_id), stage=stage.value, checkpoint=snapshot.checkpoint_id)
+    return snapshot
+
+
+async def resume_review(
+    project_id: uuid.UUID,
+    decision: dict[str, Any],
+    *,
+    session_factory: SessionFactory,
+    factory: CheckpointerFactory | None = None,
+    agents: dict[StageName, StageAgent] | None = None,
+) -> GraphSnapshot:
+    """Resume the paused run with the researcher's decision."""
+    async with (factory or checkpointer_factory)() as saver:
+        graph = build_graph(saver, agents)
+        current = await _snapshot(graph, project_id)
+        if current.pending is None:
+            raise NoPendingReviewError("No stage is awaiting review")
+        await graph.ainvoke(Command(resume=decision), thread_config(project_id))
+        snapshot = await _snapshot(graph, project_id)
+
+    await sync_to_db(project_id, snapshot, session_factory)
+    log.info(
+        "stage_review_resumed", project_id=str(project_id), stage=current.pending.stage, action=decision.get("action")
+    )
+    return snapshot
+
+
+async def sync_to_db(project_id: uuid.UUID, snapshot: GraphSnapshot, session_factory: SessionFactory) -> None:
+    """Mirror graph state into research_state / stages / projects."""
+    values = snapshot.values
+    statuses: dict[str, str] = values.get("stage_status", {})
+    approvals: dict[str, dict[str, Any]] = values.get("approvals", {})
+    async with session_factory() as session:
+        project = await _load_project(session, project_id)
+        if project.research_state is None:
+            project.research_state = ResearchStateSnapshot(snapshot={}, version=0)
+        project.research_state.snapshot = values
+        project.research_state.version += 1
+        for row in project.stages:
+            status = statuses.get(row.name.value)
+            if status and status != row.status.value:
+                row.status = StageStatus(status)
+            if row.status == StageStatus.APPROVED and (record := approvals.get(row.name.value)):
+                row.approved_at = datetime.fromisoformat(record["at"])
+                row.approved_by = uuid.UUID(record["by"]) if record.get("by") else None
+        if values.get("current_stage"):
+            project.current_stage = StageName(values["current_stage"])
+        await session.commit()
+
+
+async def set_stage_status(
+    project_id: uuid.UUID, stage: StageName, status: StageStatus, session_factory: SessionFactory
+) -> None:
+    async with session_factory() as session:
+        row = await session.scalar(select(Stage).where(Stage.project_id == project_id, Stage.name == stage))
+        if row is not None:
+            row.status = status
+            await session.commit()
+
+
+async def _load_project(session: AsyncSession, project_id: uuid.UUID) -> Project:
+    project = await session.scalar(
+        select(Project)
+        .where(Project.id == project_id)
+        .options(selectinload(Project.stages), selectinload(Project.research_state))
+        .execution_options(populate_existing=True)
+    )
+    if project is None:
+        raise LookupError(f"Project {project_id} not found")
+    return project
+
+
+def _researcher_inputs(project: Project) -> dict[str, Any]:
+    """Fields the researcher edits outside the graph; refreshed into the state on every run."""
+    snapshot = project.research_state.snapshot if project.research_state else {}
+    raw_idea = (snapshot.get("idea") or {}).get("raw_idea")
+    initial: ResearchState = initial_state(
+        str(project.id), raw_idea, project.domain, project.target_venue, project.citation_style
+    )
+    return {
+        "initial": initial,
+        "idea": {"raw_idea": raw_idea, "domain": project.domain},
+        "venue": {
+            "name": project.target_venue,
+            "template": project.target_venue,
+            "citation_style": project.citation_style,
+        },
+    }

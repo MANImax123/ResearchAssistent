@@ -1,5 +1,5 @@
 # Progress
-Current step: 2.1
+Current step: 2.2
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -12,8 +12,8 @@ Current step: 2.1
 | 1.2  | File uploads (MinIO) | ✅ | 2026-10-20 | |
 | 1.3  | Celery background jobs + job status | ✅ | 2026-10-20 | |
 | 1.4  | LLM & embeddings service | ✅ | 2026-10-20 | Gemini default (approved), OpenAI optional |
-| 2.1  | ResearchState + LangGraph orchestrator skeleton | 🔄 in progress | | |
-| 2.2  | Approval checkpoints & feedback actions | ⬜ not started | | |
+| 2.1  | ResearchState + LangGraph orchestrator skeleton | ✅ | 2026-10-21 | |
+| 2.2  | Approval checkpoints & feedback actions | 🔄 in progress | | |
 | 2.3  | Section editor with versioning | ⬜ not started | | |
 | 3.1  | Research Planning + idea refinement | ⬜ not started | | |
 | 3.2  | Critic agents (Novelty, Feasibility, Methodology) | ⬜ not started | | |

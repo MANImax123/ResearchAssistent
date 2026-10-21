@@ -70,6 +70,11 @@ class JobReporter:
         self.job_id = job_id
         self._session_factory = session_factory
 
+    @property
+    def session_factory(self) -> SessionFactory:
+        """Database sessions for the handler's own work (same database as the job row)."""
+        return self._session_factory
+
     async def _write(self, **values: Any) -> None:
         async with self._session_factory() as session:
             await session.execute(update(Job).where(Job.id == self.job_id).values(**values, updated_at=func.now()))

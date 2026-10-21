@@ -83,6 +83,14 @@ class Settings(BaseSettings):
         )
 
     @property
+    def psycopg_url(self) -> str:
+        """Plain libpq URL for psycopg (used by the LangGraph checkpointer)."""
+        return (
+            f"postgresql://{self.postgres_user}:{self.postgres_password}"
+            f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+        )
+
+    @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 

@@ -5,8 +5,10 @@ result (stored in `jobs.result_ref`) or None.
 """
 
 import asyncio
+import uuid
 from typing import Any
 
+from app.db.models.enums import StageName, StageStatus
 from app.services.jobs import JobHandler, JobReporter
 
 
@@ -22,6 +24,28 @@ async def demo(
     return {"steps": steps, "message": "Demo job completed"}
 
 
+async def stage_run(reporter: JobReporter, project_id: str, stage: str, previous_status: str) -> dict[str, Any]:
+    """Run one stage through the orchestrator; succeeds once the stage is paused for review."""
+    from app.orchestrator import service as orchestrator  # imported lazily: keeps LangGraph out of worker boot
+    from app.orchestrator.graph import STAGE_LABELS
+
+    stage_name = StageName(stage)
+    pid = uuid.UUID(project_id)
+    await reporter.progress(5, f"Running {STAGE_LABELS[stage_name]}")
+    try:
+        snapshot = await orchestrator.run_stage(pid, stage_name, session_factory=reporter.session_factory)
+    except Exception:
+        # Put the stage back the way it was so it can be run again
+        await orchestrator.set_stage_status(pid, stage_name, StageStatus(previous_status), reporter.session_factory)
+        raise
+    return {
+        "stage": stage,
+        "status": snapshot.values.get("stage_status", {}).get(stage),
+        "checkpoint_id": snapshot.checkpoint_id,
+    }
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
+    "stage_run": stage_run,
 }

@@ -6,6 +6,7 @@ The URL comes from app settings. Tests can override it by setting
 
 import asyncio
 from logging.config import fileConfig
+from typing import Any
 
 from alembic import context
 from sqlalchemy import pool
@@ -15,6 +16,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.config import get_settings
 from app.db import models  # noqa: F401  (registers all tables)
 from app.db.base import Base
+from app.orchestrator.checkpoints import CHECKPOINT_TABLES
 
 config = context.config
 if config.config_file_name is not None and config.attributes.get("configure_logger", True):
@@ -28,14 +30,27 @@ def get_url() -> str:
     return str(url) if url else get_settings().database_url
 
 
+def include_object(obj: Any, name: str | None, type_: str, reflected: bool, compare_to: Any) -> bool:
+    """Leave LangGraph's checkpoint tables alone: they're created and migrated by the checkpointer."""
+    return not (type_ == "table" and name in CHECKPOINT_TABLES)
+
+
 def run_migrations_offline() -> None:
-    context.configure(url=get_url(), target_metadata=target_metadata, literal_binds=True, compare_type=True)
+    context.configure(
+        url=get_url(),
+        target_metadata=target_metadata,
+        literal_binds=True,
+        compare_type=True,
+        include_object=include_object,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
+    context.configure(
+        connection=connection, target_metadata=target_metadata, compare_type=True, include_object=include_object
+    )
     with context.begin_transaction():
         context.run_migrations()
 

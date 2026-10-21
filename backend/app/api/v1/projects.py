@@ -7,6 +7,7 @@ from app.core.deps import CurrentUser, DbSession
 from app.core.logging import get_logger
 from app.db.models import Project
 from app.db.models.enums import MemberRole, StageName
+from app.orchestrator import service as orchestrator
 from app.schemas.project import ProjectCreate, ProjectDetail, ProjectSummary, ProjectUpdate, StageRead
 from app.services import projects as svc
 from app.services.storage import Storage, get_storage, project_prefix
@@ -96,5 +97,9 @@ async def delete_project(
     except Exception:
         log.exception("project_objects_delete_failed", project_id=str(project_id))
         removed = 0
+    try:
+        await orchestrator.delete_thread(project_id)
+    except Exception:
+        log.exception("project_graph_delete_failed", project_id=str(project_id))
     log.info("project_deleted", project_id=str(project_id), objects_removed=removed)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

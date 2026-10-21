@@ -6,6 +6,7 @@ import asyncpg
 from alembic import command
 
 from app.db.base import Base
+from app.orchestrator.checkpoints import CHECKPOINT_TABLES
 from tests.conftest import TEST_SETTINGS, alembic_config
 
 EXPECTED_TABLES = {
@@ -26,7 +27,8 @@ def _public_tables() -> set[str]:
             rows = await conn.fetch("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
         finally:
             await conn.close()
-        return {r["tablename"] for r in rows} - {"alembic_version"}
+        # Alembic's bookkeeping and LangGraph's checkpoint tables aren't part of our schema
+        return {r["tablename"] for r in rows} - {"alembic_version"} - CHECKPOINT_TABLES
 
     return asyncio.run(fetch())
 
