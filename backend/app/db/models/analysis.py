@@ -4,8 +4,8 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, CreatedAtMixin, TimestampMixin, UUIDPkMixin, str_enum
@@ -50,3 +50,9 @@ class ResearchGap(UUIDPkMixin, TimestampMixin, Base):
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     confidence: Mapped[GapConfidence] = mapped_column(str_enum(GapConfidence))
     status: Mapped[GapStatus] = mapped_column(str_enum(GapStatus), default=GapStatus.CANDIDATE)
+    # Step 4.9
+    objective_ids: Mapped[list[str]] = mapped_column(JSONB, default=list)  # plan objectives it could serve
+    edited: Mapped[bool] = mapped_column(Boolean, default=False)  # the researcher changed the AI's wording
+    agent_run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    decided_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -1,7 +1,15 @@
 import { apiFetch } from "@/lib/api";
 import type { Job } from "@/lib/jobs";
 
-export type NodeType = "Paper" | "Method" | "Dataset" | "Metric" | "Limitation" | "Objective" | "ResearchQuestion";
+export type NodeType =
+  | "Paper"
+  | "Method"
+  | "Dataset"
+  | "Metric"
+  | "Limitation"
+  | "Objective"
+  | "ResearchQuestion"
+  | "Gap";
 
 // The Project node only anchors the graph in Neo4j; it has no edges worth drawing
 export const NODE_TYPES: { type: NodeType; label: string; color: string }[] = [
@@ -12,6 +20,7 @@ export const NODE_TYPES: { type: NodeType; label: string; color: string }[] = [
   { type: "Limitation", label: "Limitations", color: "#dc2626" },
   { type: "ResearchQuestion", label: "Research questions", color: "#9333ea" },
   { type: "Objective", label: "Objectives", color: "#64748b" },
+  { type: "Gap", label: "Accepted gaps", color: "#db2777" },
 ];
 
 export const NODE_COLOR: Record<string, string> = Object.fromEntries(NODE_TYPES.map((t) => [t.type, t.color]));
@@ -23,6 +32,7 @@ export const TYPE_NAME: Record<string, string> = {
   Limitation: "Limitation",
   ResearchQuestion: "Research question",
   Objective: "Objective",
+  Gap: "Potential gap (accepted)",
 };
 
 export type GraphNode = { id: string; type: string; label: string | null; degree: number; props: Record<string, unknown> };
@@ -53,6 +63,8 @@ export const RELATION_TEXT: Record<string, [string, string]> = {
   CONTRADICTS: ["Contradicts", "Contradicted by"],
   RELEVANT_TO: ["Relevant to", "Relevant papers"],
   SUPPORTS: ["Supports", "Supported by"],
+  ADDRESSES: ["Addressed by gap", "Serves objectives"],
+  BASED_ON: ["Based on", "Evidence for gaps"],
 };
 
 export function relationText(relation: string, outgoing: boolean): string {

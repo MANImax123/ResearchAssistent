@@ -215,6 +215,22 @@ async def knowledge_graph(reporter: JobReporter, project_id: str) -> dict[str, A
     return await kg.build(uuid.UUID(project_id), reporter.session_factory, client)
 
 
+async def research_gaps(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L10: potential gaps from limitations, contradictions, untested method × dataset pairs and future work."""
+    from app.agents import registry
+    from app.services import gaps
+
+    client = registry.graph_factory()
+    await client.ensure_schema()
+    return await gaps.detect(
+        uuid.UUID(project_id),
+        reporter.session_factory,
+        registry.llm_factory(reporter.session_factory)(),
+        client,
+        progress=reporter.progress,
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -230,4 +246,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_compare": literature_compare,
     "literature_contradictions": literature_contradictions,
     "knowledge_graph": knowledge_graph,
+    "research_gaps": research_gaps,
 }

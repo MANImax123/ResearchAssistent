@@ -73,7 +73,8 @@ router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature
 log = get_logger(__name__)
 
 LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index",
-                   "literature_analyze", "literature_compare", "literature_contradictions")  # fmt: skip
+                   "literature_analyze", "literature_compare", "literature_contradictions",
+                   "research_gaps")  # fmt: skip
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -165,6 +166,7 @@ async def get_workspace(
         profiled_count=profiled or 0,
         sources=_source_statuses(settings),
         research_questions=[{"id": q.id, "text": q.text} for q in plan.research_questions] if plan else [],
+        objectives=[{"id": o.id, "text": o.text} for o in plan.objectives] if plan else [],
         subtopics=list(plan.subtopics) if plan else [],
     )
 

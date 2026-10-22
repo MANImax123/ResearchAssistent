@@ -126,3 +126,42 @@ CONTRADICTIONS = PromptTemplate(
     ),
     template="Topic: $topic\n\nPapers and passages:\n$papers\n\nList the contradictions.",
 )
+
+GAPS = PromptTemplate(
+    name="literature.gaps",
+    version="1",
+    description="L10 Research Gap Detection: candidate gaps from limitations, conflicts, untested pairs, future work.",
+    system=(
+        "You help a researcher spot POTENTIAL research gaps in the papers they selected. You only see signals "
+        "taken from those papers: limitations (L#), contradictions (C#), method × dataset combinations none of "
+        "the selected papers report (U#) and future-work statements (F#). Rules:\n"
+        "- Each gap must be specific: name the concrete method, dataset, metric, population or setting.\n"
+        "- Phrase every gap as a possibility, never as a fact: 'may', 'appears', 'it is unclear whether', "
+        "'little evidence among the selected papers'. Never write 'no study has', 'proves' or 'confirmed'.\n"
+        "- The rationale says how the cited signals point to the gap and what work could address it.\n"
+        "- `sources` lists the signal ids the gap rests on (at least one). Never cite an id that isn't listed.\n"
+        "- Confidence: high only when several independent papers point to it; medium for one strong signal or "
+        "two weaker ones; low otherwise. An untested combination alone is at most low.\n"
+        "- A U# signal may name a library or tool rather than a method (e.g. PyTorch): ignore those.\n"
+        "- `objective_ids`: the plan objectives (O#) the gap could serve; empty if none fits.\n"
+        "- Prefer gaps that matter for the research plan. Don't repeat gaps the researcher already decided on.\n"
+        "- Return 3 to 8 gaps; fewer only if the signals don't support 3 distinct ones."
+    ),
+    template=(
+        "Research plan objectives:\n$objectives\n\nResearch questions:\n$questions\n\n"
+        "Gaps the researcher already accepted or rejected (don't repeat):\n$decided\n\n"
+        "Signals from the selected papers:\n$signals\n\nList the potential gaps."
+    ),
+)
+
+GAPS_REWORD = PromptTemplate(
+    name="literature.gaps_reword",
+    version="1",
+    description="L10: rephrase gap statements that read as certain facts into possibilities.",
+    system=(
+        "Rephrase each statement as a possibility rather than a fact, keeping every specific (method, dataset, "
+        "metric, setting) and its meaning. Use wording like 'may', 'appears', 'it is unclear whether' or "
+        "'little evidence among the selected papers'. Never use 'no study has', 'proves' or 'confirmed'."
+    ),
+    template="Statements:\n$statements\n\nReturn each one rephrased, with its number.",
+)

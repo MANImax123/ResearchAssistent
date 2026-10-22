@@ -1,9 +1,10 @@
 """L9 Knowledge Graph (Step 4.8): the project's literature as a Neo4j graph (B13).
 
 Built from Postgres (the source of truth) and rebuilt on demand: papers (the selection), the methods,
-datasets and metrics their profiles name, their limitations, contradictions between them, and the
-project's objectives and research questions. Entities are normalised before merging, so "BERT",
-"bert-base" and "BERT (uncased)" are one Method, and "Root mean square error (RMSE)" is the Metric "RMSE".
+datasets and metrics their profiles name, their limitations, contradictions between them, the
+project's objectives and research questions, and the gaps the researcher accepted (Step 4.9).
+Entities are normalised before merging, so "BERT", "bert-base" and "BERT (uncased)" are one Method,
+and "Root mean square error (RMSE)" is the Metric "RMSE".
 """
 
 import re
@@ -16,7 +17,8 @@ from sqlalchemy import select
 
 from app.agents.idea.agent import plan_from_state
 from app.core.logging import get_logger
-from app.db.models import Contradiction, Paper, PaperProfile, Project
+from app.db.models import Contradiction, Paper, PaperProfile, Project, ResearchGap
+from app.db.models.enums import GapStatus
 from app.services.contradictions import short_name
 from app.services.llm import SessionFactory
 from app.services.neo4j import Neo4jClient
@@ -218,11 +220,61 @@ async def build(project_id: uuid.UUID, session_factory: SessionFactory, client: 
                 for rq in p.relevance_rqs or []
             ],
         )
+    await write_gaps(project_id, client, await accepted_gaps(project_id, session_factory))
     counts = await client.run("MATCH (n {project_id: $pid}) RETURN labels(n)[0] AS label, count(*) AS n", pid=pid)
     edges = await client.run("MATCH (a {project_id: $pid})-[r]->() RETURN count(r) AS n", pid=pid)
     result = {row["label"]: row["n"] for row in counts} | {"edges": edges[0]["n"] if edges else 0}
     log.info("knowledge_graph_built", project_id=pid, **result)
     return result
+
+
+async def accepted_gaps(project_id: uuid.UUID, session_factory: SessionFactory) -> list[ResearchGap]:
+    async with session_factory() as session:
+        return list(
+            await session.scalars(
+                select(ResearchGap)
+                .where(ResearchGap.project_id == project_id, ResearchGap.status == GapStatus.ACCEPTED)
+                .order_by(ResearchGap.created_at)
+            )
+        )
+
+
+async def write_gaps(project_id: uuid.UUID, client: Neo4jClient, gaps: list[ResearchGap]) -> None:
+    """Replace the project's Gap nodes: Objective-[:ADDRESSES]->Gap-[:BASED_ON]->Paper (papers in the graph)."""
+    pid = str(project_id)
+    await client.run("MATCH (g:Gap {project_id: $pid}) DETACH DELETE g", pid=pid)
+    rows = [
+        {
+            "key": str(g.id),
+            "name": g.statement,
+            "confidence": g.confidence.value,
+            "objectives": list(g.objective_ids or []),
+            "papers": sorted({p for s in (g.evidence or {}).get("signals", []) for p in s.get("paper_ids", [])}),
+        }
+        for g in gaps
+    ]
+    await client.run(
+        """UNWIND $rows AS r
+           CREATE (g:Gap {project_id: $pid, key: r.key, name: r.name, confidence: r.confidence})
+           WITH g, r
+           CALL (g, r) {
+               UNWIND r.objectives AS oid
+               MATCH (o:Objective {project_id: $pid, key: oid})
+               CREATE (o)-[:ADDRESSES]->(g)
+           }
+           CALL (g, r) {
+               UNWIND r.papers AS paper
+               MATCH (p:Paper {project_id: $pid, key: paper})
+               CREATE (g)-[:BASED_ON]->(p)
+           }""",
+        pid=pid,
+        rows=rows,
+    )
+
+
+async def sync_gaps(project_id: uuid.UUID, session_factory: SessionFactory, client: Neo4jClient) -> None:
+    """After a decision: update the Gap nodes without rebuilding the whole graph."""
+    await write_gaps(project_id, client, await accepted_gaps(project_id, session_factory))
 
 
 def _grouped(links: list[dict[str, Any]]) -> dict[tuple[str, str], list[dict[str, Any]]]:

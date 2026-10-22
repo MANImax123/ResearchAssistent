@@ -47,6 +47,7 @@ export type LiteratureWorkspace = {
   profiled_count: number; // selected papers with an analysis profile
   sources: SourceStatus[];
   research_questions: { id: string; text: string }[];
+  objectives: { id: string; text: string }[];
   subtopics: string[];
 };
 

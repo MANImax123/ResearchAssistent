@@ -59,6 +59,7 @@ class LiteratureWorkspaceRead(BaseModel):
     profiled_count: int  # selected papers with an analysis profile
     sources: list[SourceStatus]
     research_questions: list[dict[str, Any]]  # id + text, to show what each query targets
+    objectives: list[dict[str, Any]] = []  # id + text, for linking gaps to objectives
     subtopics: list[str]
 
 
@@ -372,3 +373,47 @@ class ContradictionRead(BaseModel):
 
 class DismissRequest(BaseModel):
     reason: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] | None = None
+
+
+# ─── Step 4.9: potential research gaps ───
+
+GapSignalKind = Literal["limitation", "contradiction", "untested", "future_work"]
+
+
+class PaperRef(BaseModel):
+    id: uuid.UUID
+    title: str
+    year: int | None
+
+
+class GapSignalRead(BaseModel):
+    kind: GapSignalKind
+    text: str
+    papers: list[PaperRef]
+    evidence: list[EvidenceRead]
+
+
+class ObjectiveRef(BaseModel):
+    id: str
+    text: str
+
+
+class GapRead(BaseModel):
+    id: uuid.UUID
+    statement: str
+    rationale: str | None
+    confidence: Literal["low", "medium", "high"]
+    status: Literal["candidate", "accepted", "rejected"]
+    objectives: list[ObjectiveRef]
+    signals: list[GapSignalRead]
+    edited: bool
+    decided_at: datetime | None
+    created_at: datetime
+
+
+class GapUpdate(BaseModel):
+    statement: Annotated[str, StringConstraints(strip_whitespace=True, min_length=10, max_length=500)] | None = None
+    rationale: Annotated[str, StringConstraints(strip_whitespace=True, max_length=1500)] | None = None
+    confidence: Literal["low", "medium", "high"] | None = None
+    objective_ids: list[str] | None = None
+    status: Literal["candidate", "accepted", "rejected"] | None = None

@@ -11,6 +11,7 @@ import { ComparePanel } from "@/components/literature/ComparePanel";
 import { ConflictsPanel } from "@/components/literature/ConflictsPanel";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
+import { GapsPanel } from "@/components/literature/GapsPanel";
 import { GraphPanel } from "@/components/literature/GraphPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
 import { QueryEditor } from "@/components/literature/QueryEditor";
@@ -25,6 +26,7 @@ import {
   type LiteratureWorkspace,
   type QueryDraft,
 } from "@/lib/literature";
+import { gapsApi } from "@/lib/gaps";
 import { graphApi } from "@/lib/graph";
 import { STATUS_META } from "@/lib/stages";
 
@@ -38,14 +40,17 @@ const JOB_LABEL: Record<string, string> = {
   literature_compare: "Comparison",
   literature_contradictions: "Contradiction check",
   knowledge_graph: "Knowledge graph",
+  research_gaps: "Gap detection",
 };
 
-type Tab = "discover" | "fulltext" | "compare" | "conflicts" | "graph" | "ask";
+type Tab =
+  "discover" | "fulltext" | "compare" | "conflicts" | "gaps" | "graph" | "ask";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
   { id: "compare", label: "Compare" },
   { id: "conflicts", label: "Conflicts" },
+  { id: "gaps", label: "Gaps" },
   { id: "graph", label: "Graph" },
   { id: "ask", label: "Ask" },
 ];
@@ -274,7 +279,17 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "graph" ? (
+      {tab === "gaps" ? (
+        <GapsPanel
+          projectId={id}
+          canEdit={canEdit}
+          busy={busy}
+          profiled={ws.profiled_count}
+          objectives={ws.objectives}
+          refreshKey={libraryVersion}
+          onDetect={() => void start(() => gapsApi.detect(id))}
+        />
+      ) : tab === "graph" ? (
         <GraphPanel
           projectId={id}
           canEdit={canEdit}

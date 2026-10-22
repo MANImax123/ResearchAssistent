@@ -71,7 +71,7 @@ describe("GraphPanel", () => {
     await userEvent.click(screen.getByRole("button", { name: "Dataset: Davis" }));
     const aside = await screen.findByRole("complementary", { name: "Details: Davis" });
     expect(String(fetchMock.mock.calls[0][0])).toBe(
-      `${API_URL}/projects/pr/kg?types=Paper&types=Method&types=Dataset&types=Metric&types=Limitation&types=ResearchQuestion&types=Objective`,
+      `${API_URL}/projects/pr/kg?types=Paper&types=Method&types=Dataset&types=Metric&types=Limitation&types=ResearchQuestion&types=Objective&types=Gap`,
     );
     expect(String(fetchMock.mock.calls[1][0])).toBe(`${API_URL}/projects/pr/kg/nodes/Dataset%3Adavis`);
     expect(within(aside).getByText("Evaluates (2)")).toBeInTheDocument();

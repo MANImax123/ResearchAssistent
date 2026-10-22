@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.logging import get_logger
-from app.db.models import Paper, Project, ResearchStateSnapshot, Section, Stage
-from app.db.models.enums import StageName, StageStatus, VersionSource
+from app.db.models import Paper, Project, ResearchGap, ResearchStateSnapshot, Section, Stage
+from app.db.models.enums import GapStatus, StageName, StageStatus, VersionSource
 from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
 from app.orchestrator.graph import StageAgent, build_graph
@@ -108,6 +108,7 @@ async def run_stage(
         project = await _load_project(session, project_id)
         fresh = _researcher_inputs(project)
         selected = await selected_paper_ids(session, project_id)
+        gap_ids = await accepted_gap_ids(session, project_id)
 
     async with (factory or checkpointer_factory)() as saver:
         graph = build_graph(saver, agents if agents is not None else _default_agents(session_factory))
@@ -126,6 +127,7 @@ async def run_stage(
         else:
             inputs = {**fresh["initial"], "requested_stage": stage.value}
         inputs["selected_paper_ids"] = selected
+        inputs["gap_ids"] = gap_ids
         stale = workflow.stale_after_change(stage, statuses)
         if stale:
             inputs["stage_status"] = {d.value: StageStatus.STALE.value for d in stale}
@@ -229,10 +231,11 @@ async def sync_to_db(
         project = await _load_project(session, project_id)
         if project.research_state is None:
             project.research_state = ResearchStateSnapshot(snapshot={}, version=0)
-        # The paper selection lives on the papers (edited outside the graph); the mirror always shows it
+        # The paper selection and gap decisions live in their tables (edited outside the graph); the mirror shows them
         project.research_state.snapshot = {
             **values,
             "selected_paper_ids": await selected_paper_ids(session, project_id),
+            "gap_ids": await accepted_gap_ids(session, project_id),
         }
         project.research_state.version += 1
         for row in project.stages:
@@ -337,6 +340,16 @@ async def selected_paper_ids(session: AsyncSession, project_id: uuid.UUID) -> li
         )
     )
     return [str(pid) for pid in rows]
+
+
+async def accepted_gap_ids(session: AsyncSession, project_id: uuid.UUID) -> list[str]:
+    """The research state's `gap_ids` (B12): the gaps the researcher accepted, oldest first."""
+    rows = await session.scalars(
+        select(ResearchGap.id)
+        .where(ResearchGap.project_id == project_id, ResearchGap.status == GapStatus.ACCEPTED)
+        .order_by(ResearchGap.created_at, ResearchGap.id)
+    )
+    return [str(i) for i in rows]
 
 
 def _researcher_inputs(project: Project) -> dict[str, Any]:

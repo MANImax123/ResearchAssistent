@@ -30,7 +30,7 @@ class Neo4jClient:
             )
 
 
-LABELS = ("Project", "Paper", "Method", "Dataset", "Metric", "Limitation", "Objective", "ResearchQuestion")
+LABELS = ("Project", "Paper", "Method", "Dataset", "Metric", "Limitation", "Objective", "ResearchQuestion", "Gap")
 
 
 @lru_cache

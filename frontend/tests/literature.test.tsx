@@ -225,7 +225,7 @@ const WS: LiteratureWorkspace = {
   status: "not_started", editable: true, blocked_reason: null, queries: QUERIES, paper_count: 100,
   selected_count: 0, must_include_count: 0, judged_count: 0, unranked_count: 100, parse_counts: {}, indexed_chunks: 0, pending_chunks: 0, profiled_count: 0,
   sources: SOURCES,
-  research_questions: [{ id: "RQ1", text: "Q?" }, { id: "RQ2", text: "H." }], subtopics: [],
+  research_questions: [{ id: "RQ1", text: "Q?" }, { id: "RQ2", text: "H." }], objectives: [], subtopics: [],
 }; // prettier-ignore
 
 describe("RankPanel", () => {
