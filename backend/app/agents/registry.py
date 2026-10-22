@@ -6,9 +6,11 @@ from collections.abc import Callable
 from app.agents.idea.agent import make_idea_agent
 from app.agents.idea.critique import CRITICS, CriticFn, make_llm_critic
 from app.agents.literature.parsing import Tools
+from app.agents.literature.survey import SurveyInputs, make_literature_agent
 from app.core.config import get_settings
 from app.db.models.enums import StageName
 from app.orchestrator.graph import StageAgent
+from app.services import survey
 from app.services.academic.models import SearchSourceName
 from app.services.academic.sources import SearchClient, default_clients
 from app.services.context import format_context, load_context
@@ -35,7 +37,13 @@ def default_agents(session_factory: SessionFactory) -> dict[StageName, StageAgen
         async with session_factory() as session:
             return format_context(await load_context(session, get_storage(), project_id))
 
-    return {StageName.IDEA: make_idea_agent(llm_factory(session_factory), notes)}
+    async def survey_inputs(project_id: uuid.UUID, selected: list[str], gap_ids: list[str]) -> SurveyInputs:
+        return await survey.load_inputs(session_factory, project_id, selected, gap_ids)
+
+    return {
+        StageName.IDEA: make_idea_agent(llm_factory(session_factory), notes),
+        StageName.LITERATURE: make_literature_agent(llm_factory(session_factory), survey_inputs),
+    }
 
 
 def default_critics(session_factory: SessionFactory) -> dict[str, CriticFn]:

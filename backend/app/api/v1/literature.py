@@ -74,7 +74,7 @@ log = get_logger(__name__)
 
 LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index",
                    "literature_analyze", "literature_compare", "literature_contradictions",
-                   "research_gaps")  # fmt: skip
+                   "research_gaps", "literature_refine")  # fmt: skip
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 

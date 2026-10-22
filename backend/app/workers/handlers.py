@@ -231,6 +231,17 @@ async def research_gaps(reporter: JobReporter, project_id: str) -> dict[str, Any
     )
 
 
+async def literature_refine(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L11: propose objective / research question refinements for the accepted gaps."""
+    from app.agents import registry
+    from app.services import refinements
+
+    await reporter.progress(10, "Reading the accepted gaps and the plan")
+    return await refinements.suggest(
+        uuid.UUID(project_id), reporter.session_factory, registry.llm_factory(reporter.session_factory)()
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -247,4 +258,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_contradictions": literature_contradictions,
     "knowledge_graph": knowledge_graph,
     "research_gaps": research_gaps,
+    "literature_refine": literature_refine,
 }

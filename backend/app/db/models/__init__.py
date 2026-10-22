@@ -1,7 +1,7 @@
 """All ORM models. Importing this package registers every table on `Base.metadata`."""
 
 from app.db.models.activity import AgentRun, Feedback, Job
-from app.db.models.analysis import Comparison, Contradiction, ResearchGap
+from app.db.models.analysis import Comparison, Contradiction, PlanRefinement, ResearchGap
 from app.db.models.figure import Figure, ManuscriptTable
 from app.db.models.file import File
 from app.db.models.paper import Paper, PaperChunk, PaperDocument, PaperProfile, SearchQuery
@@ -26,6 +26,7 @@ __all__ = [
     "Project",
     "ProjectMember",
     "Reference",
+    "PlanRefinement",
     "ResearchGap",
     "ResearchStateSnapshot",
     "SearchQuery",

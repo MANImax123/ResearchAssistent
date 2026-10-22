@@ -16,6 +16,7 @@ import { GraphPanel } from "@/components/literature/GraphPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
 import { QueryEditor } from "@/components/literature/QueryEditor";
 import { RankPanel } from "@/components/literature/RankPanel";
+import { SurveyPanel } from "@/components/literature/SurveyPanel";
 import { Badge, Button, ErrorAlert, Spinner } from "@/components/ui";
 import { projectsApi, type ProjectDetail } from "@/lib/api";
 import { jobsApi, TERMINAL, useJob, type Job } from "@/lib/jobs";
@@ -41,10 +42,19 @@ const JOB_LABEL: Record<string, string> = {
   literature_contradictions: "Contradiction check",
   knowledge_graph: "Knowledge graph",
   research_gaps: "Gap detection",
+  literature_refine: "Plan refinement",
+  stage_run: "Literature Survey writer",
 };
 
 type Tab =
-  "discover" | "fulltext" | "compare" | "conflicts" | "gaps" | "graph" | "ask";
+  | "discover"
+  | "fulltext"
+  | "compare"
+  | "conflicts"
+  | "gaps"
+  | "graph"
+  | "ask"
+  | "survey";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
@@ -53,6 +63,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "gaps", label: "Gaps" },
   { id: "graph", label: "Graph" },
   { id: "ask", label: "Ask" },
+  { id: "survey", label: "Survey" },
 ];
 
 export default function LiteratureWorkspacePage() {
@@ -279,7 +290,16 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "gaps" ? (
+      {tab === "survey" ? (
+        <SurveyPanel
+          projectId={id}
+          canEdit={canEdit}
+          busy={busy}
+          refreshKey={libraryVersion}
+          onStart={(action) => void start(action)}
+          onChanged={() => void load()}
+        />
+      ) : tab === "gaps" ? (
         <GapsPanel
           projectId={id}
           canEdit={canEdit}

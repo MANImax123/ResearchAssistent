@@ -21,7 +21,7 @@ from app.db.models import Paper, Project, ResearchGap, ResearchStateSnapshot, Se
 from app.db.models.enums import GapStatus, StageName, StageStatus, VersionSource
 from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
-from app.orchestrator.graph import StageAgent, build_graph
+from app.orchestrator.graph import REVIEW_NODE, StageAgent, build_graph, now_iso
 from app.orchestrator.state import ResearchState, initial_state
 from app.services import sections
 
@@ -177,6 +177,47 @@ async def go_back(
 
     await sync_to_db(project_id, snapshot, session_factory)
     log.info("stage_reopened", project_id=str(project_id), stage=stage.value, stale=sorted(stale))
+    return snapshot
+
+
+async def amend(
+    project_id: uuid.UUID,
+    stage: StageName,
+    fields: dict[str, Any],
+    *,
+    draft: str | None = None,
+    session_factory: SessionFactory,
+    factory: CheckpointerFactory | None = None,
+) -> GraphSnapshot:
+    """Change an approved stage's structured fields outside a review (e.g. the researcher accepted a
+    plan refinement in Step 4.10). The stage stays approved; every started dependent becomes stale,
+    and a dependent's pending review is closed (its draft is kept)."""
+    async with (factory or checkpointer_factory)() as saver:
+        graph = build_graph(saver)
+        current = await _snapshot(graph, project_id)
+        statuses = _statuses(current.values)
+        if statuses.get(stage) != StageStatus.APPROVED:
+            raise InvalidStageActionError(f"Stage '{stage.value}' isn't approved; edit it in its review instead")
+        if any(s == StageStatus.RUNNING for s in statuses.values()):
+            raise InvalidStageActionError("A stage is running; wait for it to finish")
+        if current.pending is not None and StageName(current.pending.stage) not in workflow.dependents(stage):
+            raise ReviewPendingError(current.pending.stage)
+        stale = {d.value: StageStatus.STALE.value for d in workflow.stale_after_change(stage, statuses)}
+        merged = {**{k.value: v.value for k, v in statuses.items()}, **stale}
+        update: dict[str, Any] = {
+            **fields,
+            "stage_status": stale,
+            "stale_stages": [s.value for s in StageName if merged.get(s.value) == StageStatus.STALE.value],
+        }
+        output = current.values.get("stage_outputs", {}).get(stage.value)
+        if output is not None and draft is not None:
+            update["stage_outputs"] = {stage.value: {**output, "draft": draft, "generated_at": now_iso()}}
+        # Applied as the review node: it has no outgoing edges, so any paused review ends here
+        await graph.aupdate_state(thread_config(project_id), update, as_node=REVIEW_NODE)
+        snapshot = await _snapshot(graph, project_id)
+
+    await sync_to_db(project_id, snapshot, session_factory)
+    log.info("stage_amended", project_id=str(project_id), stage=stage.value, stale=sorted(stale))
     return snapshot
 
 

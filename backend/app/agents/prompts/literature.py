@@ -165,3 +165,74 @@ GAPS_REWORD = PromptTemplate(
     ),
     template="Statements:\n$statements\n\nReturn each one rephrased, with its number.",
 )
+
+SURVEY_OUTLINE = PromptTemplate(
+    name="literature.survey_outline",
+    version="1",
+    description="L11 Report Generation: group the selected papers into themes for the Literature Survey.",
+    system=(
+        "You plan the Literature Survey (related-work) section of a research paper. Group the papers into 3 to 6 "
+        "THEMES (approaches, problem settings, evaluation practices, …) that matter for the research plan; a "
+        "theme compares several papers, it is never one paper. Every paper must appear in at least one theme "
+        "(use the ids P1, P2, …). Order the themes so the section builds towards the research questions."
+    ),
+    template=("Research plan:\n$plan\n\nPapers:\n$papers\n\n${feedback}Plan the themes."),
+)
+
+SURVEY_THEME = PromptTemplate(
+    name="literature.survey_theme",
+    version="1",
+    description="L11: write one thematic subsection of the Literature Survey with citations.",
+    system=(
+        "You write one subsection of an academic Literature Survey. Rules:\n"
+        "- Synthesise ACROSS papers: compare approaches, results and limitations; never write one paragraph per "
+        "paper.\n"
+        "- Every sentence that states something from the literature ends with its source in square brackets, "
+        "e.g. [P3] or [P1][P4]. Use only the ids listed. Every paragraph cites at least one paper.\n"
+        "- Use only what the paper notes say; never invent numbers, datasets or claims.\n"
+        "- Formal academic English, 2–4 paragraphs, no headings, no bullet lists."
+    ),
+    template=(
+        "Theme: $title\nFocus: $focus\n\nResearch plan (for relevance):\n$plan\n\n"
+        "Paper notes:\n$papers\n\n${feedback}Write the subsection."
+    ),
+)
+
+SURVEY_FRAME = PromptTemplate(
+    name="literature.survey_frame",
+    version="1",
+    description="L11: the opening paragraph and the closing research-gap summary of the Literature Survey.",
+    system=(
+        "You write the opening and the closing of an academic Literature Survey section.\n"
+        "- Opening: one paragraph on the scope of the reviewed work and how the section is organised (it names "
+        "the themes in order). Cite papers as [P#] where you refer to them.\n"
+        "- Gap summary: 1–2 paragraphs summarising the research gaps listed, as POSSIBILITIES (may, appears, "
+        "little evidence among the reviewed studies), never as certain facts; cite the papers each gap rests "
+        "on as [P#]; connect them to the research objectives.\n"
+        "- Use only the ids listed. Formal academic English, no headings, no bullet lists."
+    ),
+    template=(
+        "Research plan:\n$plan\n\nThemes in order:\n$themes\n\nPapers:\n$papers\n\n"
+        "Research gaps:\n$gaps\n\n${feedback}Write the opening and the gap summary."
+    ),
+)
+
+REFINE_PLAN = PromptTemplate(
+    name="literature.refine_plan",
+    version="1",
+    description="L11: propose refinements to objectives and research questions from accepted gaps.",
+    system=(
+        "You help a researcher refine their research plan after a literature review. Given the current "
+        "objectives (O#), research questions (RQ#) and the research gaps they accepted (G#), propose at most 6 "
+        "concrete changes so the plan addresses the gaps:\n"
+        "- modify_objective / modify_question: rewrite an existing item (`target` = its id). Keep its intent.\n"
+        "- add_question: a new research question or hypothesis linked to existing objectives.\n"
+        "- add_objective: a new objective plus its first research question (`question_text`).\n"
+        "Every change cites the gap ids it responds to and explains why in one or two sentences. Propose "
+        "nothing for gaps the plan already covers. Research questions are questions (ending with '?'); "
+        "hypotheses are statements."
+    ),
+    template=(
+        "Objectives:\n$objectives\n\nResearch questions:\n$questions\n\nAccepted gaps:\n$gaps\n\nPropose the changes."
+    ),
+)

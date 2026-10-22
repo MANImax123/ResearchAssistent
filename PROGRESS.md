@@ -27,7 +27,7 @@ Current step: 4.10
 | 4.7  | Contradiction Detection agent | ✅ | 2026-10-22 | Dataset/metric groups; cross-paper passages and tables; persistent dismissals |
 | 4.8  | Knowledge Graph agent + visualization | ✅ | 2026-10-22 | Neo4j graph per project (papers, methods, datasets, metrics, limitations, conflicts, plan), entity merging, Graph tab with filters + node details |
 | 4.9  | Research Gap Detection agent | ✅ | 2026-10-23 | Signals (limitations, conflicts, untested pairs from KG, future work); traceable hedged gaps; accept/edit/reject; state + KG |
-| 4.10 | Objective/RQ refinement + Literature Survey section | 🔄 in progress | | |
+| 4.10 | Objective/RQ refinement + Literature Survey section | 🔄 in progress | 2026-10-23 | Built and verified live; committed for iteration, awaiting approval |
 | 5.1  | Methodology input workspace | ⬜ not started | | |
 | 5.2  | Diagram understanding | ⬜ not started | | |
 | 5.3  | Methodology section generation | ⬜ not started | | |

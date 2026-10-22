@@ -15,6 +15,7 @@ EXPECTED_TABLES = {
     "references", "figures", "tables", "agent_runs", "feedback", "jobs",
     "search_queries",  # Step 4.1: literature search queries (L1)
     "paper_documents",  # Step 4.3: parsed full text
+    "plan_refinements",  # Step 4.10: proposed objective / research question changes from accepted gaps
 }  # fmt: skip
 
 

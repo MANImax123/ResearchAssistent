@@ -417,3 +417,47 @@ class GapUpdate(BaseModel):
     confidence: Literal["low", "medium", "high"] | None = None
     objective_ids: list[str] | None = None
     status: Literal["candidate", "accepted", "rejected"] | None = None
+
+
+# ─── Step 4.10: plan refinements, Literature Survey section ───
+
+
+class GapRef(BaseModel):
+    id: uuid.UUID
+    statement: str
+
+
+class RefinementRead(BaseModel):
+    id: uuid.UUID
+    kind: Literal["modify_objective", "modify_question", "add_question", "add_objective"]
+    target: str | None
+    text: str
+    question_kind: Literal["question", "hypothesis"] | None
+    linked_objective_ids: list[str]
+    question_text: str | None
+    before: str | None
+    rationale: str | None
+    gaps: list[GapRef]
+    status: Literal["proposed", "accepted", "rejected"]
+    applied_ids: list[str]
+    decided_at: datetime | None
+    created_at: datetime
+
+
+class SurveyCitation(BaseModel):
+    paper_id: uuid.UUID
+    title: str
+    year: int | None
+    authors: str
+
+
+class SurveyRead(BaseModel):
+    stage_status: StageStatus
+    version: int | None
+    content: str | None
+    source: str | None
+    updated_at: datetime | None
+    citations: list[SurveyCitation]
+    unresolved: list[str]  # citation keys that aren't a verified paper of this project
+    uncited_paragraphs: int
+    paragraphs: int
