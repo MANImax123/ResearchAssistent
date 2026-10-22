@@ -11,6 +11,7 @@ import { ComparePanel } from "@/components/literature/ComparePanel";
 import { ConflictsPanel } from "@/components/literature/ConflictsPanel";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
+import { GraphPanel } from "@/components/literature/GraphPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
 import { QueryEditor } from "@/components/literature/QueryEditor";
 import { RankPanel } from "@/components/literature/RankPanel";
@@ -24,6 +25,7 @@ import {
   type LiteratureWorkspace,
   type QueryDraft,
 } from "@/lib/literature";
+import { graphApi } from "@/lib/graph";
 import { STATUS_META } from "@/lib/stages";
 
 const JOB_LABEL: Record<string, string> = {
@@ -35,14 +37,16 @@ const JOB_LABEL: Record<string, string> = {
   literature_analyze: "Paper analysis",
   literature_compare: "Comparison",
   literature_contradictions: "Contradiction check",
+  knowledge_graph: "Knowledge graph",
 };
 
-type Tab = "discover" | "fulltext" | "compare" | "conflicts" | "ask";
+type Tab = "discover" | "fulltext" | "compare" | "conflicts" | "graph" | "ask";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
   { id: "compare", label: "Compare" },
   { id: "conflicts", label: "Conflicts" },
+  { id: "graph", label: "Graph" },
   { id: "ask", label: "Ask" },
 ];
 
@@ -270,14 +274,25 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "conflicts" ? (
+      {tab === "graph" ? (
+        <GraphPanel
+          projectId={id}
+          canEdit={canEdit}
+          busy={busy}
+          selected={ws.selected_count}
+          refreshKey={libraryVersion}
+          onBuild={() => void start(() => graphApi.build(id))}
+        />
+      ) : tab === "conflicts" ? (
         <ConflictsPanel
           projectId={id}
           canEdit={canEdit}
           busy={busy}
           profiled={ws.profiled_count}
           refreshKey={libraryVersion}
-          onDetect={() => void start(() => literatureApi.detectContradictions(id))}
+          onDetect={() =>
+            void start(() => literatureApi.detectContradictions(id))
+          }
         />
       ) : tab === "compare" ? (
         <ComparePanel
@@ -285,7 +300,9 @@ export default function LiteratureWorkspacePage() {
           canEdit={canEdit}
           busy={busy}
           refreshKey={libraryVersion}
-          onBuild={(force) => void start(() => literatureApi.buildComparison(id, force))}
+          onBuild={(force) =>
+            void start(() => literatureApi.buildComparison(id, force))
+          }
           onFill={(key) => void start(() => literatureApi.fillColumn(id, key))}
         />
       ) : tab === "ask" ? (

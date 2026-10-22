@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.8
+Current step: 4.9
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -25,8 +25,8 @@ Current step: 4.8
 | 4.5  | Paper Analysis agent | ✅ | 2026-10-21 | Evidence-backed profiles (every value cites passages); editable |
 | 4.6  | Comparative Analysis agent | ✅ | 2026-10-21 | Grounded matrix of selected papers; custom AI columns; CSV; insert as table |
 | 4.7  | Contradiction Detection agent | ✅ | 2026-10-22 | Dataset/metric groups; cross-paper passages and tables; persistent dismissals |
-| 4.8  | Knowledge Graph agent + visualization | 🔄 in progress | | |
-| 4.9  | Research Gap Detection agent | ⬜ not started | | |
+| 4.8  | Knowledge Graph agent + visualization | ✅ done | 2026-10-22 | Neo4j graph per project (papers, methods, datasets, metrics, limitations, conflicts, plan), entity merging, Graph tab with filters + node details |
+| 4.9  | Research Gap Detection agent | 🔄 in progress | | |
 | 4.10 | Objective/RQ refinement + Literature Survey section | ⬜ not started | | |
 | 5.1  | Methodology input workspace | ⬜ not started | | |
 | 5.2  | Diagram understanding | ⬜ not started | | |

@@ -204,6 +204,17 @@ async def literature_contradictions(reporter: JobReporter, project_id: str) -> d
     )
 
 
+async def knowledge_graph(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L9: rebuild the project's Neo4j graph from its papers, profiles, contradictions and plan."""
+    from app.agents import registry
+    from app.services import knowledge_graph as kg
+
+    await reporter.progress(10, "Building the knowledge graph")
+    client = registry.graph_factory()
+    await client.ensure_schema()
+    return await kg.build(uuid.UUID(project_id), reporter.session_factory, client)
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -218,4 +229,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_analyze": literature_analyze,
     "literature_compare": literature_compare,
     "literature_contradictions": literature_contradictions,
+    "knowledge_graph": knowledge_graph,
 }
