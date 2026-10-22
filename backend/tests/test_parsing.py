@@ -14,7 +14,7 @@ from app.agents import registry
 from app.agents.idea.agent import make_idea_agent
 from app.agents.literature.parsing import Tools
 from app.core.config import get_settings
-from app.db.models import File, Job, Paper, PaperChunk
+from app.db.models import File, Job, Paper, PaperChunk, PaperProfile
 from app.db.models.enums import JobStatus, PaperOrigin, ParseStatus, StageName
 from app.services.embeddings import EmbeddingService, FakeEmbeddings
 from app.services.grobid import GrobidClient, GrobidError, parse_tei
@@ -81,6 +81,10 @@ def test_tei_sections_kinds_captions() -> None:
     assert not any(c.text.startswith(("Definition", ")")) for c in doc.captions)  # not real figures
     table2 = next(c for c in doc.captions if c.label == "Table 2")
     assert table2.kind == "table" and table2.text.startswith("Performance comparison on PDBbind")
+    # The table's cells become a results section (chunked, searchable, citable)
+    cells = next(s for s in doc.sections if s.title.startswith("Table 2:"))
+    assert cells.kind == "results" and cells.page == 7 and "1.675 (0.000)" in cells.text and "Pafnucy" in cells.text
+    assert next(s for s in doc.sections if s.title.startswith("Table 1:")).kind == "other"  # notation, not numbers
 
 
 def test_subsections_inherit_from_nearest_ancestor_with_trailing_dots() -> None:
@@ -358,8 +362,13 @@ async def test_upload_needed_then_pdf_uploaded_and_fallback_parser(
     # Default run: only selected papers not parsed yet; force re-parses the parsed ones too
     again = await parse(flow)
     assert again == {"papers": 1, "upload_needed": 1}  # just the paywalled one
+    db_session.add(PaperProfile(paper_id=ids["arxiv"], method="Old.", evidence={}, dataset=[], metrics=[],
+                                limitations=[], tech_stack=[]))  # fmt: skip
+    await db_session.commit()
     forced = await parse(flow, force=True)
     assert forced["papers"] == 3
+    # Re-parsing replaced the passages, so the profile built on the old ones is gone (analyse again)
+    assert await db_session.get(PaperProfile, ids["arxiv"], populate_existing=True) is None
     assert (await flow.post("/literature/parse", {"paper_ids": [str(uuid.uuid4())]})).status_code == 409
 
 

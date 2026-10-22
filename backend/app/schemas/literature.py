@@ -344,3 +344,31 @@ class InsertTableRequest(BaseModel):
 class InsertTableResult(BaseModel):
     table_number: int
     section_version: int
+
+
+# ─── Contradictions (Step 4.7) ───────────────────────────────────────────
+
+
+class ClaimSide(BaseModel):
+    paper_id: uuid.UUID
+    title: str
+    year: int | None
+    claim: str
+    evidence: list[EvidenceRead]
+
+
+class ContradictionRead(BaseModel):
+    id: uuid.UUID
+    topic: str | None
+    a: ClaimSide
+    b: ClaimSide
+    explanation: str | None
+    explanation_kind: str | None
+    status: Literal["open", "dismissed"]
+    dismiss_reason: str | None
+    dismissed_at: datetime | None
+    created_at: datetime
+
+
+class DismissRequest(BaseModel):
+    reason: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] | None = None

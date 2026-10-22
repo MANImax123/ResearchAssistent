@@ -8,6 +8,7 @@ import { JobProgress } from "@/components/JobProgress";
 import { AddPaper } from "@/components/literature/AddPaper";
 import { AskPanel } from "@/components/literature/AskPanel";
 import { ComparePanel } from "@/components/literature/ComparePanel";
+import { ConflictsPanel } from "@/components/literature/ConflictsPanel";
 import { DiscoverPanel } from "@/components/literature/DiscoverPanel";
 import { FullTextPanel } from "@/components/literature/FullTextPanel";
 import { PaperTable } from "@/components/literature/PaperTable";
@@ -33,13 +34,15 @@ const JOB_LABEL: Record<string, string> = {
   literature_index: "Indexing passages",
   literature_analyze: "Paper analysis",
   literature_compare: "Comparison",
+  literature_contradictions: "Contradiction check",
 };
 
-type Tab = "discover" | "fulltext" | "compare" | "ask";
+type Tab = "discover" | "fulltext" | "compare" | "conflicts" | "ask";
 const TABS: { id: Tab; label: string }[] = [
   { id: "discover", label: "Discover" },
   { id: "fulltext", label: "Full text" },
   { id: "compare", label: "Compare" },
+  { id: "conflicts", label: "Conflicts" },
   { id: "ask", label: "Ask" },
 ];
 
@@ -267,7 +270,16 @@ export default function LiteratureWorkspacePage() {
         </div>
       )}
 
-      {tab === "compare" ? (
+      {tab === "conflicts" ? (
+        <ConflictsPanel
+          projectId={id}
+          canEdit={canEdit}
+          busy={busy}
+          profiled={ws.profiled_count}
+          refreshKey={libraryVersion}
+          onDetect={() => void start(() => literatureApi.detectContradictions(id))}
+        />
+      ) : tab === "compare" ? (
         <ComparePanel
           projectId={id}
           canEdit={canEdit}

@@ -21,7 +21,7 @@ from app.db.models.enums import PaperOrigin, ParseStatus, QueryOrigin, StageName
 from app.services import retrieval
 from app.services.academic.models import Author, PaperMetadata, SearchSourceName
 from app.services.academic.sources import SearchClient
-from app.services.embeddings import EmbeddingService
+from app.services.embeddings import EmbeddingQuotaError, EmbeddingService
 from app.services.llm import LLMService, SessionFactory
 
 log = get_logger(__name__)
@@ -389,6 +389,9 @@ async def index_chunks(
             project_id, session_factory, registry.embeddings_factory(), progress=scaled
         )
         return {"indexed": indexed}
+    except EmbeddingQuotaError as exc:
+        log.warning("chunk_indexing_quota", project_id=str(project_id))
+        return {"indexed": 0, "index_error": str(exc)}
     except Exception as exc:  # noqa: BLE001 - reported in the job result; the chunks stay pending
         log.warning("chunk_indexing_failed", project_id=str(project_id), error=str(exc)[:300])
         return {"indexed": 0, "index_error": f"Indexing for search failed ({type(exc).__name__}); try again."}

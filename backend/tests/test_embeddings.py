@@ -113,6 +113,26 @@ async def test_quota_errors_wait_as_long_as_the_api_asks() -> None:
     assert svc.sleeps == [48.372185136, 90.0]  # type: ignore[attr-defined]  # capped at 90 s
 
 
+async def test_daily_quota_fails_at_once_with_a_clear_message() -> None:
+    """Live case: Gemini's free tier allows 1,000 embedding requests a day; waiting minutes won't help."""
+    from app.services.embeddings import EmbeddingQuotaError
+
+    class Daily(FakeEmbeddings):
+        async def embed(self, texts: list[str], *, kind: Kind, dim: int, titles: list[str | None]) -> list[list[float]]:
+            raise RuntimeError(
+                "429 RESOURCE_EXHAUSTED. {'quotaId': 'EmbedContentRequestsPerDayPerUserPerProjectPerModel-FreeTier'}, "
+                "{'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '45624s'}"
+            )
+
+        def is_retryable(self, exc: BaseException) -> bool:
+            return True
+
+    svc = service(Daily())
+    with pytest.raises(EmbeddingQuotaError, match="daily embedding quota is used up; it resets in about 13 h"):
+        await svc.embed_query("x")
+    assert svc.sleeps == []  # type: ignore[attr-defined]
+
+
 async def test_gemini_embeds_each_text_separately_with_task_prefixes() -> None:
     """gemini-embedding-2 merges a plain list of strings into ONE vector, so each text must be its own Content."""
     provider = GeminiEmbeddings("test-key", "gemini-embedding-2", timeout_s=30)

@@ -1,9 +1,10 @@
 """Literature-analysis outputs: comparison matrix, contradictions, candidate gaps."""
 
 import uuid
+from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ForeignKey, Integer, Text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,8 +28,15 @@ class Contradiction(UUIDPkMixin, CreatedAtMixin, Base):
     claim_b: Mapped[str] = mapped_column(Text)
     paper_a_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("papers.id", ondelete="CASCADE"))
     paper_b_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("papers.id", ondelete="CASCADE"))
-    evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)  # {"a": [chunk ids], "b": [chunk ids]}
     explanation: Mapped[str | None] = mapped_column(Text)
+    # Step 4.7
+    topic: Mapped[str | None] = mapped_column(Text)  # what both papers report on, e.g. "PDBbind core set · RMSE"
+    explanation_kind: Mapped[str | None] = mapped_column(String(32))  # different_setup | dataset_version | …
+    status: Mapped[str] = mapped_column(String(16), default="open")  # open | dismissed
+    dismissed_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    dismissed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    dismiss_reason: Mapped[str | None] = mapped_column(Text)
 
 
 class ResearchGap(UUIDPkMixin, TimestampMixin, Base):

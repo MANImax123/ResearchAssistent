@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from sqlalchemy import delete
 
 from app.core.logging import get_logger
-from app.db.models import File, Paper, PaperChunk, PaperDocument
+from app.db.models import File, Paper, PaperChunk, PaperDocument, PaperProfile
 from app.db.models.enums import FileKind, ParseStatus
 from app.services.grobid import GrobidClient, GrobidError, parse_tei
 from app.services.llm import SessionFactory
@@ -131,6 +131,8 @@ async def parse_paper(paper_id: uuid.UUID, session_factory: SessionFactory, tool
         async with session_factory() as session:
             await session.execute(delete(PaperChunk).where(PaperChunk.paper_id == paper_id))
             await session.execute(delete(PaperDocument).where(PaperDocument.paper_id == paper_id))
+            # Its profile's evidence pointed at the old passages: analyse again for a grounded profile
+            await session.execute(delete(PaperProfile).where(PaperProfile.paper_id == paper_id))
             session.add(
                 PaperDocument(
                     paper_id=paper_id, file_id=file_id, pdf_source=source, pdf_url=url, parser=document.parser,

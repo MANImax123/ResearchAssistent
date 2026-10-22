@@ -1,5 +1,5 @@
 # Progress
-Current step: 4.7
+Current step: 4.8
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -24,8 +24,8 @@ Current step: 4.7
 | 4.4  | Embeddings + RAG Retrieval agent | ✅ | 2026-10-21 | HNSW + MMR retrieval; Ask the literature with verified chunk citations |
 | 4.5  | Paper Analysis agent | ✅ | 2026-10-21 | Evidence-backed profiles (every value cites passages); editable |
 | 4.6  | Comparative Analysis agent | ✅ | 2026-10-21 | Grounded matrix of selected papers; custom AI columns; CSV; insert as table |
-| 4.7  | Contradiction Detection agent | 🔄 in progress | | |
-| 4.8  | Knowledge Graph agent + visualization | ⬜ not started | | |
+| 4.7  | Contradiction Detection agent | ✅ | 2026-10-22 | Dataset/metric groups; cross-paper passages and tables; persistent dismissals |
+| 4.8  | Knowledge Graph agent + visualization | 🔄 in progress | | |
 | 4.9  | Research Gap Detection agent | ⬜ not started | | |
 | 4.10 | Objective/RQ refinement + Literature Survey section | ⬜ not started | | |
 | 5.1  | Methodology input workspace | ⬜ not started | | |

@@ -14,7 +14,7 @@ from typing import Literal, Protocol
 
 from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
-from app.services.llm import LLMNotConfiguredError
+from app.services.llm import LLMError, LLMNotConfiguredError
 from app.services.llm_providers import PerLoop, is_network_error
 
 log = get_logger(__name__)
@@ -24,6 +24,20 @@ MAX_SUGGESTED_WAIT_S = 90.0  # longest server-requested wait we honour before re
 
 _RETRY_IN = re.compile(r"retry in (\d+(?:\.\d+)?)s", re.IGNORECASE)
 _RETRY_DELAY = re.compile(r"'retryDelay': '(\d+(?:\.\d+)?)s'")
+
+
+class EmbeddingQuotaError(LLMError):
+    """The provider's daily embedding quota is used up; retrying today won't help."""
+
+    def __init__(self, cause: BaseException) -> None:
+        wait = suggested_wait(cause)
+        when = f"; it resets in about {wait / 3600:.0f} h" if wait and wait >= 3600 else ""
+        super().__init__(f"The AI provider's daily embedding quota is used up{when}. Try again later.")
+
+
+def daily_quota_exhausted(exc: BaseException) -> bool:
+    """A per-day quota (e.g. Gemini free tier's 1,000 embedding requests a day), as opposed to a per-minute one."""
+    return "PerDay" in str(exc)
 
 
 def suggested_wait(exc: BaseException) -> float | None:
@@ -170,6 +184,8 @@ class EmbeddingService:
                 vectors = await self.provider.embed(texts, kind=kind, dim=self.dim, titles=titles)
                 break
             except Exception as exc:
+                if daily_quota_exhausted(exc):
+                    raise EmbeddingQuotaError(exc) from exc  # waiting minutes won't help
                 if attempt == attempts or not self.provider.is_retryable(exc):
                     raise
                 # Free-tier quotas are per minute: wait as long as the API asks, not just a few seconds

@@ -17,7 +17,7 @@ from app.api.v1.files import StorageDep, save_upload
 from app.api.v1.jobs import DispatcherDep, start_job
 from app.core.deps import CurrentUser, DbSession, SettingsDep
 from app.core.logging import get_logger
-from app.db.models import Job, ManuscriptTable, Paper, PaperChunk, PaperDocument, PaperProfile, Project
+from app.db.models import Contradiction, Job, ManuscriptTable, Paper, PaperChunk, PaperDocument, PaperProfile, Project
 from app.db.models.enums import FileKind, JobStatus, MemberRole, PaperOrigin, ParseStatus, SectionType, StageName
 from app.db.session import request_session_factory
 from app.orchestrator.service import selected_paper_ids
@@ -27,6 +27,7 @@ from app.schemas.literature import (
     AnswerRead,
     AskRequest,
     CellWrite,
+    ClaimSide,
     ColumnCreate,
     ColumnUpdate,
     CompareRequest,
@@ -35,7 +36,9 @@ from app.schemas.literature import (
     ComparisonPaper,
     ComparisonRead,
     ComparisonRow,
+    ContradictionRead,
     DiscoverRequest,
+    DismissRequest,
     EvidenceRead,
     InsertTableRequest,
     InsertTableResult,
@@ -58,7 +61,7 @@ from app.schemas.literature import (
     SourceRead,
     SourceStatus,
 )
-from app.services import comparison, literature, retrieval, sections
+from app.services import comparison, contradictions, literature, retrieval, sections
 from app.services.academic import sources as academic
 from app.services.academic.dedup import Deduplicator
 from app.services.academic.http import SourceError
@@ -70,7 +73,7 @@ router = APIRouter(prefix="/projects/{project_id}/literature", tags=["literature
 log = get_logger(__name__)
 
 LITERATURE_JOBS = ("literature_plan", "literature_discover", "literature_rank", "literature_parse", "literature_index",
-                   "literature_analyze", "literature_compare")  # fmt: skip
+                   "literature_analyze", "literature_compare", "literature_contradictions")  # fmt: skip
 SortKey = Literal["relevance", "added", "year", "citations", "title"]
 
 
@@ -863,3 +866,103 @@ async def insert_comparison(
     await db.commit()
     log.info("comparison_inserted", project_id=str(project_id), table=number, papers=len(papers))
     return InsertTableResult(table_number=number, section_version=version.number)
+
+
+# ─── Contradictions (Step 4.7) ───────────────────────────────────────────
+
+
+@router.post("/contradictions/detect", response_model=JobRead, status_code=status.HTTP_202_ACCEPTED)
+async def detect_contradictions(
+    project_id: uuid.UUID, user: CurrentUser, db: DbSession, dispatcher: DispatcherDep
+) -> Job:
+    """L8: compare the claims of selected papers that share a dataset or metric."""
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    await _ensure_idle(db, project)
+    profiled = await db.scalar(
+        select(func.count())
+        .select_from(PaperProfile)
+        .join(Paper, Paper.id == PaperProfile.paper_id)
+        .where(Paper.project_id == project_id, Paper.selected.is_(True))
+    )
+    if (profiled or 0) < 2:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Analyse at least two selected papers first")
+    return await start_job(
+        db, dispatcher, user, "literature_contradictions", {"project_id": str(project_id)}, project_id
+    )
+
+
+async def _contradiction_reads(db: DbSession, rows: list[Contradiction]) -> list[ContradictionRead]:
+    paper_ids = {r.paper_a_id for r in rows} | {r.paper_b_id for r in rows}
+    papers = {p.id: p for p in await db.scalars(select(Paper).where(Paper.id.in_(paper_ids)))} if paper_ids else {}
+    chunk_ids = {uuid.UUID(i) for r in rows for side in ("a", "b") for i in (r.evidence or {}).get(side, [])}
+    chunks = await comparison.chunk_lookup(db, chunk_ids)
+
+    def side(paper_id: uuid.UUID, claim: str, ids: list[str]) -> ClaimSide:
+        paper = papers[paper_id]
+        found = [chunks[uuid.UUID(i)] for i in ids if uuid.UUID(i) in chunks]
+        return ClaimSide(
+            paper_id=paper_id, title=paper.title, year=paper.year, claim=claim,
+            evidence=[EvidenceRead(chunk_id=c.id, section=c.section_name, kind=c.section_kind, page=c.page,
+                                   text=c.text) for c in found],
+        )  # fmt: skip
+
+    return [
+        ContradictionRead(
+            id=r.id,
+            topic=r.topic,
+            a=side(r.paper_a_id, r.claim_a, (r.evidence or {}).get("a", [])),
+            b=side(r.paper_b_id, r.claim_b, (r.evidence or {}).get("b", [])),
+            explanation=r.explanation,
+            explanation_kind=r.explanation_kind,
+            status=r.status,
+            dismiss_reason=r.dismiss_reason,
+            dismissed_at=r.dismissed_at,
+            created_at=r.created_at,
+        )  # fmt: skip
+        for r in rows
+        if r.paper_a_id in papers and r.paper_b_id in papers
+    ]
+
+
+@router.get("/contradictions", response_model=list[ContradictionRead])
+async def list_contradictions(
+    project_id: uuid.UUID,
+    user: CurrentUser,
+    db: DbSession,
+    status_: Annotated[Literal["open", "dismissed", "all"], Query(alias="status")] = "open",
+) -> list[ContradictionRead]:
+    await get_project_for_user(db, project_id, user)
+    stmt = select(Contradiction).where(Contradiction.project_id == project_id)
+    if status_ != "all":
+        stmt = stmt.where(Contradiction.status == status_)
+    rows = list(await db.scalars(stmt.order_by(Contradiction.topic, Contradiction.created_at)))
+    return await _contradiction_reads(db, rows)
+
+
+async def _set_contradiction(
+    project_id: uuid.UUID, contradiction_id: uuid.UUID, user: CurrentUser, db: DbSession, *, dismissed: bool,
+    reason: str | None = None,
+) -> ContradictionRead:  # fmt: skip
+    project, _ = await get_project_for_user(db, project_id, user, min_role=MemberRole.EDITOR)
+    _ensure_editable(project)
+    row = await contradictions.set_status(db, project_id, contradiction_id, dismissed=dismissed, by=user.id,
+                                          reason=reason)  # fmt: skip
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Contradiction not found")
+    await db.commit()
+    return (await _contradiction_reads(db, [row]))[0]
+
+
+@router.post("/contradictions/{contradiction_id}/dismiss", response_model=ContradictionRead)
+async def dismiss_contradiction(
+    project_id: uuid.UUID, contradiction_id: uuid.UUID, body: DismissRequest, user: CurrentUser, db: DbSession
+) -> ContradictionRead:
+    """Not a real conflict (or not relevant): hidden, and not reported again for this pair and topic."""
+    return await _set_contradiction(project_id, contradiction_id, user, db, dismissed=True, reason=body.reason)
+
+
+@router.post("/contradictions/{contradiction_id}/restore", response_model=ContradictionRead)
+async def restore_contradiction(
+    project_id: uuid.UUID, contradiction_id: uuid.UUID, user: CurrentUser, db: DbSession
+) -> ContradictionRead:
+    return await _set_contradiction(project_id, contradiction_id, user, db, dismissed=False)

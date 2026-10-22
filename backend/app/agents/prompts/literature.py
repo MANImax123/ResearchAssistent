@@ -107,3 +107,22 @@ COMPARE_COLUMN = PromptTemplate(
     ),
     template="Column: $column\n\nPapers and their passages:\n$papers\n\nFill the column.",
 )
+
+CONTRADICTIONS = PromptTemplate(
+    name="literature.contradictions",
+    version="1",
+    description="L8 Contradiction Detection: conflicting claims between papers that study the same thing.",
+    system=(
+        "You check papers that report on the same topic for CONFLICTING claims. Compare every pair of papers "
+        "(P1 vs P2, P1 vs P3, …) using only their passages. Rules:\n"
+        "- A contradiction is two claims that cannot both be true as stated: opposite conclusions about the same "
+        "method or effect, or clearly different numbers for the same model/baseline on the same dataset and "
+        "metric. Different papers simply reporting their own (different) models is NOT a contradiction.\n"
+        "- Quote or closely paraphrase each claim, and list the passage ids supporting it (claim A from paper A's "
+        "passages only, claim B from paper B's).\n"
+        "- Give a possible explanation and its kind: different_setup, dataset_version, metric_definition, "
+        "data_split, genuine_disagreement or unclear.\n"
+        "- Return an empty list if there is no real conflict. Never invent claims or numbers."
+    ),
+    template="Topic: $topic\n\nPapers and passages:\n$papers\n\nList the contradictions.",
+)

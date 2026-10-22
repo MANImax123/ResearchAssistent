@@ -189,6 +189,21 @@ async def literature_compare(
     return await comparison.build(pid, reporter.session_factory, llm, force=force, progress=reporter.progress)
 
 
+async def literature_contradictions(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """L8: conflicting claims between selected papers that share a dataset or metric."""
+    from app.agents import registry
+    from app.services import contradictions
+
+    await reporter.progress(5, "Grouping papers by dataset and metric")
+    return await contradictions.detect(
+        uuid.UUID(project_id),
+        reporter.session_factory,
+        registry.llm_factory(reporter.session_factory)(),
+        registry.embeddings_factory(),
+        progress=reporter.progress,
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -202,4 +217,5 @@ HANDLERS: dict[str, JobHandler] = {
     "literature_index": literature_index,
     "literature_analyze": literature_analyze,
     "literature_compare": literature_compare,
+    "literature_contradictions": literature_contradictions,
 }

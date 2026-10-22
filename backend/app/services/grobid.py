@@ -61,6 +61,24 @@ def _is_glyph_heading(head: str, number: str | None) -> bool:
     return number is None and (len(head) <= 3 or not re.search(r"[A-Za-z]{3,}", head))
 
 
+def _table_rows(figure: ET.Element) -> list[str]:
+    """Rows of a table figure as "cell | cell | …" lines (empty cells dropped)."""
+    table = figure.find("t:table", NS)
+    if table is None:
+        return []
+    rows = []
+    for row in table.findall("t:row", NS):
+        cells = [c for c in (_text(cell) for cell in row.findall("t:cell", NS)) if c]
+        if cells:
+            rows.append(" | ".join(cells))
+    return rows
+
+
+def _numeric_share(text: str) -> float:
+    tokens = text.split()
+    return sum(bool(re.fullmatch(r"[(±]?[-+]?\d+(?:[.,]\d+)?%?[)]?", t)) for t in tokens) / max(len(tokens), 1)
+
+
 def parse_tei(tei: str) -> ParsedDocument:
     root = ET.fromstring(tei)  # noqa: S314 - TEI from our own GROBID container
     title = _text(root.find(".//t:teiHeader//t:titleStmt/t:title", NS)) or None
@@ -112,6 +130,12 @@ def parse_tei(tei: str) -> ParsedDocument:
         label = f"{'Table' if is_table else 'Figure'} {number}"
         text = CAPTION.sub("", description, count=1).lstrip(" :.") if CAPTION.match(description) else description
         captions.append(Caption("table" if is_table else "figure", label, text, _page(figure)))
+        if is_table and (rows := _table_rows(figure)):
+            # The table's cells as text: results tables hold the numbers that comparisons and answers need
+            body = "\n".join(rows)
+            results_caption = re.search(r"performance|results?|comparison|accuracy|error|evaluation", text, re.I)
+            kind: SectionKind = "results" if results_caption or _numeric_share(body) >= 0.3 else "other"
+            sections.append(Section(title=f"{label}: {text}"[:200], text=body, kind=kind, page=_page(figure)))
 
     pages = [p for p in (_page(n) for n in root.iter() if n.get("coords")) if p]
     references = len(root.findall(".//t:back//t:listBibl/t:biblStruct", NS))

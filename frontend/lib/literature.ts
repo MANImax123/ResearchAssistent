@@ -274,6 +274,17 @@ export const literatureApi = {
     link.click();
     URL.revokeObjectURL(url);
   },
+  detectContradictions: (projectId: string) =>
+    apiFetch<Job>(`${base(projectId)}/contradictions/detect`, { method: "POST" }),
+  contradictions: (projectId: string, status: "open" | "dismissed" | "all" = "open") =>
+    apiFetch<Contradiction[]>(`${base(projectId)}/contradictions?status=${status}`),
+  dismissContradiction: (projectId: string, id: string, reason: string | null) =>
+    apiFetch<Contradiction>(`${base(projectId)}/contradictions/${encodeURIComponent(id)}/dismiss`, {
+      method: "POST",
+      json: { reason },
+    }),
+  restoreContradiction: (projectId: string, id: string) =>
+    apiFetch<Contradiction>(`${base(projectId)}/contradictions/${encodeURIComponent(id)}/restore`, { method: "POST" }),
   indexPassages: (projectId: string) => apiFetch<Job>(`${base(projectId)}/index`, { method: "POST" }),
   ask: (projectId: string, question: string, sectionKinds: AskSectionKind[] | null) =>
     apiFetch<Answer>(`${base(projectId)}/ask`, {
@@ -405,3 +416,43 @@ export type Comparison = {
   generated_at: string | null;
   uncompared: number;
 };
+
+export type ClaimSide = { paper_id: string; title: string; year: number | null; claim: string; evidence: Evidence[] };
+export type Contradiction = {
+  id: string;
+  topic: string | null;
+  a: ClaimSide;
+  b: ClaimSide;
+  explanation: string | null;
+  explanation_kind: string | null;
+  status: "open" | "dismissed";
+  dismiss_reason: string | null;
+  dismissed_at: string | null;
+  created_at: string;
+};
+
+export const EXPLANATION_LABEL: Record<string, string> = {
+  different_setup: "Different experimental setup",
+  dataset_version: "Different dataset version",
+  metric_definition: "Different metric definition",
+  data_split: "Different data split",
+  genuine_disagreement: "Genuine disagreement",
+  unclear: "Unclear",
+};
+
+/**
+ * The part of a passage that backs a claim: a window around the first of the claim's distinctive terms
+ * (numbers, then capitalised or long words) found in the passage. Falls back to the passage's start.
+ */
+export function focusExcerpt(text: string, claim: string, size = 420): string {
+  if (text.length <= size) return text;
+  const words = claim.match(/[\p{L}\p{N}][\p{L}\p{N}.,%-]*/gu) ?? [];
+  const terms = [
+    ...words.filter((w) => /\d/.test(w)),
+    ...words.filter((w) => !/\d/.test(w) && (/^\p{Lu}/u.test(w) || w.length >= 8)),
+  ].map((w) => w.replace(/[.,]+$/, ""));
+  const lower = text.toLowerCase();
+  const at = terms.map((t) => lower.indexOf(t.toLowerCase())).find((i) => i >= 0) ?? 0;
+  const start = Math.max(0, Math.min(at - Math.floor(size / 3), text.length - size));
+  return `${start > 0 ? "…" : ""}${text.slice(start, start + size)}${start + size < text.length ? "…" : ""}`;
+}
