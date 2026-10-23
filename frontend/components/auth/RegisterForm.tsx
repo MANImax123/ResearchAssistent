@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { Button, ErrorAlert, TextField } from "@/components/ui";
+import { ErrorAlert } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+
+import styles from "./AuthSlider.module.css";
 
 const MIN_PASSWORD = 8;
 
@@ -39,39 +41,45 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">Create your account</h1>
-        <p className="mt-1 text-sm text-slate-500">Start your first research project.</p>
-      </div>
+    <form onSubmit={onSubmit} noValidate>
+      <h1>Create account</h1>
+      <span>Start your first research project</span>
       {error && <ErrorAlert>{error}</ErrorAlert>}
-      <TextField label="Full name" id="name" name="name" autoComplete="name" required />
-      <TextField label="Email" id="email" name="email" type="email" autoComplete="email" required />
-      <TextField
-        label="Password"
-        id="password"
+      <label htmlFor="register-name" className="sr-only">
+        Full name
+      </label>
+      <input id="register-name" name="name" placeholder="Full name" autoComplete="name" required />
+      <label htmlFor="register-email" className="sr-only">
+        Email
+      </label>
+      <input id="register-email" name="email" type="email" placeholder="Email" autoComplete="email" required />
+      <label htmlFor="register-password" className="sr-only">
+        Password
+      </label>
+      <input
+        id="register-password"
         name="password"
         type="password"
+        placeholder={`Password (at least ${MIN_PASSWORD} characters)`}
         autoComplete="new-password"
-        hint={`At least ${MIN_PASSWORD} characters.`}
         required
       />
-      <TextField
-        label="Confirm password"
-        id="confirm"
+      <label htmlFor="register-confirm" className="sr-only">
+        Confirm password
+      </label>
+      <input
+        id="register-confirm"
         name="confirm"
         type="password"
+        placeholder="Confirm password"
         autoComplete="new-password"
         required
       />
-      <Button type="submit" loading={submitting} className="w-full">
-        Create account
-      </Button>
-      <p className="text-center text-sm text-slate-500">
-        Already have an account?{" "}
-        <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Sign in
-        </Link>
+      <button type="submit" disabled={submitting}>
+        {submitting ? "Please wait…" : "Sign up"}
+      </button>
+      <p className={styles.switchLink}>
+        Already have an account? <Link href="/login">Sign in</Link>
       </p>
     </form>
   );

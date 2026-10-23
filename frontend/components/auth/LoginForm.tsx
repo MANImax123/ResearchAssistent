@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { Button, ErrorAlert, TextField } from "@/components/ui";
+import { ErrorAlert } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { safeRedirectTarget } from "@/lib/redirect";
+
+import styles from "./AuthSlider.module.css";
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -29,29 +31,30 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5" noValidate>
-      <div>
-        <h1 className="text-xl font-semibold text-slate-900">Sign in</h1>
-        <p className="mt-1 text-sm text-slate-500">Welcome back to ResearchFlow.</p>
-      </div>
+    <form onSubmit={onSubmit} noValidate>
+      <h1>Sign in</h1>
+      <span>Welcome back to ResearchFlow</span>
       {error && <ErrorAlert>{error}</ErrorAlert>}
-      <TextField label="Email" id="email" name="email" type="email" autoComplete="email" required />
-      <TextField
-        label="Password"
-        id="password"
+      <label htmlFor="login-email" className="sr-only">
+        Email
+      </label>
+      <input id="login-email" name="email" type="email" placeholder="Email" autoComplete="email" required />
+      <label htmlFor="login-password" className="sr-only">
+        Password
+      </label>
+      <input
+        id="login-password"
         name="password"
         type="password"
+        placeholder="Password"
         autoComplete="current-password"
         required
       />
-      <Button type="submit" loading={submitting} className="w-full">
-        Sign in
-      </Button>
-      <p className="text-center text-sm text-slate-500">
-        No account?{" "}
-        <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
-          Create one
-        </Link>
+      <button type="submit" disabled={submitting}>
+        {submitting ? "Please wait…" : "Sign in"}
+      </button>
+      <p className={styles.switchLink}>
+        No account? <Link href="/register">Create one</Link>
       </p>
     </form>
   );

@@ -34,6 +34,11 @@ ResearchFlow is an end-to-end, multi-agent, AI-powered research assistant that s
    ```bash
    make up
    ```
+   On Windows (no `make`), one command starts everything, applies migrations and opens http://localhost:3000:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\start.ps1          # add -Build after frontend/dependency changes
+   docker compose stop                                                 # stop everything
+   ```
 
 3. **Verify infrastructure:**
    ```bash
