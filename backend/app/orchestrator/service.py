@@ -17,8 +17,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.logging import get_logger
-from app.db.models import Paper, Project, ResearchGap, ResearchStateSnapshot, Section, Stage
-from app.db.models.enums import GapStatus, StageName, StageStatus, VersionSource
+from app.db.models import (
+    File,
+    MethodologyInput,
+    MethodologyQuestion,
+    Paper,
+    Project,
+    ResearchGap,
+    ResearchStateSnapshot,
+    Section,
+    Stage,
+)
+from app.db.models.enums import FileKind, GapStatus, StageName, StageStatus, VersionSource
 from app.orchestrator import workflow
 from app.orchestrator.checkpoints import CheckpointerFactory, open_checkpointer, thread_config
 from app.orchestrator.graph import REVIEW_NODE, StageAgent, build_graph, now_iso
@@ -109,6 +119,7 @@ async def run_stage(
         fresh = _researcher_inputs(project)
         selected = await selected_paper_ids(session, project_id)
         gap_ids = await accepted_gap_ids(session, project_id)
+        methodology = await methodology_state(session, project_id)
 
     async with (factory or checkpointer_factory)() as saver:
         graph = build_graph(saver, agents if agents is not None else _default_agents(session_factory))
@@ -128,6 +139,7 @@ async def run_stage(
             inputs = {**fresh["initial"], "requested_stage": stage.value}
         inputs["selected_paper_ids"] = selected
         inputs["gap_ids"] = gap_ids
+        inputs["methodology"] = methodology
         stale = workflow.stale_after_change(stage, statuses)
         if stale:
             inputs["stage_status"] = {d.value: StageStatus.STALE.value for d in stale}
@@ -277,6 +289,7 @@ async def sync_to_db(
             **values,
             "selected_paper_ids": await selected_paper_ids(session, project_id),
             "gap_ids": await accepted_gap_ids(session, project_id),
+            "methodology": await methodology_state(session, project_id),
         }
         project.research_state.version += 1
         for row in project.stages:
@@ -391,6 +404,25 @@ async def accepted_gap_ids(session: AsyncSession, project_id: uuid.UUID) -> list
         .order_by(ResearchGap.created_at, ResearchGap.id)
     )
     return [str(i) for i in rows]
+
+
+async def methodology_state(session: AsyncSession, project_id: uuid.UUID) -> dict[str, Any]:
+    """The research state's `methodology` block (B12): the researcher's input (Step 5.1), the follow-up
+    questions they answered, and the uploaded diagrams."""
+    row = await session.get(MethodologyInput, project_id)
+    answered = await session.scalars(
+        select(MethodologyQuestion)
+        .where(MethodologyQuestion.project_id == project_id, MethodologyQuestion.status == "answered")
+        .order_by(MethodologyQuestion.created_at)
+    )
+    diagrams = await session.scalars(
+        select(File.id).where(File.project_id == project_id, File.kind == FileKind.DIAGRAM).order_by(File.created_at)
+    )
+    return {
+        **(row.data if row is not None else {}),
+        "clarifications": [{"field": q.field, "question": q.question, "answer": q.answer} for q in answered],
+        "diagrams": [str(i) for i in diagrams],
+    }
 
 
 def _researcher_inputs(project: Project) -> dict[str, Any]:

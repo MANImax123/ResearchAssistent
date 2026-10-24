@@ -10,6 +10,7 @@ from app.api.v1 import (
     jobs,
     kg,
     literature,
+    methodology,
     projects,
     sections,
     stages,
@@ -30,6 +31,7 @@ api_router.include_router(literature.router)
 api_router.include_router(kg.router)
 api_router.include_router(gaps.router)
 api_router.include_router(survey.router)
+api_router.include_router(methodology.router)
 
 if get_settings().is_dev:
     api_router.include_router(debug.router)

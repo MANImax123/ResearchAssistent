@@ -15,12 +15,15 @@ export function FilesPanel({
   canEdit,
   kinds,
   title = "Files",
+  onChanged,
 }: {
   projectId: string;
   canEdit: boolean;
   /** Restrict the panel to these file types (default: all). */
   kinds?: FileKind[];
   title?: string;
+  /** Called after a file is uploaded or deleted. */
+  onChanged?: () => void;
 }) {
   const kindOptions = kinds ? FILE_KINDS.filter((k) => kinds.includes(k.value)) : FILE_KINDS;
   const [files, setFiles] = useState<ProjectFile[] | null>(null);
@@ -58,6 +61,7 @@ export function FilesPanel({
           const created = await filesApi.upload(projectId, file, uploadKind, (p) => patchUpload(key, { progress: p }));
           setFiles((prev) => [created, ...(prev ?? [])]);
           setUploads((prev) => prev.filter((u) => u.key !== key));
+          onChanged?.();
         } catch (err) {
           patchUpload(key, { error: err instanceof Error ? err.message : "Upload failed" });
         }
@@ -246,6 +250,7 @@ export function FilesPanel({
             await filesApi.remove(projectId, toDelete.id);
             setFiles((prev) => prev?.filter((f) => f.id !== toDelete.id) ?? null);
             setToDelete(null);
+            onChanged?.();
           }}
         >
           <p>

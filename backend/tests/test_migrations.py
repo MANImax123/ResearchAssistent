@@ -16,6 +16,7 @@ EXPECTED_TABLES = {
     "search_queries",  # Step 4.1: literature search queries (L1)
     "paper_documents",  # Step 4.3: parsed full text
     "plan_refinements",  # Step 4.10: proposed objective / research question changes from accepted gaps
+    "methodology_inputs", "methodology_questions",  # Step 5.1: researcher-provided methodology + follow-ups
 }  # fmt: skip
 
 

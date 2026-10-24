@@ -40,12 +40,21 @@ class ResearchQuestion(TypedDict):
 
 
 class MethodologyBlock(TypedDict, total=False):
-    architecture: str | None
-    algorithms: list[str]
+    """The researcher's methodology input (Step 5.1; see agents.methodology.schemas) + answered follow-ups."""
+
+    architecture: str
+    algorithms: str
+    workflow: str
     datasets: list[dict[str, Any]]
-    setup: str | None
-    metrics: list[str]
-    diagrams: list[str]
+    preprocessing: str
+    experimental_setup: str
+    hyperparameters: list[dict[str, Any]]
+    tools: list[dict[str, Any]]
+    metrics: list[dict[str, Any]]
+    reproducibility: str
+    notes: str
+    clarifications: list[dict[str, Any]]  # answered follow-up questions
+    diagrams: list[str]  # file ids
 
 
 class ResultsBlock(TypedDict, total=False):

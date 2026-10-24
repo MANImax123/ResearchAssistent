@@ -19,7 +19,7 @@ from app.services.grobid import GrobidClient
 from app.services.llm import LLMService, SessionFactory, get_provider
 from app.services.neo4j import Neo4jClient, get_neo4j
 from app.services.pdf_fetch import PdfFetcher
-from app.services.storage import get_storage
+from app.services.storage import Storage, get_storage
 
 
 def default_llm(session_factory: SessionFactory) -> Callable[[], LLMService]:
@@ -70,3 +70,4 @@ def default_parsing_tools() -> Tools:
 
 parsing_factory: Callable[[], Tools] = default_parsing_tools
 graph_factory: Callable[[], Neo4jClient] = get_neo4j
+storage_factory: Callable[[], Storage] = get_storage

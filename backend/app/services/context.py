@@ -6,6 +6,7 @@ Budgets keep prompts bounded: each file is cut to PER_FILE_CHARS and the total t
 
 import asyncio
 import io
+import json
 import uuid
 from dataclasses import dataclass
 
@@ -36,8 +37,10 @@ class ContextDocument:
 
 def extract_text(data: bytes, mime: str) -> str:
     """Plain text from a file's bytes; empty for formats we don't read."""
-    if mime in TEXT_MIMES:
+    if mime in TEXT_MIMES or mime.startswith("text/"):  # incl. source code (text/x-python, …)
         return data.decode("utf-8", errors="replace")
+    if mime == "application/x-ipynb+json":
+        return _notebook_text(data)
     if mime == PDF_MIME:
         import pymupdf
 
@@ -49,6 +52,20 @@ def extract_text(data: bytes, mime: str) -> str:
         document = docx.Document(io.BytesIO(data))
         return "\n".join(p.text for p in document.paragraphs)
     return ""
+
+
+def _notebook_text(data: bytes) -> str:
+    """A Jupyter notebook's cells (markdown and code), without outputs."""
+    try:
+        notebook = json.loads(data)
+    except ValueError:
+        return ""
+    cells = notebook.get("cells") if isinstance(notebook, dict) else None
+    parts = []
+    for cell in cells or []:
+        source = cell.get("source", "")
+        parts.append("".join(source) if isinstance(source, list) else str(source))
+    return "\n\n".join(p for p in parts if p.strip())
 
 
 async def load_context(

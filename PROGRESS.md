@@ -1,5 +1,5 @@
 # Progress
-Current step: 5.1
+Current step: 5.2
 
 | Step | Title | Status | Approved on | Notes |
 |------|-------|--------|-------------|-------|
@@ -28,8 +28,8 @@ Current step: 5.1
 | 4.8  | Knowledge Graph agent + visualization | ✅ | 2026-10-22 | Neo4j graph per project (papers, methods, datasets, metrics, limitations, conflicts, plan), entity merging, Graph tab with filters + node details |
 | 4.9  | Research Gap Detection agent | ✅ | 2026-10-23 | Signals (limitations, conflicts, untested pairs from KG, future work); traceable hedged gaps; accept/edit/reject; state + KG |
 | 4.10 | Objective/RQ refinement + Literature Survey section | ✅ | 2026-10-23 | Gap-based plan refinements (diff, accept → staleness); thematic survey with verified [@paper_id] citations; analysis report |
-| 5.1  | Methodology input workspace | 🔄 in progress | | |
-| 5.2  | Diagram understanding | ⬜ not started | | |
+| 5.1  | Methodology input workspace | ✅ | 2026-10-24 | Structured form + uploads; code checklist of missing essentials; grounded follow-up questions; answers mirrored into state |
+| 5.2  | Diagram understanding | 🔄 in progress | | |
 | 5.3  | Methodology section generation | ⬜ not started | | |
 | 6.1  | Results data ingestion & analysis | ⬜ not started | | |
 | 6.2  | Tables & charts | ⬜ not started | | |

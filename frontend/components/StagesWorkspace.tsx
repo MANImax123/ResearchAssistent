@@ -17,6 +17,7 @@ const POLL_WHILE_RUNNING_MS = 2000;
 const STAGE_WORKSPACE: Partial<Record<StageName, (projectId: string) => string>> = {
   idea: (projectId) => `/projects/${projectId}/idea`,
   literature: (projectId) => `/projects/${projectId}/literature`,
+  methodology: (projectId) => `/projects/${projectId}/methodology`,
 };
 
 /** Stage tracker + review panel: runs stages, shows agent progress, applies review actions. */

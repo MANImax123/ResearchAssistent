@@ -242,6 +242,20 @@ async def literature_refine(reporter: JobReporter, project_id: str) -> dict[str,
     )
 
 
+async def methodology_follow_up(reporter: JobReporter, project_id: str) -> dict[str, Any]:
+    """Step 5.1: follow-up questions for what the methodology input is missing."""
+    from app.agents import registry
+    from app.services import methodology
+
+    await reporter.progress(10, "Checking the methodology for missing details")
+    return await methodology.ask_follow_ups(
+        uuid.UUID(project_id),
+        reporter.session_factory,
+        registry.llm_factory(reporter.session_factory)(),
+        registry.storage_factory(),
+    )
+
+
 HANDLERS: dict[str, JobHandler] = {
     "demo": demo,
     "stage_run": stage_run,
@@ -259,4 +273,5 @@ HANDLERS: dict[str, JobHandler] = {
     "knowledge_graph": knowledge_graph,
     "research_gaps": research_gaps,
     "literature_refine": literature_refine,
+    "methodology_follow_up": methodology_follow_up,
 }
